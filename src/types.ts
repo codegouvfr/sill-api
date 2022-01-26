@@ -53,4 +53,5 @@ export type Software = {
     versionMin: string;
     versionMax?: string;
     referentId: number;
+    isReferentExpert: boolean;
 };

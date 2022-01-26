@@ -138,6 +138,7 @@ export function sillCsvToSoftwares(params: { pathToSillCsvFile: string }): Softw
             "versionMin": "",
             "versionMax": undefined,
             "referentId": 33,
+            "isReferentExpert": false,
         };
 
         softwares.push(software);
