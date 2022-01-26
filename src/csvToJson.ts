@@ -1,21 +1,38 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import { parse as parseCsv } from "csv-parse/sync";
 import { join as pathJoin } from "path";
 import * as fs from "fs";
 import { assert } from "tsafe/assert";
 import { is } from "tsafe/is";
+import { exclude } from "tsafe/exclude";
 
 const projectDirPath = pathJoin(__dirname, "..");
 const resDirPath = pathJoin(projectDirPath, "res");
 
-type SoftwareRef =
-    | {
-          isInSill: true;
-          softwareId: number;
-      }
-    | {
-          isInSill: false;
-          softwareName: string;
-      };
+export type SoftwareRef = SoftwareRef.Known | SoftwareRef.Unknown;
+export namespace SoftwareRef {
+    export type Known = {
+        isKnown: true;
+        softwareId: number;
+    };
+
+    export type Unknown = {
+        isKnown: false;
+        softwareName: string;
+    };
+}
+
+const recommendationStatuses = ["recommended", "in observation", "no longer recommended"] as const;
+
+type RecommendationStatus = typeof recommendationStatuses[number];
+
+const licenses = ["LGPL-2.0-only", "MIT"] as const;
+
+type Licenses = typeof licenses[number];
+
+const mimGroups = ["MIMO", "MIMDEV"] as const;
+
+type MimGroup = typeof mimGroups[number];
 
 // https://git.sr.ht/~etalab/sill
 type Software = {
@@ -23,7 +40,7 @@ type Software = {
     name: string;
     function: string;
     referencedSinceTime: number;
-    recommendationStatus: "recommended" | "in observation" | "no longer recommended";
+    recommendationStatus: RecommendationStatus;
     parentSoftware?: SoftwareRef;
     isFromFrenchPublicService: boolean;
     isPresentInSupportContract: boolean;
@@ -31,15 +48,15 @@ type Software = {
     wikidataId?: string;
     //Example https://comptoir-du-libre.org/en/softwares/461 -> 461
     /* cspell: disable-next-line */
-    comptoirDuLibrOrgeId?: string;
+    comptoirDuLibreOrgId?: string;
     // https://spdx.org/licenses/
     // https://www.data.gouv.fr/fr/pages/legal/licences/
-    license: "LGPL-2.0-only" | "MIT";
+    license: Licenses;
     usageContext?: string;
     //Lien vers catalogue.numerique.gouv.fr
     /* cspell: disable-next-line */
     catalogNumeriqueGouvFrId?: string;
-    groupe: "MIMO" | "MIMDEV";
+    mimGroup: MimGroup;
     versionMin: string;
     versionMax?: string;
     referentId: number;
@@ -113,7 +130,7 @@ function sillCsvToSoftwares(params: { pathToSillCsvFile: string }): Software[] {
                 assert(false);
             })(),
             //TODO: in a second step
-            "parentSoftwareId": (() => {
+            "parentSoftware": (() => {
                 const src = entry["parent"];
 
                 if (src === "") {
@@ -159,23 +176,23 @@ function sillCsvToSoftwares(params: { pathToSillCsvFile: string }): Software[] {
                         (idOrName): SoftwareRef =>
                             typeof idOrName === "string"
                                 ? {
-                                      "isInSill": false,
+                                      "isKnown": false,
                                       "softwareName": idOrName,
                                   }
                                 : {
-                                      "isInSill": true,
+                                      "isKnown": true,
                                       "softwareId": idOrName,
                                   },
                     );
             })(),
             "wikidataId": "",
             /* cspell: disable-next-line */
-            "comptoirDuLibrOrgeId": undefined,
+            "comptoirDuLibreOrgId": undefined,
             "license": "MIT",
             "usageContext": undefined,
             /* cspell: disable-next-line */
             "catalogNumeriqueGouvFrId": undefined,
-            "groupe": "MIMO",
+            "mimGroup": "MIMO",
             "versionMin": "",
             "versionMax": undefined,
             "referentId": 33,
@@ -197,14 +214,14 @@ function sillCsvToSoftwares(params: { pathToSillCsvFile: string }): Software[] {
             return t(name) === t(parentSoftwareName);
         });
 
-        software.parentSoftwareId =
+        software.parentSoftware =
             parentSoftware === undefined
                 ? {
-                      "isInSill": false,
+                      "isKnown": false,
                       "softwareName": parentSoftwareName,
                   }
                 : {
-                      "isInSill": true,
+                      "isKnown": true,
                       "softwareId": parentSoftware.id,
                   };
     });
@@ -212,17 +229,14 @@ function sillCsvToSoftwares(params: { pathToSillCsvFile: string }): Software[] {
     return softwares;
 }
 
-function isSoftwareRef(obj: any, softwares: Software[]): obj is SoftwareRef {
+function isSoftwareRef(obj: any): obj is SoftwareRef {
     assert(is<SoftwareRef>(obj));
 
     try {
-        if (obj.isInSill) {
-            const software = softwares.find(({ id }) => obj.softwareId === id);
-
-            assert(software !== undefined);
-        } else {
-            assert(typeof obj.softwareName === "string");
-        }
+        assert(
+            (obj.isKnown === true && typeof obj.softwareId === "number") ||
+                (obj.isKnown === false && typeof obj.softwareName === "string"),
+        );
     } catch {
         return false;
     }
@@ -230,34 +244,87 @@ function isSoftwareRef(obj: any, softwares: Software[]): obj is SoftwareRef {
     return true;
 }
 
-function isSoftware(obj: any, softwares: Software[]): obj is Software {
+function isSoftware(obj: any): obj is Software {
     assert(is<Software>(obj));
 
     try {
         assert(
-            typeof obj.id === "number" &&
-                typeof obj.name === "string" &&
-                typeof obj.function === "string" &&
-                typeof obj.referencedSinceTime === "",
+            [obj.id, obj.referencedSinceTime, obj.referentId]
+                .map(value => typeof value === "number")
+                .every(b => b) &&
+                [obj.name, obj.function, obj.versionMin]
+                    .map(value => typeof value === "string")
+                    .every(b => b) &&
+                [obj.isFromFrenchPublicService, obj.isPresentInSupportContract]
+                    .map(value => typeof value === "boolean")
+                    .every(b => b) &&
+                [
+                    obj.wikidataId,
+                    obj.usageContext,
+                    obj.comptoirDuLibreOrgId,
+                    obj.catalogNumeriqueGouvFrId,
+                    obj.versionMax,
+                ]
+                    .map(value => value === undefined || typeof value === "string")
+                    .every(b => b) &&
+                recommendationStatuses.includes(obj.recommendationStatus) &&
+                licenses.includes(obj.license) &&
+                mimGroups.includes(obj.mimGroup),
         );
-
-        scope: {
-            const { parentSoftware: softwareRef } = obj;
-
-            if (softwareRef === undefined) {
-                break scope;
-            }
-
-            assert(isSoftwareRef(softwareRef, softwares));
-        }
-
-        obj.alikeSoftwares.forEach(softwareRef => assert(isSoftwareRef(softwareRef, softwares)));
     } catch {
         return false;
     }
 
     return true;
 }
+
+const { validateThatSoftwareCanBeInserted } = (() => {
+    function isSoftwareRefValidReference(params: {
+        softwareRef: SoftwareRef.Known;
+        softwares: Software[];
+    }) {
+        const { softwareRef, softwares } = params;
+
+        const software = softwares.find(({ id }) => softwareRef.softwareId === id);
+
+        return software !== undefined;
+    }
+
+    function validateThatSoftwareCanBeInserted(params: {
+        software: Software;
+        softwares: Software[];
+    }): void {
+        const { software, softwares } = params;
+
+        assert(
+            softwares.find(({ id }) => id === software.id) === undefined,
+            "There is already a software with this id",
+        );
+
+        software.alikeSoftwares
+            .map(softwareRef => (softwareRef.isKnown ? softwareRef : undefined))
+            .filter(exclude(undefined))
+            .forEach(softwareRef =>
+                assert(
+                    isSoftwareRefValidReference({ softwareRef, softwares }),
+                    `Alike software ${softwareRef.softwareId} is not not present in the software list`,
+                ),
+            );
+
+        {
+            const softwareRef = software.parentSoftware;
+
+            if (softwareRef !== undefined && softwareRef.isKnown) {
+                assert(
+                    isSoftwareRefValidReference({ softwareRef, softwares }),
+                    `Parent software ${softwareRef.softwareId} is not present in the software list`,
+                );
+            }
+        }
+    }
+
+    return { validateThatSoftwareCanBeInserted };
+})();
 
 sillCsvToSoftwares({
     "pathToSillCsvFile": pathJoin(resDirPath, "sill.csv"),
