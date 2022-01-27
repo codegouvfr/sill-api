@@ -3,12 +3,13 @@ import type { Software, SoftwareRef, Referent } from "../types";
 import { allUniq } from "evt/tools/reducers";
 import { is } from "tsafe/is";
 import { symToStr } from "tsafe/symToStr";
+import { exclude } from "tsafe/exclude";
 
 function validateSoftwaresAllUniq(params: { softwares: Software[] }): void {
     const { softwares } = params;
 
     assert(
-        softwares.map(({ id }) => id).reduce(...allUniq()),
+        softwares.map(({ _id }) => _id).reduce(...allUniq()),
         `Not all ${symToStr({ softwares })} have an unique id`,
     );
 }
@@ -20,7 +21,7 @@ const { validateAllSoftwareRefs } = (() => {
     }): void {
         const { softwareRef, softwares } = params;
 
-        const software = softwares.find(({ id }) => softwareRef.softwareId === id);
+        const software = softwares.find(({ _id }) => softwareRef.softwareId === _id);
 
         assert(
             software !== undefined,
@@ -91,12 +92,15 @@ function validateReferentsAllUnique(params: { referents: Referent[] }): void {
 function validateReferentsRef(params: { softwares: Software[]; referents: Referent[] }): void {
     const { softwares, referents } = params;
 
-    softwares.forEach(({ referentId }) =>
-        assert(
-            referents.find(({ id }) => referentId === id) !== undefined,
-            `${symToStr({ referentId })} ${referentId} do not point to an actual referent`,
-        ),
-    );
+    softwares
+        .map(({ referentId }) => (referentId === undefined ? undefined : referentId))
+        .filter(exclude(undefined))
+        .forEach(referentId =>
+            assert(
+                referents.find(({ id }) => referentId === id) !== undefined,
+                `${symToStr({ referentId })} ${referentId} do not point to an actual referent`,
+            ),
+        );
 }
 
 export function validateAllRelations(params: { softwares: Software[]; referents: Referent[] }) {

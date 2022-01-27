@@ -1,10 +1,26 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import { parse as parseCsv } from "csv-parse/sync";
+import { parse as csvParseSync } from "csv-parse/sync";
 import * as fs from "fs";
 import { assert } from "tsafe/assert";
 import type { Software, Referent, SoftwareRef } from "./types";
 import { matchReferent, matchSoftware } from "./validators/typeValidators";
 import { validateAllRelations } from "./validators/relationsValidators";
+
+function parseCsv(path: string): any[] {
+    return (
+        csvParseSync(fs.readFileSync(path).toString("utf8"), {
+            "columns": true,
+            "skip_empty_lines": true,
+        }) as any[]
+    ).map(entry =>
+        Object.fromEntries(
+            Object.entries(entry).map(([key, value]) => [
+                key.replace(/é/g, "e").replace(/[^\x20-\x7E]+/g, ""),
+                value,
+            ]),
+        ),
+    );
+}
 
 export function sillCsvToSoftwares(params: {
     pathToSillCsvFile: string;
@@ -15,13 +31,7 @@ export function sillCsvToSoftwares(params: {
 } {
     const { pathToSillCsvFile, pathToSillReferentsCsvFile } = params;
 
-    const referentEntries: any[] = parseCsv(
-        fs.readFileSync(pathToSillReferentsCsvFile).toString("utf8"),
-        {
-            "columns": true,
-            "skip_empty_lines": true,
-        },
-    );
+    const referentEntries: any[] = parseCsv(pathToSillReferentsCsvFile);
 
     const referents: Referent[] = [];
 
@@ -32,27 +42,44 @@ export function sillCsvToSoftwares(params: {
             return () => counter++;
         })();
 
-        referentEntries.forEach(entry =>
-            referents.push({
-                "id": getUniqReferentId(),
-                "email": (() => {
-                    /* cspell: disable-next-line */
-                    const src = entry["Courriel"];
+        referentEntries.forEach(entry => {
+            let referent: Referent;
 
-                    assert(src !== "");
+            try {
+                referent = {
+                    "id": getUniqReferentId(),
+                    "email": (() => {
+                        /* cspell: disable-next-line */
+                        const src = entry["Courriel"];
 
-                    return src;
-                })(),
-            }),
-        );
+                        assert(src !== "");
+
+                        return src;
+                    })(),
+                    "emailAlt": (() => {
+                        /* cspell: disable-next-line */
+                        const src = entry["Courriel 2"];
+
+                        if (src === "") {
+                            return undefined;
+                        }
+
+                        return src;
+                    })(),
+                };
+                assert(matchReferent(referent));
+            } catch {
+                console.log("Referent entry dropped", entry);
+                return;
+            }
+
+            referents.push(referent);
+        });
     }
 
     const softwares: Software[] = [];
 
-    const sillEntries: any[] = parseCsv(fs.readFileSync(pathToSillCsvFile).toString("utf8"), {
-        "columns": true,
-        "skip_empty_lines": true,
-    });
+    const sillEntries = parseCsv(pathToSillCsvFile);
 
     const parentSoftwareNameBySoftwareId = new Map<number, string>();
 
@@ -76,9 +103,9 @@ export function sillCsvToSoftwares(params: {
         })();
 
         const software: Software = {
-            "id": softwareId,
-            name,
-            "function": (() => {
+            "_id": softwareId,
+            "_name": name,
+            "_function": (() => {
                 /* cspell: disable-next-line */
                 const src = entry["fonction"];
 
@@ -86,13 +113,13 @@ export function sillCsvToSoftwares(params: {
 
                 return src;
             })(),
-            "referencedSinceTime": (() => {
+            "__referencedSinceTime": (() => {
                 /* cspell: disable-next-line */
                 const src = entry["annees"];
 
-                const firstYear = src.replace(/ /g, "").split(";");
+                const firstYear = src.replace(/ /g, "").split(";")[0];
 
-                assert(/[0-9]{4,4}/.test(firstYear));
+                assert(/^[0-9]{4,4}$/.test(firstYear));
 
                 return new Date(firstYear).getTime();
             })(),
@@ -193,12 +220,11 @@ export function sillCsvToSoftwares(params: {
 
                 return out;
             })(),
-            "license": (() => {
+            "_license": (() => {
                 /* cspell: disable-next-line */
                 const src: string = entry["licence"];
 
-                //TODO
-                return src as any;
+                return src;
             })(),
             "whereAndInWhatContextIsItUsed": (() => {
                 /* cspell: disable-next-line */
@@ -231,7 +257,7 @@ export function sillCsvToSoftwares(params: {
 
                 return src as any;
             })(),
-            "versionMin": (() => {
+            "__versionMin": (() => {
                 /* cspell: disable-next-line */
                 const src: string = entry["version_min"];
 
@@ -250,26 +276,36 @@ export function sillCsvToSoftwares(params: {
                 return src;
             })(),
             ...(() => {
-                const referentEntry:
-                    | {
-                          Courriel: string;
-                          "Référent : expert technique ?": string;
-                      }
-                    | undefined = referentEntries.find(entry => entry["Logiciel"] === name);
+                const referentEntry = (
+                    referentEntries as {
+                        Logiciel: string;
+                        Courriel: string;
+                        "Referent : expert technique ?": string;
+                    }[]
+                ).find(entry => entry["Logiciel"] === name);
 
-                assert(referentEntry !== undefined);
+                const referent =
+                    referentEntry === undefined
+                        ? undefined
+                        : referents.find(referent => referent.email === referentEntry["Courriel"]);
 
-                const referent = referents.find(
-                    referent => referent.email === referentEntry["Courriel"],
-                );
-
-                assert(referent !== undefined);
-
-                assert(["", "Oui"].includes(referentEntry["Référent : expert technique ?"]));
+                if (referentEntry === undefined || referent === undefined) {
+                    return {
+                        "referentId": undefined,
+                        "isReferentExpert": undefined,
+                    };
+                }
 
                 return {
                     "referentId": referent.id,
-                    "isReferentExpert": referentEntry["Référent : expert technique ?"] === "Oui",
+                    "isReferentExpert": (() => {
+                        const src = referentEntry["Referent : expert technique ?"];
+
+                        assert(["", "Oui", "Non"].includes(src), `=> ${src}`);
+                        return referentEntry["Referent : expert technique ?"] === "Oui"
+                            ? true
+                            : undefined;
+                    })(),
                 };
             })(),
         };
@@ -278,16 +314,16 @@ export function sillCsvToSoftwares(params: {
     });
 
     softwares.forEach(software => {
-        const parentSoftwareName = parentSoftwareNameBySoftwareId.get(software.id);
+        const parentSoftwareName = parentSoftwareNameBySoftwareId.get(software._id);
 
         if (parentSoftwareName === undefined) {
             return;
         }
 
-        const parentSoftware = softwares.find(({ name }) => {
+        const parentSoftware = softwares.find(({ _name }) => {
             const t = (name: string) => name.toLowerCase().replace(/ /g, "");
 
-            return t(name) === t(parentSoftwareName);
+            return t(_name) === t(parentSoftwareName);
         });
 
         software.parentSoftware =
@@ -298,12 +334,12 @@ export function sillCsvToSoftwares(params: {
                   }
                 : {
                       "isKnown": true,
-                      "softwareId": parentSoftware.id,
+                      "softwareId": parentSoftware._id,
                   };
     });
 
     softwares.forEach(software => assert(matchSoftware(software)));
-    referents.forEach(referent => assert(matchReferent(referent)));
+    referents.forEach(referent => assert(matchReferent(referent), JSON.stringify(referent)));
 
     validateAllRelations({ softwares, referents });
 

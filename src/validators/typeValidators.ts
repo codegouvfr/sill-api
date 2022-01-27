@@ -1,7 +1,7 @@
 import { assert } from "tsafe/assert";
 import { is } from "tsafe/is";
 import type { Software, SoftwareRef, Referent } from "../types";
-import { recommendationStatuses, licenses, mimGroups } from "../types";
+import { recommendationStatuses, mimGroups } from "../types";
 import { id } from "tsafe/id";
 
 export function matchSoftwareRef(obj: any): obj is SoftwareRef {
@@ -24,10 +24,10 @@ export function matchSoftware(obj: any): obj is Software {
 
     try {
         assert(
-            id<number[]>([obj.id, obj.referencedSinceTime, obj.referentId])
-                .map(value => typeof value === "number")
+            id<number[]>([obj._id, obj.__referencedSinceTime])
+                .map(value => typeof value === "number" && !isNaN(value))
                 .every(b => b) &&
-                id<string[]>([obj.name, obj.function, obj.versionMin])
+                id<string[]>([obj._name, obj._function, obj.__versionMin, obj._license])
                     .map(value => typeof value === "string")
                     .every(b => b) &&
                 id<boolean[]>([obj.isFromFrenchPublicService, obj.isPresentInSupportContract])
@@ -41,11 +41,10 @@ export function matchSoftware(obj: any): obj is Software {
                 ])
                     .map(value => value === undefined || typeof value === "string")
                     .every(b => b) &&
-                id<(number | undefined)[]>([obj.comptoirDuLibreOrgId])
-                    .map(value => value === undefined || typeof value === "number")
+                id<(number | undefined)[]>([obj.comptoirDuLibreOrgId, obj.referentId])
+                    .map(value => value === undefined || (typeof value === "number" && !isNaN(value)))
                     .every(b => b) &&
                 recommendationStatuses.includes(obj.recommendationStatus) &&
-                licenses.includes(obj.license) &&
                 mimGroups.includes(obj.mimGroup),
         );
     } catch {
