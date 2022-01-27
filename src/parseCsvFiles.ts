@@ -22,7 +22,6 @@ export function sillCsvToSoftwares(params: {
             "skip_empty_lines": true,
         },
     );
-    console.log(referentEntries[0]);
 
     const referents: Referent[] = [];
 
