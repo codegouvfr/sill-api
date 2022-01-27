@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { join as pathJoin } from "path";
-import { sillCsvToSoftwares } from "../parser";
+import { sillCsvToSoftwares } from "../parseCsvFiles";
 
 const projectDirPath = pathJoin(__dirname, "..", "..");
-const resDirPath = pathJoin(projectDirPath, "res");
 
 const softwares = sillCsvToSoftwares({
-    "pathToSillCsvFile": pathJoin(resDirPath, "sill.csv"),
+    "pathToSillCsvFile": pathJoin(projectDirPath, "sill.csv"),
+    "pathToSillReferentsCsvFile": pathJoin(projectDirPath, "sill-referents", "sill-referents.csv"),
 });
 
-console.log(softwares);
+if (process.env === {}) {
+    console.log(softwares);
+}

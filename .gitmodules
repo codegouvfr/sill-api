@@ -1,0 +1,3 @@
+[submodule "sill-referents"]
+	path = sill-referents
+	url = https://github.com/etalab/sill-referents
