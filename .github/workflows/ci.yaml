@@ -162,4 +162,4 @@ jobs:
       with: 
         action_name: publish_easily_consumable_entries
         github_token: ${{secrets.PAT}}
-        url: sill.ovh/${{secret.SECRET_DIRNAME}}/sill.json
+        url: sill.ovh/${{secrets.SECRET_DIRNAME}}/sill.json
