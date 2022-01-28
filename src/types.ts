@@ -1,7 +1,10 @@
 // https://git.sr.ht/~etalab/sill
-//All fields with _ will eventually be fetched from wikiData and thus, removed from Software.
-//An API will gather all the missing infos so that sill.etalab.gouv.fr and code.gouv.fr work with it.
-//All the fields with __ will be deduced from other metadata.
+/*
+ * All fields with _ will eventually be fetched from wikiData and thus, removed from Software.
+ * We will create a bot that automatically puts data into WikiData. See: http://baskauf.blogspot.com/2019/06/putting-data-into-wikidata-using.html
+ * An API will gather all the missing infos so that sill.etalab.gouv.fr and code.gouv.fr work with it.
+ * All the fields with __ will be deduced from other metadata.
+ */
 export type Software = {
     //The id should be the one of Wikidata
     _id: number;
