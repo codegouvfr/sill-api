@@ -43,6 +43,32 @@ export type Referent = {
     emailAlt?: string;
 };
 
+export type EasilyConsumableEntry = {
+    id: number;
+    name: string;
+    function: string;
+    //"2018" | "2019" | "2020" | "2021" | "2022";
+    referencedSinceYear: string;
+    recommendationStatus: RecommendationStatus;
+    parentSoftware: SoftwareRef | null;
+    isFromFrenchPublicService: boolean;
+    isPresentInSupportContract: boolean;
+    alikeSoftwares: SoftwareRef[];
+    wikidataId: string | null;
+    comptoirDuLibreOrgId: number | null;
+    license: string;
+    whereAndInWhatContextIsItUsed: string | null;
+    catalogNumeriqueGouvFrId: string | null;
+    mimGroup: MimGroup;
+    versionMin: string;
+    versionMax: string | null;
+    referent: {
+        email: string;
+        emailAlt: string | null;
+        isReferentExpert: boolean | null;
+    } | null;
+};
+
 export type SoftwareRef = SoftwareRef.Known | SoftwareRef.Unknown;
 export namespace SoftwareRef {
     export type Known = {

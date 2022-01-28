@@ -1,7 +1,7 @@
 {
-    "name": "sill",
+    "name": "sillfr",
     "version": "0.0.0",
-    "description": "Ongoing work with the sill",
+    "description": "Ongoing work with the SILL 2.0",
     "repository": {
         "type": "git",
         "url": "git://github.com/etalab/sill.git"
@@ -16,6 +16,9 @@
         "_format": "prettier '**/*.{ts,tsx,json,md}'",
         "format": "npm run _format -- --write",
         "format:check": "npm run _format -- --list-different"
+    },
+    "bin": {
+        "generate-easily-consumable-entries": "dist/bin/build-keycloak-theme/index.js"
     },
     "lint-staged": {
         "*.{ts,tsx}": [
