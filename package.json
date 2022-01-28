@@ -18,7 +18,7 @@
         "format:check": "npm run _format -- --list-different"
     },
     "bin": {
-        "generate-easily-consumable-entries": "dist/bin/build-keycloak-theme/index.js"
+        "generate-easily-consumable-entries": "dist/bin/generate-easily-consumable-entries.js"
     },
     "lint-staged": {
         "*.{ts,tsx}": [
