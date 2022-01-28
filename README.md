@@ -2,7 +2,7 @@ Work in progress on the SILL 2.0
 
 # Publishing
 
-The data are published via [garronej/sill-publish](https://github.com/garronej/sill)  
+The data are published via [garronej/sill-publish](https://github.com/garronej/sill-publish)  
 (It was published @garronej because the ability to enable GitHub pages on private repo
 is a premium GitHub feature). 
 
