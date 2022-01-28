@@ -1,12 +1,17 @@
 #!/usr/bin/env node
 import { generateEasilyConsumableEntries } from "../buildExposedData";
-//$ npx sillfr generate-easily-consumable-entries '<software_json>' '<referents_json>'
+import * as fs from "fs";
+//$ npx sillfr generate-easily-consumable-entries softwares.json referents.json
 
-const [softwaresJson, referentsJson] = process.argv.slice(2, process.argv.length);
+const [softwaresJsonPath, referentsJsonPath] = process.argv.slice(2, process.argv.length);
+
+const [softwares, referents] = [softwaresJsonPath, referentsJsonPath].map(path =>
+    JSON.parse(fs.readFileSync(path).toString("utf8")),
+);
 
 const easilyConsumableEntries = generateEasilyConsumableEntries({
-    "softwares": JSON.parse(softwaresJson),
-    "referents": JSON.parse(referentsJson),
+    softwares,
+    referents,
 });
 
 console.log(JSON.stringify(easilyConsumableEntries, null, 2));

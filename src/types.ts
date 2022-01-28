@@ -30,7 +30,6 @@ export type Software = {
     /* cspell: disable-next-line */
     catalogNumeriqueGouvFrId?: string;
     mimGroup: MimGroup;
-    //The version min will actually be the current one at the time the software if first added.
     __versionMin: string;
     versionMax?: string;
     referentId: number | undefined;
