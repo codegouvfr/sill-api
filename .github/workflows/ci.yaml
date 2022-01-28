@@ -158,7 +158,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: publish_on_npm
     steps:
-    - uses: etalab@gh-actions
+    - uses: etalab/sill@gh-actions
       with: 
         action_name: publish_easily_consumable_entries
         github_token: ${{secrets.PAT}}
