@@ -9,7 +9,7 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "test": "node dist/test/main.js",
+        "generate-json-from-csv": "node dist/bin/generateJsonFromCsv.js",
         "build": "tsc",
         "lint:check": "eslint . --ext .ts,.tsx",
         "lint": "npm run lint:check -- --fix",
@@ -51,7 +51,7 @@
         "husky": "^4.3.8",
         "lint-staged": "^11.1.1",
         "prettier": "^2.3.2",
-        "typescript": "^4.3.5"
+        "typescript": "^4.5.5"
     },
     "dependencies": {
         "evt": "^2.0.0-beta.39",

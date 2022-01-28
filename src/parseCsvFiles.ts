@@ -302,8 +302,9 @@ export function sillCsvToSoftwares(params: {
                         const src = referentEntry["Referent : expert technique ?"];
 
                         assert(["", "Oui", "Non"].includes(src), `=> ${src}`);
+
                         return referentEntry["Referent : expert technique ?"] === "Oui"
-                            ? true
+                            ? (true as const)
                             : undefined;
                     })(),
                 };
