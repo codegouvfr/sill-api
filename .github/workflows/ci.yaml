@@ -16,4 +16,4 @@ jobs:
      with:
        token: ${{ secrets.PAT }}
        event-type: publish_data
-       repository: etalab/sill-publish
+       repository: garronej/sill-publish
