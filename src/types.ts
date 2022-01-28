@@ -1,11 +1,13 @@
 // https://git.sr.ht/~etalab/sill
-//All fields with _ will eventually be fetched from wikiData
+//All fields with _ will eventually be fetched from wikiData and thus, removed from Software.
+//An API will gather all the missing infos so that sill.etalab.gouv.fr and code.gouv.fr work with it.
+//All the fields with __ will be deduced from other metadata.
 export type Software = {
     //The id should be the one of Wikidata
     _id: number;
     _name: string;
     _function: string;
-    //
+    //This info could be fetched from git blame.
     __referencedSinceTime: number;
     recommendationStatus: RecommendationStatus;
     parentSoftware?: SoftwareRef;
@@ -25,7 +27,7 @@ export type Software = {
     /* cspell: disable-next-line */
     catalogNumeriqueGouvFrId?: string;
     mimGroup: MimGroup;
-    //I think it should go away.
+    //The version min will actually be the current one at the time the software if first added.
     __versionMin: string;
     versionMax?: string;
     referentId: number | undefined;
