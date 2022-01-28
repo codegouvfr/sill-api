@@ -9,9 +9,8 @@ on:
 
 jobs:
 
-  poke_gitops:
+  poke_sill-publish:
    runs-on: ubuntu-latest
-   needs: release
    steps:
    - uses: peter-evans/repository-dispatch@v1
      with:
