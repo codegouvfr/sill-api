@@ -157,9 +157,13 @@ jobs:
   publish_easily_consumable_entries:
     runs-on: ubuntu-latest
     needs: publish_on_npm
+    # Run after publish_on_npm if we do. See https://stackoverflow.com/a/69252812/3731798
+    if: always()
     steps:
-    - uses: etalab/sill@gh-actions
-      with: 
-        action_name: publish_easily_consumable_entries
-        github_token: ${{secrets.PAT}}
-        url: sill.ovh/${{secrets.SECRET_DIRNAME}}/sill.json
+      - if: ${{ needs.publish_on_npm.result == 'failure' }}
+        run: exit 1
+      - uses: etalab/sill@gh-actions
+        with: 
+          action_name: publish_easily_consumable_entries
+          github_token: ${{secrets.PAT}}
+          url: sill.ovh/${{secrets.SECRET_DIRNAME}}/sill.json
