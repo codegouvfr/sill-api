@@ -10,22 +10,20 @@
     </a>
 </p>
 
-- [How the data are made available](#how-the-data-are-made-available)
-	- [Where are the data available](#where-are-the-data-available)
-	- [How does it work](#how-does-it-work)
-- [Dev](#dev)
-	- [Checking out the code](#checking-out-the-code)
-- [Pushing new code](#pushing-new-code)
-- [Licence](#licence)
+-   [Purpose](#purpose)
+-   [How the data are made available](#how-the-data-are-made-available)
+    -   [Where are the data available](#where-are-the-data-available)
+    -   [How does it work](#how-does-it-work)
+-   [Dev](#dev)
+    -   [Checking out the code](#checking-out-the-code)
+-   [Pushing new code](#pushing-new-code)
+-   [Licence](#licence)
 
-Ce dépôt contient la liste des logiciels recommandés dans le [socle
-interministériel de logiciels libres](https://sill.etalab.gouv.fr).
+# Purpose
 
-Pour des explications détaillées sur le SILL, voir [cette
-page](https://man.sr.ht/~etalab/logiciels-libres/sill.md).
+Private and public data about software in the SILL catalog come from scattered sources: from the original SILL csv file, from the sill-referent.csv file in a private repo, from Wikidata, etc. This repository solves this by aggregating the sources, exposing them as a unique and private .json file.
 
-L'interface d'affichage du SILL est développée [via ce
-dépôt](https://git.sr.ht/~etalab/sill.etalab.gouv.fr).
+Another problem is that the SILL updates are shared informally on a private mailing list, forcing the maintainer of the sill.csv file to centralize updates: this repository prepares a process that will be handled through a web interface where contributors will be able to update their own SILL entries by themselves.
 
 # How the data are made available
 
