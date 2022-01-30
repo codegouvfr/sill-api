@@ -6,17 +6,17 @@
       <img src="https://github.com/etalab/sill/workflows/ci/badge.svg?branch=main">
     </a>
     <a href="https://github.com/etalab/sill#licence">
-      <img src="https://img.shields.io/badge/Licence-EPL%2C%20Licence%20Ouverte-orange.svg?style=flat-square">
+      <img src="https://img.shields.io/npm/l/sillfr">
     </a>
 </p>
 
--   [How the data are made available](#how-the-data-are-made-available)
-    -   [Where are the data available](#where-are-the-data-available)
-    -   [How does it work](#how-does-it-work)
--   [Dev](#dev)
-    -   [Checking out the code](#checking-out-the-code)
--   [Pushing new code](#pushing-new-code)
--   [Licence](#licence)
+- [How the data are made available](#how-the-data-are-made-available)
+	- [Where are the data available](#where-are-the-data-available)
+	- [How does it work](#how-does-it-work)
+- [Dev](#dev)
+	- [Checking out the code](#checking-out-the-code)
+- [Pushing new code](#pushing-new-code)
+- [Licence](#licence)
 
 Ce dépôt contient la liste des logiciels recommandés dans le [socle
 interministériel de logiciels libres](https://sill.etalab.gouv.fr).

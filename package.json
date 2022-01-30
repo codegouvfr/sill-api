@@ -34,7 +34,7 @@
         }
     },
     "author": "DINUM",
-    "license": "etalab-2.0",
+    "license": "MIT",
     "files": [
         "src/",
         "!src/test/",
