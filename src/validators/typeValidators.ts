@@ -4,7 +4,7 @@ import type { Software, SoftwareRef, Referent } from "../types";
 import { recommendationStatuses, mimGroups } from "../types";
 import { id } from "tsafe/id";
 
-export function matchSoftwareRef(obj: any): obj is SoftwareRef {
+function matchSoftwareRef(obj: any): obj is SoftwareRef {
     assert(is<SoftwareRef>(obj));
 
     try {
@@ -45,7 +45,9 @@ export function matchSoftware(obj: any): obj is Software {
                     .map(value => value === undefined || (typeof value === "number" && !isNaN(value)))
                     .every(b => b) &&
                 recommendationStatuses.includes(obj.recommendationStatus) &&
-                mimGroups.includes(obj.mimGroup),
+                mimGroups.includes(obj.mimGroup) &&
+                (obj.parentSoftware === undefined || matchSoftwareRef(obj.parentSoftware)) &&
+                obj.alikeSoftwares.every(matchSoftwareRef),
         );
     } catch {
         return false;

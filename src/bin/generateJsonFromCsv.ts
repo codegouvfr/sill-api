@@ -8,14 +8,22 @@ const projectDirPath = pathJoin(__dirname, "..", "..");
 const pathToSillCsvFile = pathJoin(projectDirPath, "sill.csv");
 const pathToSillReferentsCsvFile = pathJoin(projectDirPath, "sill-referents", "sill-referents.csv");
 
-const { softwares, referents } = sillCsvToSoftwares({
-    pathToSillCsvFile,
-    pathToSillReferentsCsvFile,
-});
+export const pathToSillSoftwaresJson = pathJoin(pathDirname(pathToSillCsvFile), "sill-softwares.json");
+export const pathToSillReferentsJson = pathJoin(
+    pathDirname(pathToSillReferentsCsvFile),
+    "sill-referents.json",
+);
 
-for (const [path, data] of [
-    [pathJoin(pathDirname(pathToSillCsvFile), "sill-softwares.json"), softwares],
-    [pathJoin(pathDirname(pathToSillReferentsCsvFile), "sill-referents.json"), referents],
-] as const) {
-    fs.writeFileSync(path, Buffer.from(JSON.stringify(data, null, 2)));
+if (require.main === module) {
+    const { softwares, referents } = sillCsvToSoftwares({
+        pathToSillCsvFile,
+        pathToSillReferentsCsvFile,
+    });
+
+    for (const [path, data] of [
+        [pathToSillSoftwaresJson, softwares],
+        [pathToSillReferentsJson, referents],
+    ] as const) {
+        fs.writeFileSync(path, Buffer.from(JSON.stringify(data, null, 2)));
+    }
 }

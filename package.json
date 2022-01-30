@@ -11,6 +11,7 @@
     "scripts": {
         "generate-json-from-csv": "node dist/bin/generateJsonFromCsv.js",
         "build": "tsc",
+        "test": "node dist/test/validateData.js",
         "lint:check": "eslint . --ext .ts,.tsx",
         "lint": "npm run lint:check -- --fix",
         "_format": "prettier '**/*.{ts,tsx,json,md}'",
