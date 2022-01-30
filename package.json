@@ -34,7 +34,7 @@
         }
     },
     "author": "u/etalab",
-    "license": "MIT",
+    "license": "etalab-2.0",
     "files": [
         "src/",
         "!src/test/",
