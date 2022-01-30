@@ -41,7 +41,7 @@ If you are entitle to access the data [here is where it's available](https://git
 
 ## How does it work
 
-1. Every push [this job of the CI runs](https://github.com/etalab/sill/blob/4b926f7819bd78c3a21f135f85208dc662bf30fa/.github/workflows/ci.yaml#L157-L172)
+1. Every push [this job](https://github.com/etalab/sill/blob/4b926f7819bd78c3a21f135f85208dc662bf30fa/.github/workflows/ci.yaml#L157-L172) of [the CI](https://github.com/etalab/sill/actions/runs/1768877957) runs.
 2. It riggers [a custom action](https://github.com/etalab/sill/blob/gh-actions/src/publish_easily_consumable_entries.ts) hosted on the `gh-actions` branch.
 3. The custom action [calls](https://github.com/etalab/sill/blob/2203b02f0c3d8e5b7068251089a1f763a867e723/src/publish_easily_consumable_entries.ts#L98) the function
    in charges of compiling the softwares and referents into a single file.
