@@ -10,6 +10,14 @@
     </a>
 </p>
 
+-   [How the data are made available](#how-the-data-are-made-available)
+    -   [Where are the data available](#where-are-the-data-available)
+    -   [How does it work](#how-does-it-work)
+-   [Dev](#dev)
+    -   [Checking out the code](#checking-out-the-code)
+-   [Pushing new code](#pushing-new-code)
+-   [Licence](#licence)
+
 Ce dépôt contient la liste des logiciels recommandés dans le [socle
 interministériel de logiciels libres](https://sill.etalab.gouv.fr).
 
