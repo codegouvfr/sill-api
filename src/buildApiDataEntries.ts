@@ -1,12 +1,11 @@
-import type { Software, Referent, EasilyConsumableEntry } from "./types";
+import type { Software, Referent, ApiDataEntry } from "./types";
 
-export function generateEasilyConsumableEntries(params: {
-    softwares: Software[];
-    referents: Referent[];
-}): EasilyConsumableEntry[] {
+export function buildApiDataEntries(params: { softwares: Software[]; referents: Referent[] }): {
+    dataEntries: ApiDataEntry[];
+} {
     const { softwares, referents } = params;
 
-    return softwares
+    const dataEntries = softwares
         .map(softwares => {
             const { referentId } = softwares;
 
@@ -17,7 +16,7 @@ export function generateEasilyConsumableEntries(params: {
             return [softwares, referents.find(({ id }) => id === referentId)] as const;
         })
         .map(
-            ([software, referent]): EasilyConsumableEntry => ({
+            ([software, referent]): ApiDataEntry => ({
                 "id": software._id,
                 "name": software._name,
                 "function": software._function,
@@ -45,4 +44,6 @@ export function generateEasilyConsumableEntries(params: {
                           },
             }),
         );
+
+    return { dataEntries };
 }

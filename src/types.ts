@@ -42,7 +42,7 @@ export type Referent = {
     emailAlt?: string;
 };
 
-export type EasilyConsumableEntry = {
+export type ApiDataEntry = {
     id: number;
     name: string;
     function: string;
@@ -92,3 +92,40 @@ export type RecommendationStatus = typeof recommendationStatuses[number];
 export const mimGroups = ["MIMO", "MIMDEV", "MIMPROD", "MIMDEVOPS"] as const;
 
 export type MimGroup = typeof mimGroups[number];
+
+export const csvSoftwareColumns = [
+    "ID",
+    "nom",
+    "fonction",
+    "annees",
+    "statut",
+    "parent",
+    "public",
+    "support",
+    "similaire-a",
+    "wikidata",
+    "comptoir-du-libre",
+    "licence",
+    "contexte-usage",
+    "label",
+    "groupe",
+    "version_min",
+    "version_max",
+    "contexte-usage",
+] as const;
+
+export type CsvSoftwareColumn = typeof csvSoftwareColumns[number];
+
+//export type CsvSoftware = Record<CsvSoftwareColumn, string>;
+
+export const csvReferentColumns = [
+    "Logiciel",
+    "Courriel",
+    "Courriel 2",
+    "Type",
+    "Referent : expert technique ?",
+] as const;
+
+export type CsvReferentColumn = typeof csvReferentColumns[number];
+
+//export type CsvReferent = Record<CsvReferentColumn, string>;

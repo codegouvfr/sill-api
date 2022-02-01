@@ -1,0 +1,3 @@
+[submodule "data/referents"]
+	path = data/referents
+	url = https://github.com/etalab/sill-referents

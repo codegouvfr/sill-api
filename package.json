@@ -9,17 +9,13 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "generate-json-from-csv": "node dist/bin/generateJsonFromCsv.js",
-        "build": "tsc",
-        "test": "node dist/test/validateData.js",
+        "build": "tsc && generate-json",
+        "generate-json": "node dist/bin/generate-json.js",
         "lint:check": "eslint . --ext .ts,.tsx",
         "lint": "npm run lint:check -- --fix",
         "_format": "prettier '**/*.{ts,tsx,json,md}'",
         "format": "npm run _format -- --write",
         "format:check": "npm run _format -- --list-different"
-    },
-    "bin": {
-        "generate-easily-consumable-entries": "dist/bin/generate-easily-consumable-entries.js"
     },
     "lint-staged": {
         "*.{ts,tsx}": [
