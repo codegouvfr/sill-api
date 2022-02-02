@@ -182,7 +182,6 @@ jobs:
       - uses: actions/setup-node@v2.1.3
         with:
           node-version: '16'
-      - uses: bahmutov/npm-install@v1
       - run: git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/etalab/sill-referents.git
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
