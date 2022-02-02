@@ -181,13 +181,13 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: json-files
-          path: ${{secrets.SECRET_DIR_BASENAME}}
-      - run: echo "sill-static.etalab.studio" > CNAME
+          path: public/${{secrets.SECRET_DIR_BASENAME}}
+      - run: echo "sill-static.etalab.studio" > public/CNAME
       - uses: actions/setup-node@v2.1.3
         with:
           node-version: '16'
       - run: git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/etalab/sill-referents.git
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
-      - run: npx -y -p gh-pages@3.0.0 gh-pages -b ovh-pages -d . -u "github-actions-bot <actions@github.com>"
+      - run: npx -y -p gh-pages@3.0.0 gh-pages -b ovh-pages -d public -u "github-actions-bot <actions@github.com>"
 
