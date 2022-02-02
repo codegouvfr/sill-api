@@ -1,0 +1,39 @@
+### **0.0.6** (2022-02-02)  
+  
+- Update documentation  
+- Dissociate build job and the job that generates the *.json  
+- Generate liste of softwares without names  
+- Publish every json under data/  
+- untrack all json files under data (thoes are generated)  
+- Detect when two softwares have the same name in CSV  
+- Grammalecte was present twice  
+- Make sure ther isn't two softwares with the same name  
+- Rename ApiDataEntry -> ApiSoftware  
+- Avoid serving private files  
+- Use older version of gh-page as we dont have a package json: https://github.com/tschaub/gh-pages/issues/354#issuecomment-674552919  
+- Clone sill-referents in CI before publishing  
+- Remove useless step  
+- Update referent submodule  
+- Remove hack file  
+- Data stuarting  
+- Update language statistics  
+- Update submodule  
+- General refactor, CSV unique source of truth  
+- Remove sill-referents submodule (to add it elswhere)  
+- Specify that the link to the API endpoint proxy to a private repo  
+- Fmt  
+- Run test to validate data on every push  
+-  #3  
+-  #1  
+- Add a link to the CI visualization  
+- Add TOC  
+- #2  
+- #1  
+- Fix CI  
+- fmt  
+- #3  
+-  #5  
+- No need to run the tests on old window version and on deprecated node versions, this is not a mainstream lib  
+- No need to run the tests on old window version and on deprecated node versions, this is not a mainstream lib  
+- Make publishing run every commit    
+  
