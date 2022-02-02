@@ -15,6 +15,10 @@ const [jsonSoftwaresFilePath, jsonReferentsFilePath] = [csvSoftwaresPath, csvRef
     path.replace(/csv$/, "json"),
 );
 const jsonApiFilePath = pathJoin(pathDirname(jsonSoftwaresFilePath), "..", "api.json");
+const jsonSoftwaresWithoutReferentPath = pathJoin(
+    pathDirname(jsonSoftwaresFilePath),
+    "softwaresWithoutReferent.json",
+);
 
 if (require.main === module) {
     const { softwares, referents } = parseCsv({
@@ -24,12 +28,15 @@ if (require.main === module) {
 
     const { apiSoftwares } = buildApiSoftwares({ softwares, referents });
 
-    apiSoftwares.filter(({ referent }) => referent !== null).map(({ name }) => apiSoftwares);
+    const softwaresWithoutReferent = apiSoftwares
+        .filter(({ referent }) => referent !== null)
+        .map(({ name, id }) => ({ id, name }));
 
     for (const [path, data] of [
         [jsonSoftwaresFilePath, softwares],
         [jsonReferentsFilePath, referents],
         [jsonApiFilePath, apiSoftwares],
+        [jsonSoftwaresWithoutReferentPath, softwaresWithoutReferent],
     ] as const) {
         fs.writeFileSync(path, Buffer.from(JSON.stringify(data, null, 2)));
     }
