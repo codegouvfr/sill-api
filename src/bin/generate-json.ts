@@ -29,7 +29,7 @@ if (require.main === module) {
     const { apiSoftwares } = buildApiSoftwares({ softwares, referents });
 
     const softwaresWithoutReferent = apiSoftwares
-        .filter(({ referent }) => referent !== null)
+        .filter(({ referent }) => referent === null)
         .map(({ name, id }) => ({ id, name }));
 
     for (const [path, data] of [
