@@ -15,7 +15,10 @@
     -   [Where are the data available as an API endpoint](#where-are-the-data-available-as-an-api-endpoint)
 -   [Dev](#dev)
     -   [Checking out the code](#checking-out-the-code)
+    -   [Generating the json files](#generating-the-json-files)
 -   [Contributing](#contributing)
+    -   [Editing `referent.csv`](#editing-referentcsv)
+    -   [Publishing a new version of the types definitions](#publishing-a-new-version-of-the-types-definitions)
 -   [Licence](#licence)
 
 # Purpose
@@ -53,18 +56,36 @@ cd data/referents
 git checkout main
 ```
 
+## Generating the json files
+
+```bash
+yarn build # Compile the code
+yarn start # Generate the data/**/*.json files
+```
+
 # Contributing
+
+All changes to the `data/**/*.csv` file will triggers
+new publication of updated `*.json` (assuming the changes are valid).
+
+## Editing `referent.csv`
 
 ```bash
 cd data/referents
 git add -A
-git commit -am "commit message"
+git commit -am "<Describe the changes made on data/referents/referents.csv>"
 git push
 cd ../..
 git add -A
-git commit -am "commit message"
+git commit -am "Update sill-referent submodule"
 git push
 ```
+
+## Publishing a new version of the types definitions
+
+To update the version of the [`src/types.ts`](/src/types.ts) published
+as [an NPM modules](https://www.npmjs.com/package/sillfr) just bump the version
+of the [`package.json`](/package.json) file.
 
 # Licence
 
