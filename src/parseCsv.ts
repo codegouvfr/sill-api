@@ -7,7 +7,7 @@ import { assert } from "tsafe/assert";
 import { mimGroups } from "./types";
 import { id } from "tsafe/id";
 import { typeGuard } from "tsafe/typeGuard";
-import { same } from "evt/tools/inDepth";
+import { arrDiff } from "evt/tools/reducers/diff";
 
 export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: string }): {
     softwares: Software[];
@@ -26,13 +26,18 @@ export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: s
     assertsCsv(csvSoftwares, csvSoftwareColumns);
     assertsCsv(csvReferents, csvReferentColumns);
 
+    const softwaresByReferent = new Map<
+        Referent,
+        { softwareName: string; isReferentExpert: true | undefined }[]
+    >();
+
     const referents: Referent[] = [];
 
     {
         const emailRegexp = /^[^@ ]+@[^@ ]+$/;
 
         csvReferents.forEach(row => {
-            const email = (() => {
+            const [email, m_email] = (() => {
                 const column = "Courriel";
 
                 const value = row[column];
@@ -45,20 +50,63 @@ export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: s
 
                 assert(emailRegexp.test(out), m("Not a valid email"));
 
-                assert(
-                    !referents.map(({ email }) => email).includes(out),
-                    m("The is already a referent with this email"),
-                );
-
-                assert(
-                    !referents.map(({ emailAlt }) => emailAlt).includes(out),
-                    m("The is a referent with this email as secondary email"),
-                );
-
-                return out;
+                return [out, m];
             })();
 
-            referents.push({
+            const [softwareName, m_softwareName] = (() => {
+                const column = "Logiciel";
+
+                const value = row[column];
+
+                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+
+                assert(value !== "", m("Can't be void"));
+
+                return [value, m];
+            })();
+
+            const isReferentExpert = (() => {
+                const column = "Référent : expert technique ?";
+
+                const value = row[column];
+
+                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+
+                assert(["", "Oui", "Non"].includes(value), m("Should either be '', 'Oui' or 'Non'"));
+
+                return value === "Oui" ? (true as const) : undefined;
+            })();
+
+            scope: {
+                const referent = referents.find(referent => referent.email === email);
+
+                if (referent === undefined) {
+                    break scope;
+                }
+
+                assert(
+                    !referents.filter(r => r !== referent).find(({ emailAlt }) => emailAlt === email),
+                    m_email("There is another referent with this email as secondary email"),
+                );
+
+                const softwaresName = softwaresByReferent.get(referent);
+
+                assert(softwaresName !== undefined);
+
+                assert(
+                    !Array.from(softwaresByReferent.values())
+                        .flat()
+                        .map(({ softwareName }) => softwareName)
+                        .includes(softwareName),
+                    m_softwareName("There is already a referent for this software"),
+                );
+
+                softwaresName.push({ softwareName, isReferentExpert });
+
+                return;
+            }
+
+            const referent: Referent = {
                 "id": (function hashCode(s) {
                     let out = NaN;
                     for (let h = 0, i = 0; i < s.length; h &= h) {
@@ -99,7 +147,11 @@ export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: s
 
                     return out;
                 })(),
-            });
+            };
+
+            referents.push(referent);
+
+            softwaresByReferent.set(referent, [{ softwareName, isReferentExpert }]);
         });
     }
 
@@ -376,37 +428,23 @@ export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: s
                 return value;
             })(),
             ...(() => {
-                const rowReferent = csvReferents.find(entry => entry["Logiciel"] === name);
+                const referentAndIsExpert = Array.from(softwaresByReferent.entries())
+                    .map(([referent, wraps]) => wraps.map(wrap => ({ referent, ...wrap })))
+                    .flat()
+                    .find(({ softwareName }) => softwareName === name);
 
-                const referent =
-                    rowReferent === undefined
-                        ? undefined
-                        : referents.find(referent => referent.email === rowReferent["Courriel"]);
-
-                if (rowReferent === undefined || referent === undefined) {
+                if (referentAndIsExpert === undefined) {
                     return {
                         "referentId": undefined,
                         "isReferentExpert": undefined,
                     };
                 }
 
+                const { referent, isReferentExpert } = referentAndIsExpert;
+
                 return {
                     "referentId": referent.id,
-                    "isReferentExpert": (() => {
-                        const column = "Referent : expert technique ?";
-
-                        const value = rowReferent[column];
-
-                        const m = (reason: string) =>
-                            creatAssertErrorMessage({ "row": rowReferent, column, value, reason });
-
-                        assert(
-                            ["", "Oui", "Non"].includes(value),
-                            m("Should either be '', 'Oui' or 'Non'"),
-                        );
-
-                        return value === "Oui" ? (true as const) : undefined;
-                    })(),
+                    isReferentExpert,
                 };
             })(),
         };
@@ -446,10 +484,13 @@ function assertsCsv<Columns extends string>(
     csv: any[],
     columns: readonly Columns[],
 ): asserts csv is Record<Columns, string>[] {
+    const { added, removed } = arrDiff(id<readonly string[]>(columns), Object.keys(csv[0]));
+
     assert(
-        same(Object.keys(csv[0]), id<readonly string[]>(columns)),
-        `CSV file expects ${columns.join(", ")} column`,
+        removed.length === 0,
+        `The following expected columns are missing from the CSV: ${removed.join(", ")}`,
     );
+    assert(added.length === 0, `The following CSV columns are not expected: ${added.join(", ")}`);
 }
 
 function creatAssertErrorMessage<Columns extends string>(params: {
@@ -460,7 +501,7 @@ function creatAssertErrorMessage<Columns extends string>(params: {
 }) {
     const { row, column, value, reason } = params;
     return [
-        `${JSON.stringify(value)} is not a valid ${column}: ${reason}`,
+        `${JSON.stringify(value)} is not a valid "${column}": ${reason}.`,
         `Checkout the row: ${JSON.stringify(row)}`,
     ].join(" ");
 }

@@ -9,7 +9,7 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "build": "tsc && generate-json",
+        "build": "tsc && yarn generate-json",
         "generate-json": "node dist/bin/generate-json.js",
         "lint:check": "eslint . --ext .ts,.tsx",
         "lint": "npm run lint:check -- --fix",
@@ -54,6 +54,7 @@
         "typescript": "^4.5.5"
     },
     "dependencies": {
+        "csv-stringify": "^6.0.5",
         "evt": "^2.0.0-beta.39",
         "tsafe": "^0.9.0"
     }

@@ -123,7 +123,7 @@ export const csvReferentColumns = [
     "Courriel",
     "Courriel 2",
     "Type",
-    "Referent : expert technique ?",
+    "Référent : expert technique ?",
 ] as const;
 
 export type CsvReferentColumn = typeof csvReferentColumns[number];
