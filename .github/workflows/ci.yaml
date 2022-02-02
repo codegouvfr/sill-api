@@ -189,5 +189,5 @@ jobs:
       - run: git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/etalab/sill-referents.git
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
-      - run: npx -y -p gh-pages@3.1.0 gh-pages -b ovh-pages -d . -u "github-actions-bot <actions@github.com>"
+      - run: npx -y -p gh-pages@3.0.0 gh-pages -b ovh-pages -d . -u "github-actions-bot <actions@github.com>"
 
