@@ -1,11 +1,11 @@
-import type { Software, Referent, ApiDataEntry } from "./types";
+import type { Software, Referent, ApiSoftware } from "./types";
 
-export function buildApiDataEntries(params: { softwares: Software[]; referents: Referent[] }): {
-    dataEntries: ApiDataEntry[];
+export function buildApiSoftwares(params: { softwares: Software[]; referents: Referent[] }): {
+    apiSoftwares: ApiSoftware[];
 } {
     const { softwares, referents } = params;
 
-    const dataEntries = softwares
+    const apiSoftwares = softwares
         .map(softwares => {
             const { referentId } = softwares;
 
@@ -16,7 +16,7 @@ export function buildApiDataEntries(params: { softwares: Software[]; referents: 
             return [softwares, referents.find(({ id }) => id === referentId)] as const;
         })
         .map(
-            ([software, referent]): ApiDataEntry => ({
+            ([software, referent]): ApiSoftware => ({
                 "id": software._id,
                 "name": software._name,
                 "function": software._function,
@@ -45,5 +45,5 @@ export function buildApiDataEntries(params: { softwares: Software[]; referents: 
             }),
         );
 
-    return { dataEntries };
+    return { apiSoftwares };
 }

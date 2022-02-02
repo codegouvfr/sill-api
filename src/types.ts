@@ -42,7 +42,8 @@ export type Referent = {
     emailAlt?: string;
 };
 
-export type ApiDataEntry = {
+/** Combines Software and Referent, the api.json file is an array of this type */
+export type ApiSoftware = {
     id: number;
     name: string;
     function: string;
