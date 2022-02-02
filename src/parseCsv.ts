@@ -187,6 +187,11 @@ export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: s
 
             assert(value !== "", m("Should not be empty"));
 
+            assert(
+                !softwares.map(({ _name }) => _name).includes(value),
+                m("There is another software with this name"),
+            );
+
             return value;
         })();
 
