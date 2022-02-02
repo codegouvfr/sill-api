@@ -41,5 +41,4 @@ jspm_packages
 .DS_Store
 
 /dist
-/data/softwares/softwares.json
-/data/api.json
+/data/**/*.json
