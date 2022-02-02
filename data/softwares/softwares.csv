@@ -53,7 +53,6 @@ ID,nom,fonction,annees,statut,parent,public,support,similaire-a,wikidata,comptoi
 53,GitLab Community Edition,Plateforme de développement,2018 ; 2019 ; 2020 ; 2021 ; 2022,R,,,,,Q16639197,198,MIT,,,MIMDEV,11.X,
 54,GLPI,Gestion de parc et suivi d'incidents,2018 ; 2019 ; 2020 ; 2021 ; 2022,R,,,Oui,172,Q3104570,35,GPL-2.0-only,,,MIMO,9.3.4,
 55,Survey (questionnaire),Gestion de questionnaires pour GLPI,2019 ; 2020 ; 2021 ; 2022,O,GLPI,,,,Q3104570,,AGPL-3.0-or-later,Gestion de parc,,MIMO,9.3.1.0,
-56,Grammalecte,Correction grammaticale,2018 ; 2019 ; 2020 ; 2021 ; 2022,R,LibreOffice,,Oui,,,79,GPL-3.0,Télécharger l'extension sur [grammalecte.net](https://grammalecte.net/#download).  Intégration de la base terminologique FranceTerme.,,MIMO,1.12,
 57,Grammalecte,Correction grammaticale,2018 ; 2019 ; 2020 ; 2021 ; 2022,R,Firefox,,Oui,,Q17629243,79,GPL-3.0,Télécharger l'extension sur [grammalecte.net](https://grammalecte.net/#download).  Intégration de la base terminologique FranceTerme.,,MIMO,1.12,
 58,GreenShot,Capture d'écran,2018 ; 2019 ; 2020 ; 2021 ; 2022,R,,,,,Q1544791,56,GPL-3.0,,,MIMO,1.2.10,
 59,H2,Base de données,2018 ; 2019 ; 2020 ; 2021 ; 2022,R,,,,,Q1562670,194,MPL 2.0 et EPL 1.0,Poste développeur,,MIMDEV,1.4.200,
