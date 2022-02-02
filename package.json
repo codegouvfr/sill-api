@@ -9,8 +9,8 @@
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "scripts": {
-        "build": "tsc && yarn generate-json",
-        "generate-json": "node dist/bin/generate-json.js",
+        "build": "tsc",
+        "start": "node dist/bin/generate-json.js",
         "lint:check": "eslint . --ext .ts,.tsx",
         "lint": "npm run lint:check -- --fix",
         "_format": "prettier '**/*.{ts,tsx,json,md}'",
