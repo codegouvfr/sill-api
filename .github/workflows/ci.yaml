@@ -56,10 +56,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         name: json-files
-        path: |
-          data/api.json
-          data/softwares/softwares.json
-          data/referents/referents.json
+        path: data/**/*.json
 
   check_if_version_upgraded:
     name: Check if version upgrade
