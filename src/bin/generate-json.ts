@@ -24,6 +24,8 @@ if (require.main === module) {
 
     const { apiSoftwares } = buildApiSoftwares({ softwares, referents });
 
+    apiSoftwares.filter(({ referent }) => referent !== null).map(({ name }) => apiSoftwares);
+
     for (const [path, data] of [
         [jsonSoftwaresFilePath, softwares],
         [jsonReferentsFilePath, referents],
