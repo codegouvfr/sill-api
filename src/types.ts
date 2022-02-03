@@ -123,7 +123,6 @@ export const csvReferentColumns = [
     "Logiciel",
     "Courriel",
     "Courriel 2",
-    "Type",
     "Référent : expert technique ?",
 ] as const;
 
