@@ -77,12 +77,49 @@ export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: s
                 return value === "Oui" ? (true as const) : undefined;
             })();
 
+            const [emailAlt, m_emailAlt] = (() => {
+                const column = "Courriel 2";
+
+                const value = row[column];
+
+                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+
+                if (value === "") {
+                    return [undefined, m];
+                }
+
+                const out = value.toLowerCase();
+
+                assert(emailRegexp.test(out), m("Not a valid email"));
+
+                assert(out !== email, m("Must be different from main email or empty"));
+
+                assert(
+                    !referents.map(({ email }) => email).includes(out),
+                    m("There is already a referent with this email as main email"),
+                );
+
+                assert(
+                    !referents.map(({ emailAlt }) => emailAlt).includes(out),
+                    m("The is a referent with this email as secondary email"),
+                );
+
+                return [out, m];
+            })();
+
             scope: {
                 const referent = referents.find(referent => referent.email === email);
 
                 if (referent === undefined) {
                     break scope;
                 }
+
+                assert(
+                    referent.emailAlt === emailAlt,
+                    m_emailAlt(
+                        "There is an other line where it's the primary email but atl email differs",
+                    ),
+                );
 
                 assert(
                     !referents.filter(r => r !== referent).find(({ emailAlt }) => emailAlt === email),
@@ -117,36 +154,7 @@ export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: s
                     return out;
                 })(email),
                 email,
-                "emailAlt": (() => {
-                    const column = "Courriel 2";
-
-                    const value = row[column];
-
-                    if (value === "") {
-                        return undefined;
-                    }
-
-                    const m = (reason: string) =>
-                        creatAssertErrorMessage({ row, column, value, reason });
-
-                    const out = value.toLowerCase();
-
-                    assert(emailRegexp.test(out), m("Not a valid email"));
-
-                    assert(out !== email, m("Must be different from main email or empty"));
-
-                    assert(
-                        !referents.map(({ email }) => email).includes(out),
-                        m("There is already a referent with this email as main email"),
-                    );
-
-                    assert(
-                        !referents.map(({ emailAlt }) => emailAlt).includes(out),
-                        m("The is a referent with this email as secondary email"),
-                    );
-
-                    return out;
-                })(),
+                emailAlt,
             };
 
             referents.push(referent);
