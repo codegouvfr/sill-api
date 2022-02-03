@@ -1,3 +1,15 @@
+### **0.0.8** (2022-02-03)  
+  
+- Generates referents stats  
+- Make (primary email, secondary email) primary key of referents  
+- Remove the Type collumn from type def of referent csv  
+- Update sill-referents submodule  
+- Update sill-referents submodule  
+- Match softwares names in softwares.csv and referents.csv  
+- Fix bug bool logic bug  
+- Imediately delete artefact after creation, it's private data  
+- Build the .json files in the ci    
+  
 ### **0.0.6** (2022-02-02)  
   
 - Update documentation  
