@@ -69,6 +69,12 @@ export type ApiSoftware = {
     } | null;
 };
 
+export type ReferentStats = Omit<Referent, "id"> & {
+    softwaresCount: number;
+    //Always at least one element if array defined
+    unknownSoftwares?: string[];
+};
+
 export type SoftwareRef = SoftwareRef.Known | SoftwareRef.Unknown;
 export namespace SoftwareRef {
     export type Known = {

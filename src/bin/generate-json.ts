@@ -20,8 +20,10 @@ const jsonSoftwaresWithoutReferentPath = pathJoin(
     "softwaresWithoutReferent.json",
 );
 
+const jsonReferentsStatsPath = pathJoin(pathDirname(jsonReferentsFilePath), "referentsStats.json");
+
 if (require.main === module) {
-    const { softwares, referents } = parseCsv({
+    const { softwares, referents, referentsStats } = parseCsv({
         csvSoftwaresPath,
         csvReferentsPath,
     });
@@ -37,6 +39,7 @@ if (require.main === module) {
         [jsonReferentsFilePath, referents],
         [jsonApiFilePath, apiSoftwares],
         [jsonSoftwaresWithoutReferentPath, softwaresWithoutReferent],
+        [jsonReferentsStatsPath, referentsStats],
     ] as const) {
         fs.writeFileSync(path, Buffer.from(JSON.stringify(data, null, 2)));
     }

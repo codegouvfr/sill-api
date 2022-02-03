@@ -2,7 +2,7 @@
 import * as fs from "fs";
 import { parse as csvParseSync } from "csv-parse/sync";
 import { csvSoftwareColumns, csvReferentColumns, SoftwareRef } from "./types";
-import type { Software, Referent } from "./types";
+import type { Software, Referent, ReferentStats } from "./types";
 import { assert } from "tsafe/assert";
 import { mimGroups } from "./types";
 import { id } from "tsafe/id";
@@ -12,6 +12,7 @@ import { arrDiff } from "evt/tools/reducers/diff";
 export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: string }): {
     softwares: Software[];
     referents: Referent[];
+    referentsStats: ReferentStats[];
 } {
     const { csvSoftwaresPath, csvReferentsPath } = params;
 
@@ -490,7 +491,45 @@ export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: s
                   };
     });
 
-    return { softwares, referents };
+    const referentsStats = Array.from(softwaresByReferent.entries())
+        .map(
+            ([referent, softwareNamesAndIsReferentExpert]) =>
+                [
+                    referent,
+                    softwareNamesAndIsReferentExpert.map(({ softwareName }) => softwareName),
+                ] as const,
+        )
+        .map(
+            (() => {
+                const allSoftwaresName = softwares.map(({ _name }) => _name);
+
+                return ([referent, softwaresName]) =>
+                    [
+                        referent,
+                        (() => {
+                            const totalCount = softwaresName.length;
+
+                            const unknownSoftwaresName = softwaresName.filter(
+                                softwareName => !allSoftwaresName.includes(softwareName),
+                            );
+
+                            return {
+                                "softwaresCount": totalCount - unknownSoftwaresName.length,
+                                "unknownSoftwares": unknownSoftwaresName,
+                            };
+                        })(),
+                    ] as const;
+            })(),
+        )
+        //.filter(([, { unknownSoftwares }]) => unknownSoftwares.length !== 0)
+        .map(([{ id, ...referent }, { softwaresCount, unknownSoftwares }]) => ({
+            ...referent,
+            softwaresCount,
+            ...(unknownSoftwares.length === 0 ? {} : { unknownSoftwares }),
+        }))
+        .sort((a, b) => b.softwaresCount - a.softwaresCount);
+
+    return { softwares, referents, referentsStats };
 }
 
 function assertsCsv<Columns extends string>(
