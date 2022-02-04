@@ -1,3 +1,7 @@
+### **0.0.9** (2022-02-04)  
+  
+- Incorporate comptoir du libre data    
+  
 ### **0.0.8** (2022-02-03)  
   
 - Generates referents stats  
