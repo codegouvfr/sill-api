@@ -340,7 +340,7 @@ export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: s
 
                 return value;
             })(),
-            "comptoirDuLibreOrgId": (() => {
+            "comptoirDuLibreId": (() => {
                 const column = "comptoir-du-libre";
 
                 const value = row[column];

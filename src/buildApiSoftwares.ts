@@ -1,9 +1,18 @@
-import type { Software, Referent, ApiSoftware } from "./types";
+import type { Software, Referent, ApiSoftware, ComptoirDuLibre } from "./types";
+import fetch from "node-fetch";
+import { assert } from "tsafe/assert";
 
-export function buildApiSoftwares(params: { softwares: Software[]; referents: Referent[] }): {
-    apiSoftwares: ApiSoftware[];
-} {
+const cdlUrl = "https://comptoir-du-libre.org/public/export/comptoir-du-libre_export_v1.json";
+
+export async function buildApiSoftwares(params: {
+    softwares: Software[];
+    referents: Referent[];
+}): Promise<{ apiSoftwares: ApiSoftware[] }> {
     const { softwares, referents } = params;
+
+    const { softwares: cdlSoftwares } = await fetch(cdlUrl)
+        .then(res => res.text())
+        .then(text => JSON.parse(text) as ComptoirDuLibre);
 
     const apiSoftwares = softwares
         .map(softwares => {
@@ -27,7 +36,21 @@ export function buildApiSoftwares(params: { softwares: Software[]; referents: Re
                 "isPresentInSupportContract": software.isPresentInSupportContract,
                 "alikeSoftwares": software.alikeSoftwares,
                 "wikidataId": software.wikidataId ?? null,
-                "comptoirDuLibreOrgId": software.comptoirDuLibreOrgId ?? null,
+                "comptoirDuLibreSoftware":
+                    software.comptoirDuLibreId === undefined
+                        ? null
+                        : (() => {
+                              const cdlSoftware = cdlSoftwares.find(
+                                  ({ id }) => software.comptoirDuLibreId === id,
+                              );
+
+                              assert(
+                                  cdlSoftware !== undefined,
+                                  `Comptoir du libre id: ${software.comptoirDuLibreId} does not match ant software in ${cdlUrl}`,
+                              );
+
+                              return cdlSoftware;
+                          })(),
                 "license": software._license,
                 "whereAndInWhatContextIsItUsed": software.whereAndInWhatContextIsItUsed ?? null,
                 "catalogNumeriqueGouvFrId": software.catalogNumeriqueGouvFrId ?? null,

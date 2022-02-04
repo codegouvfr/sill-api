@@ -23,24 +23,26 @@ const jsonSoftwaresWithoutReferentPath = pathJoin(
 const jsonReferentsStatsPath = pathJoin(pathDirname(jsonReferentsFilePath), "referentsStats.json");
 
 if (require.main === module) {
-    const { softwares, referents, referentsStats } = parseCsv({
-        csvSoftwaresPath,
-        csvReferentsPath,
-    });
+    (async () => {
+        const { softwares, referents, referentsStats } = parseCsv({
+            csvSoftwaresPath,
+            csvReferentsPath,
+        });
 
-    const { apiSoftwares } = buildApiSoftwares({ softwares, referents });
+        const { apiSoftwares } = await buildApiSoftwares({ softwares, referents });
 
-    const softwaresWithoutReferent = apiSoftwares
-        .filter(({ referent }) => referent === null)
-        .map(({ name, id }) => ({ id, name }));
+        const softwaresWithoutReferent = apiSoftwares
+            .filter(({ referent }) => referent === null)
+            .map(({ name, id }) => ({ id, name }));
 
-    for (const [path, data] of [
-        [jsonSoftwaresFilePath, softwares],
-        [jsonReferentsFilePath, referents],
-        [jsonApiFilePath, apiSoftwares],
-        [jsonSoftwaresWithoutReferentPath, softwaresWithoutReferent],
-        [jsonReferentsStatsPath, referentsStats],
-    ] as const) {
-        fs.writeFileSync(path, Buffer.from(JSON.stringify(data, null, 2)));
-    }
+        for (const [path, data] of [
+            [jsonSoftwaresFilePath, softwares],
+            [jsonReferentsFilePath, referents],
+            [jsonApiFilePath, apiSoftwares],
+            [jsonSoftwaresWithoutReferentPath, softwaresWithoutReferent],
+            [jsonReferentsStatsPath, referentsStats],
+        ] as const) {
+            fs.writeFileSync(path, Buffer.from(JSON.stringify(data, null, 2)));
+        }
+    })();
 }

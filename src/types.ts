@@ -21,7 +21,7 @@ export type Software = {
     wikidataId?: string;
     //Example https://comptoir-du-libre.org/en/softwares/461 -> 461
     /* cspell: disable-next-line */
-    comptoirDuLibreOrgId?: number;
+    comptoirDuLibreId?: number;
     // https://spdx.org/licenses/
     // https://www.data.gouv.fr/fr/pages/legal/licences/
     _license: string;
@@ -42,7 +42,9 @@ export type Referent = {
     emailAlt?: string;
 };
 
-/** Combines Software and Referent, the api.json file is an array of this type */
+/** Combines Software and Referent and data
+ * from comptoir-du-libre.org, the api.json file is an array of this type
+ **/
 export type ApiSoftware = {
     id: number;
     name: string;
@@ -55,7 +57,7 @@ export type ApiSoftware = {
     isPresentInSupportContract: boolean;
     alikeSoftwares: SoftwareRef[];
     wikidataId: string | null;
-    comptoirDuLibreOrgId: number | null;
+    comptoirDuLibreSoftware: ComptoirDuLibre.Software | null;
     license: string;
     whereAndInWhatContextIsItUsed: string | null;
     catalogNumeriqueGouvFrId: string | null;
@@ -135,3 +137,47 @@ export const csvReferentColumns = [
 export type CsvReferentColumn = typeof csvReferentColumns[number];
 
 //export type CsvReferent = Record<CsvReferentColumn, string>;
+
+// https://comptoir-du-libre.org/public/export/comptoir-du-libre_export_v1.json
+
+export type ComptoirDuLibre = {
+    date_of_export: Date;
+    number_of_software: number;
+    softwares: ComptoirDuLibre.Software[];
+};
+export declare namespace ComptoirDuLibre {
+    export interface Provider {
+        id: number;
+        url: string;
+        name: string;
+        type: string;
+        external_resources: {
+            website: string;
+        };
+    }
+
+    export interface User {
+        id: number;
+        url: string;
+        name: string;
+        type: string;
+        external_resources: {
+            website: string;
+        };
+    }
+
+    export interface Software {
+        id: number;
+        created: Date;
+        modified: Date;
+        url: string;
+        name: string;
+        licence: string;
+        external_resources: {
+            website: string;
+            repository: string;
+        };
+        providers: Provider[];
+        users: User[];
+    }
+}
