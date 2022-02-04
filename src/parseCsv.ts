@@ -1,22 +1,31 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import * as fs from "fs";
 import { parse as csvParseSync } from "csv-parse/sync";
-import { csvSoftwareColumns, csvReferentColumns, SoftwareRef } from "./types";
-import type { Software, Referent, ReferentStats } from "./types";
+import { csvSoftwareColumns, csvReferentColumns, csvPapillonServiceColumns } from "./types";
+import type { Software, Referent, ReferentStats, SoftwareRef, PapillonService } from "./types";
 import { assert } from "tsafe/assert";
 import { mimGroups } from "./types";
 import { id } from "tsafe/id";
 import { typeGuard } from "tsafe/typeGuard";
 import { arrDiff } from "evt/tools/reducers/diff";
 
-export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: string }): {
+export function parseCsv(params: {
+    csvSoftwaresPath: string;
+    csvReferentsPath: string;
+    csvPapillonServicesPath: string;
+}): {
     softwares: Software[];
     referents: Referent[];
+    papillonServices: PapillonService[];
     referentsStats: ReferentStats[];
 } {
-    const { csvSoftwaresPath, csvReferentsPath } = params;
+    const { csvSoftwaresPath, csvReferentsPath, csvPapillonServicesPath } = params;
 
-    const [csvSoftwares, csvReferents] = [csvSoftwaresPath, csvReferentsPath].map(
+    const [csvSoftwares, csvReferents, csvPapillonServices] = [
+        csvSoftwaresPath,
+        csvReferentsPath,
+        csvPapillonServicesPath,
+    ].map(
         path =>
             csvParseSync(fs.readFileSync(path).toString("utf8"), {
                 "columns": true,
@@ -26,6 +35,7 @@ export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: s
 
     assertsCsv(csvSoftwares, csvSoftwareColumns);
     assertsCsv(csvReferents, csvReferentColumns);
+    assertsCsv(csvPapillonServices, csvPapillonServiceColumns);
 
     const softwaresByReferent = new Map<
         Referent,
@@ -529,7 +539,102 @@ export function parseCsv(params: { csvSoftwaresPath: string; csvReferentsPath: s
         }))
         .sort((a, b) => b.softwaresCount - a.softwaresCount);
 
-    return { softwares, referents, referentsStats };
+    const papillonServices: PapillonService[] = [];
+
+    csvPapillonServices.forEach(row => {
+        const common: PapillonService.Common = {
+            "id": (() => {
+                const column = "id";
+
+                const value = row[column];
+
+                const out = parseInt(value);
+
+                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+
+                assert(!isNaN(out), m("Must be an integer"));
+
+                assert(
+                    !papillonServices.map(({ id }) => id).includes(out),
+                    m(`There is another service with the same id`),
+                );
+
+                return out;
+            })(),
+            "agencyName": row["agency_name"],
+            "publicSector": row["public_sector"],
+            "agencyUrl": row["agency_url"],
+            "serviceName": row["service_name"],
+            "serviceUrl": row["service_url"],
+            "description": row["description"],
+            "publicationDate": row["publication_date"],
+            "lastUpdateDate": row["last_update_date"],
+            "signupScope": row["signup_scope"],
+            "usageScope": row["usage_scope"],
+            "signupValidationMethod": row["signup_validation_method"],
+            "contentModerationMethod": row["content_moderation_method"],
+        };
+
+        const softwareId = (() => {
+            const column = "software_sill_id";
+
+            const value = row[column];
+
+            if (value === "") {
+                return undefined;
+            }
+
+            const out = parseInt(value);
+
+            const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+
+            assert(!isNaN(out), m("Must be an integer"));
+
+            assert(
+                softwares.map(({ _id }) => _id).includes(out),
+                m("This id does not correspond to a software"),
+            );
+
+            return out;
+        })();
+
+        papillonServices.push(
+            softwareId === undefined
+                ? id<PapillonService.Unknown>({
+                      ...common,
+                      "softwareName": row["software_name"],
+                      "comptoirDuLibreId": (() => {
+                          const column = "software_comptoir_id";
+
+                          const value = row[column];
+
+                          if (value === "") {
+                              return undefined;
+                          }
+
+                          const out = parseInt(value);
+
+                          const m = (reason: string) =>
+                              creatAssertErrorMessage({ row, column, value, reason });
+
+                          assert(!isNaN(out), m("Must be an integer"));
+
+                          assert(
+                              !softwares.map(({ comptoirDuLibreId }) => comptoirDuLibreId).includes(out),
+                              m("This is a valid cdl id for a known software known, check the sill id"),
+                          );
+
+                          return out;
+                      })(),
+                  })
+                : id<PapillonService.Known>({
+                      ...common,
+                      softwareId,
+                  }),
+        );
+    });
+
+    return { softwares, referents, referentsStats, papillonServices };
 }
 
 function assertsCsv<Columns extends string>(

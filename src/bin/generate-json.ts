@@ -6,14 +6,17 @@ import * as fs from "fs";
 
 const projectDirPath = pathJoin(__dirname, "..", "..");
 
-const [csvSoftwaresPath, csvReferentsPath] = [
+const [csvSoftwaresPath, csvReferentsPath, csvPapillonServicesPath] = [
     ["softwares", "softwares.csv"],
     ["referents", "referents.csv"],
+    ["papillonServices", "papillonServices.csv"],
 ].map(path => pathJoin(...[projectDirPath, "data", ...path]));
 
-const [jsonSoftwaresFilePath, jsonReferentsFilePath] = [csvSoftwaresPath, csvReferentsPath].map(path =>
-    path.replace(/csv$/, "json"),
-);
+const [jsonSoftwaresFilePath, jsonReferentsFilePath, jsonPapillonServicesPath] = [
+    csvSoftwaresPath,
+    csvReferentsPath,
+    csvPapillonServicesPath,
+].map(path => path.replace(/csv$/, "json"));
 const jsonApiFilePath = pathJoin(pathDirname(jsonSoftwaresFilePath), "..", "api.json");
 const jsonSoftwaresWithoutReferentPath = pathJoin(
     pathDirname(jsonSoftwaresFilePath),
@@ -24,21 +27,23 @@ const jsonReferentsStatsPath = pathJoin(pathDirname(jsonReferentsFilePath), "ref
 
 if (require.main === module) {
     (async () => {
-        const { softwares, referents, referentsStats } = parseCsv({
+        const { softwares, referents, papillonServices, referentsStats } = parseCsv({
             csvSoftwaresPath,
             csvReferentsPath,
+            csvPapillonServicesPath,
         });
 
-        const { apiSoftwares } = await buildApiSoftwares({ softwares, referents });
+        const { api } = await buildApiSoftwares({ softwares, referents, papillonServices });
 
-        const softwaresWithoutReferent = apiSoftwares
+        const softwaresWithoutReferent = api.softwares
             .filter(({ referent }) => referent === null)
             .map(({ name, id }) => ({ id, name }));
 
         for (const [path, data] of [
             [jsonSoftwaresFilePath, softwares],
             [jsonReferentsFilePath, referents],
-            [jsonApiFilePath, apiSoftwares],
+            [jsonPapillonServicesPath, papillonServices],
+            [jsonApiFilePath, api],
             [jsonSoftwaresWithoutReferentPath, softwaresWithoutReferent],
             [jsonReferentsStatsPath, referentsStats],
         ] as const) {
