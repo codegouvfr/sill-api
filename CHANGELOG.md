@@ -1,3 +1,7 @@
+### **0.0.10** (2022-02-04)  
+  
+- Add papillon data    
+  
 ### **0.0.9** (2022-02-04)  
   
 - Incorporate comptoir du libre data    
