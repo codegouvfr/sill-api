@@ -187,7 +187,7 @@ jobs:
         with:
           name: json-files
       - run: |
-          echo "sill-static.etalab.studio" > static/CNAME
+          echo "code.gouv.fr" > static/CNAME
           echo "GitHub pages is not enabled on this repo, we uploads the file directly to a server via SSH" > README.md
       - uses: actions/setup-node@v2.1.3
         with:
@@ -206,4 +206,4 @@ jobs:
           username: web
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "${{secrets.SECRET_DIR_BASENAME}}/*.json,${{secrets.SECRET_DIR_BASENAME}}/**/*.json"
-          target: .
+          target: websites/code.gouv.fr/

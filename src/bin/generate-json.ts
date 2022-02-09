@@ -17,7 +17,7 @@ const [jsonSoftwaresFilePath, jsonReferentsFilePath, jsonPapillonServicesPath] =
     csvReferentsPath,
     csvPapillonServicesPath,
 ].map(path => path.replace(/csv$/, "json"));
-const jsonApiFilePath = pathJoin(pathDirname(jsonSoftwaresFilePath), "..", "api.json");
+const jsonApiFilePath = pathJoin(pathDirname(jsonSoftwaresFilePath), "..", "data.json");
 const jsonSoftwaresWithoutReferentPath = pathJoin(
     pathDirname(jsonSoftwaresFilePath),
     "softwaresWithoutReferent.json",

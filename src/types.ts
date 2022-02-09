@@ -80,7 +80,7 @@ export type Api = {
 
 export namespace Api {
     /** Combines Software and Referent and data
-     * from comptoir-du-libre.org, the api.json file is an array of this type
+     * from comptoir-du-libre.org, the data.json file is an array of this type
      **/
     export type Software = {
         id: number;
