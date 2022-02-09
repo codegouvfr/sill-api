@@ -206,5 +206,5 @@ jobs:
           username: admin
           port: 37329
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "${{secrets.SECRET_DIR_BASENAME}}/**/*.json"
+          source: "${{secrets.SECRET_DIR_BASENAME}}/**/*.json,${{secrets.SECRET_DIR_BASENAME}}/*.json"
           target: .
