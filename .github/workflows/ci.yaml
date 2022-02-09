@@ -202,5 +202,5 @@ jobs:
           host: 193.70.86.67
           username: web
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "${{secrets.SECRET_DIR_BASENAME}}/*.json"
+          source: "${{secrets.SECRET_DIR_BASENAME}}/*.json,${{secrets.SECRET_DIR_BASENAME}}/**/*.json"
           target: "~/websites/code.gouv.fr/"
