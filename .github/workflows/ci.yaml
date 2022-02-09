@@ -198,8 +198,9 @@ jobs:
       - name: Send data via SPP to the server
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: web
+          host: 13.37.180.114
+          username: admin
+          port: 37329
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "public/**/*.json"
           target: ${{secrets.SECRET_DIR_BASENAME}}
