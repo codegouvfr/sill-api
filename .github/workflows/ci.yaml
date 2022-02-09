@@ -182,7 +182,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: json-files
-          path: public/${{secrets.SECRET_DIR_BASENAME}}
+          path: public/
       - uses: geekyeggo/delete-artifact@v1
         with:
           name: json-files
@@ -195,3 +195,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT }}
       - run: npx -y -p gh-pages@3.0.0 gh-pages -b static -d public -u "github-actions-bot <actions@github.com>"
 
+      - name: Send data via SPP to the server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: web
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "public/**/*.json"
+          target: ${{secrets.SECRET_DIR_BASENAME}}
