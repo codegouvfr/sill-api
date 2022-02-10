@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import * as fs from "fs";
 import { parse as csvParseSync } from "csv-parse/sync";
-import { csvSoftwareColumns, csvReferentColumns, csvPapillonServiceColumns } from "./types";
-import type { Software, Referent, ReferentStats, SoftwareRef, PapillonService } from "./types";
+import { csvSoftwareColumns, csvReferentColumns, csvServiceColumns } from "./types";
+import type { Software, Referent, ReferentStats, SoftwareRef, Service } from "./types";
 import { assert } from "tsafe/assert";
 import { mimGroups } from "./types";
 import { id } from "tsafe/id";
@@ -12,19 +12,19 @@ import { arrDiff } from "evt/tools/reducers/diff";
 export function parseCsv(params: {
     csvSoftwaresPath: string;
     csvReferentsPath: string;
-    csvPapillonServicesPath: string;
+    csvServicesPath: string;
 }): {
     softwares: Software[];
     referents: Referent[];
-    papillonServices: PapillonService[];
+    services: Service[];
     referentsStats: ReferentStats[];
 } {
-    const { csvSoftwaresPath, csvReferentsPath, csvPapillonServicesPath } = params;
+    const { csvSoftwaresPath, csvReferentsPath, csvServicesPath } = params;
 
-    const [csvSoftwares, csvReferents, csvPapillonServices] = [
+    const [csvSoftwares, csvReferents, csvServices] = [
         csvSoftwaresPath,
         csvReferentsPath,
-        csvPapillonServicesPath,
+        csvServicesPath,
     ].map(
         path =>
             csvParseSync(fs.readFileSync(path).toString("utf8"), {
@@ -35,7 +35,7 @@ export function parseCsv(params: {
 
     assertsCsv(csvSoftwares, csvSoftwareColumns);
     assertsCsv(csvReferents, csvReferentColumns);
-    assertsCsv(csvPapillonServices, csvPapillonServiceColumns);
+    assertsCsv(csvServices, csvServiceColumns);
 
     const softwaresByReferent = new Map<
         Referent,
@@ -584,10 +584,10 @@ export function parseCsv(params: {
         }))
         .sort((a, b) => b.softwaresCount - a.softwaresCount);
 
-    const papillonServices: PapillonService[] = [];
+    const services: Service[] = [];
 
-    csvPapillonServices.forEach(row => {
-        const common: PapillonService.Common = {
+    csvServices.forEach(row => {
+        const common: Service.Common = {
             "id": (() => {
                 const column = "id";
 
@@ -600,7 +600,7 @@ export function parseCsv(params: {
                 assert(!isNaN(out), m("Must be an integer"));
 
                 assert(
-                    !papillonServices.map(({ id }) => id).includes(out),
+                    !services.map(({ id }) => id).includes(out),
                     m(`There is another service with the same id`),
                 );
 
@@ -643,9 +643,9 @@ export function parseCsv(params: {
             return out;
         })();
 
-        papillonServices.push(
+        services.push(
             softwareId === undefined
-                ? id<PapillonService.Unknown>({
+                ? id<Service.UnknownSoftware>({
                       ...common,
                       "softwareName": row["software_name"],
                       "comptoirDuLibreId": (() => {
@@ -672,14 +672,14 @@ export function parseCsv(params: {
                           return out;
                       })(),
                   })
-                : id<PapillonService.Known>({
+                : id<Service.KnownSoftware>({
                       ...common,
                       softwareId,
                   }),
         );
     });
 
-    return { softwares, referents, referentsStats, papillonServices };
+    return { softwares, referents, referentsStats, services };
 }
 
 function assertsCsv<Columns extends string>(

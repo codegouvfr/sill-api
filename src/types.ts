@@ -45,9 +45,9 @@ export type Referent = {
     emailAlt?: string;
 };
 
-export type PapillonService = PapillonService.Known | PapillonService.Unknown;
+export type Service = Service.KnownSoftware | Service.UnknownSoftware;
 
-export namespace PapillonService {
+export namespace Service {
     export type Common = {
         id: number;
         agencyName: string;
@@ -65,11 +65,11 @@ export namespace PapillonService {
         contentModerationMethod: string;
     };
 
-    export type Known = Common & {
+    export type KnownSoftware = Common & {
         softwareId: number;
     };
 
-    export type Unknown = Common & {
+    export type UnknownSoftware = Common & {
         softwareId?: undefined;
         softwareName: string;
         comptoirDuLibreId?: number;
@@ -77,70 +77,30 @@ export namespace PapillonService {
 }
 
 export type Api = {
-    softwares: Api.Software[];
-    papillonServices: Api.PapillonService[];
-};
-
-export namespace Api {
-    /** Combines Software and Referent and data
-     * from comptoir-du-libre.org, the data.json file is an array of this type
-     **/
-    export type Software = {
-        id: number;
-        name: string;
-        function: string;
-        //"2018" | "2019" | "2020" | "2021" | "2022";
-        referencedSinceYear: string;
-        recommendationStatus: RecommendationStatus;
-        parentSoftware: SoftwareRef | null;
-        isFromFrenchPublicService: boolean;
-        isPresentInSupportContract: boolean;
-        alikeSoftwares: SoftwareRef[];
-        wikidataId: string | null;
-        comptoirDuLibreSoftware: ComptoirDuLibre.Software | null;
-        license: string;
-        whereAndInWhatContextIsItUsed: string | null;
-        catalogNumeriqueGouvFrId: string | null;
-        mimGroup: MimGroup;
-        versionMin: string;
-        versionMax: string | null;
-        workshopUrl: string | null;
-        testUrl: string | null;
-        useCaseUrl: string | null;
-        hasReferent: boolean;
-    };
-
-    export type PapillonService = PapillonService.Known | PapillonService.Unknown;
-
-    export namespace PapillonService {
-        export type Common = {
-            id: number;
-            agencyName: string;
-            publicSector: string;
-            agencyUrl: string;
-            serviceName: string;
-            serviceUrl: string;
-            description: string;
-            //"2018" | "2019" | "2020" | "2021" | "2022";
-            publicationDate: string;
-            lastUpdateDate: string;
-            signupScope: string;
-            usageScope: string;
-            signupValidationMethod: string;
-            contentModerationMethod: string;
-        };
-
-        export type Known = Common & {
-            software: Software;
-        };
-
-        export type Unknown = Common & {
-            software: null;
-            softwareName: string;
-            comptoirDuLibre: ComptoirDuLibre.Software | null;
-        };
-    }
-}
+    id: number;
+    name: string;
+    function: string;
+    //"2018" | "2019" | "2020" | "2021" | "2022";
+    referencedSinceYear: string;
+    recommendationStatus: RecommendationStatus;
+    parentSoftware: SoftwareRef | null;
+    isFromFrenchPublicService: boolean;
+    isPresentInSupportContract: boolean;
+    alikeSoftwares: SoftwareRef[];
+    wikidataId: string | null;
+    comptoirDuLibreSoftware: ComptoirDuLibre.Software | null;
+    license: string;
+    whereAndInWhatContextIsItUsed: string | null;
+    catalogNumeriqueGouvFrId: string | null;
+    mimGroup: MimGroup;
+    versionMin: string;
+    versionMax: string | null;
+    workshopUrl: string | null;
+    testUrl: string | null;
+    useCaseUrl: string | null;
+    hasReferent: boolean;
+    services: Omit<Service.KnownSoftware[], "softwareId">;
+}[];
 
 export type ReferentStats = Omit<Referent, "id"> & {
     softwaresCount: number;
@@ -212,7 +172,7 @@ export type CsvReferentColumn = typeof csvReferentColumns[number];
 
 //export type CsvReferent = Record<CsvReferentColumn, string>;
 
-export const csvPapillonServiceColumns = [
+export const csvServiceColumns = [
     "id",
     "agency_name",
     "public_sector",
@@ -231,7 +191,7 @@ export const csvPapillonServiceColumns = [
     "content_moderation_method",
 ] as const;
 
-export type CsvPapillonServiceColumn = typeof csvPapillonServiceColumns[number];
+export type CsvServiceColumn = typeof csvServiceColumns[number];
 
 export type ComptoirDuLibre = {
     date_of_export: Date;
