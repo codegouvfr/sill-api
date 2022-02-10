@@ -11,8 +11,7 @@
 </p>
 
 -   [Purpose](#purpose)
--   [How the data are made available](#how-the-data-are-made-available)
-    -   [Where are the data available as an API endpoint](#where-are-the-data-available-as-an-api-endpoint)
+-   [Published data](#published-data)
 -   [Dev](#dev)
     -   [Checking out the code](#checking-out-the-code)
     -   [Generating the json files](#generating-the-json-files)
@@ -23,23 +22,18 @@
 
 # Purpose
 
-Private and public data about software in the SILL catalog come from scattered sources: from the original SILL csv file, from the sill-referent.csv file in a private repo, from Wikidata, etc. This repository solves this by aggregating the sources, exposing them as a unique and private .json file.
+Private and public data about software in the SILL catalog come from scattered sources: from the original [sill.csv](data/softwares/sill.csv) file,
+from the [sill-referent.csv](data/referents/referents.csv) file in [a private repo](https://github.com/etalab/sill-referents), from Wikidata, [Le comptoir du libre](https://comptoir-du-libre.org/), etc.
 
-Another problem is that the SILL updates are shared informally on a private mailing list, forcing the maintainer of the sill.csv file to centralize updates: this repository prepares a process that will be handled through a web interface where contributors will be able to update their own SILL entries by themselves.
+Another problem is that the SILL updates are shared informally on a private mailing list, forcing the maintainer of the sill.csv file to centralize updates: this
+repository prepares a process that will be handled through a web interface where contributors will be able to update their own SILL entries by themselves.
 
-# How the data are made available
+# Published data
 
-This repo publish a `sill.json` files that compiles the data from
-`/sill-softwares.json` and `/sill-referents/sill-referents.json`.  
-This file is meant to provide the information needed to implement
-an interface like [this one](https://sill.etalab.gouv.fr).
+This repo publish a [`sill2.json`](https://code.gouv.fr/data/sill2.json) files that compiles data from [softwares.csv](data/softwares/softwares.csv)
+and [Le comptoir du libre](https://comptoir-du-libre.org/).
 
-## Where are the data available as an API endpoint
-
-[See notes on private repo](https://github.com/etalab/sill-referents/blob/main/private_notes.md) to get the URL.
-
-The types definition are available [here](https://github.com/etalab/sill/blob/4b926f7819bd78c3a21f135f85208dc662bf30fa/src/types.ts#L45-L69)
-and can be imported as [an NPM modules](https://www.npmjs.com/package/sillfr).
+It will be used from [code.gouv.fr](https://code.gouv.fr/) to expose the SILL.
 
 # Dev
 
