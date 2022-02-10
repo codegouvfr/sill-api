@@ -67,6 +67,9 @@ export async function buildApiSoftwares(params: {
                               "emailAlt": referent.emailAlt ?? null,
                               "isReferentExpert": software.isReferentExpert ?? null,
                           },
+                "workshopUrl": software.workshopUrl ?? null,
+                "testUrl": software.testUrl ?? null,
+                "cardUrl": software.cardUrl ?? null,
             }),
         );
 

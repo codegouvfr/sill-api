@@ -471,6 +471,51 @@ export function parseCsv(params: {
                     isReferentExpert,
                 };
             })(),
+            "workshopUrl": (() => {
+                const column = "atelier";
+
+                const value = row[column];
+
+                if (value === "") {
+                    return undefined;
+                }
+
+                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+
+                assert(value.startsWith("http"), m("It should be an url"));
+
+                return value;
+            })(),
+            "testUrl": (() => {
+                const column = "test";
+
+                const value = row[column];
+
+                if (value === "") {
+                    return undefined;
+                }
+
+                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+
+                assert(value.startsWith("http"), m("It should be an url"));
+
+                return value;
+            })(),
+            "cardUrl": (() => {
+                const column = "fiche";
+
+                const value = row[column];
+
+                if (value === "") {
+                    return undefined;
+                }
+
+                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+
+                assert(value.startsWith("http"), m("It should be an url"));
+
+                return value;
+            })(),
         };
 
         softwares.push(software);

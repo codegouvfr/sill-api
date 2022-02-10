@@ -34,6 +34,9 @@ export type Software = {
     versionMax?: string;
     referentId: number | undefined;
     isReferentExpert?: true;
+    workshopUrl?: string;
+    testUrl?: string;
+    cardUrl?: string;
 };
 
 export type Referent = {
@@ -101,6 +104,9 @@ export namespace Api {
         mimGroup: MimGroup;
         versionMin: string;
         versionMax: string | null;
+        workshopUrl: string | null;
+        testUrl: string | null;
+        cardUrl: string | null;
         referent: {
             email: string;
             emailAlt: string | null;
@@ -186,6 +192,9 @@ export const csvSoftwareColumns = [
     "licence",
     "contexte-usage",
     "label",
+    "fiche",
+    "atelier",
+    "test",
     "groupe",
     "version_min",
     "version_max",
