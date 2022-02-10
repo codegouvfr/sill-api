@@ -1,3 +1,15 @@
+### **0.0.11** (2022-02-10)  
+  
+- Integrate workshopUrl testUrl and cardUrl  
+- commit hack migration  
+- debug  
+- update formating of target path  
+- Update submodule  
+- updat secret path and domain where we publish the data.json  
+- Send to etalab's server  
+- Test deploy with SSH  
+- Rename ovh-pages -> static    
+  
 ### **0.0.10** (2022-02-04)  
   
 - Add papillon data    
