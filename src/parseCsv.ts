@@ -501,20 +501,25 @@ export function parseCsv(params: {
 
                 return value;
             })(),
-            "useCaseUrl": (() => {
+            "useCasesUrl": (() => {
                 const column = "fiche";
 
                 const value = row[column];
 
                 if (value === "") {
-                    return undefined;
+                    return [];
                 }
+
+                const out = value.replace(/ /g, "").split(",");
 
                 const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
 
-                assert(value.startsWith("http"), m("It should be an url"));
+                assert(
+                    out.every(url => url.startsWith("http")),
+                    m("Every entries should be urls"),
+                );
 
-                return value;
+                return out;
             })(),
         };
 

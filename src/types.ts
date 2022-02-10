@@ -36,7 +36,7 @@ export type Software = {
     isReferentExpert?: true;
     workshopUrl?: string;
     testUrl?: string;
-    useCaseUrl?: string;
+    useCasesUrl: string[];
 };
 
 export type Referent = {
@@ -97,7 +97,7 @@ export type Api = {
     versionMax: string | null;
     workshopUrl: string | null;
     testUrl: string | null;
-    useCaseUrl: string | null;
+    useCasesUrl: string[];
     hasReferent: boolean;
     services: Omit<Service.KnownSoftware[], "softwareId">;
 }[];

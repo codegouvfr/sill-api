@@ -61,7 +61,7 @@ export async function buildApiData(params: {
             "hasReferent": referent !== undefined,
             "workshopUrl": software.workshopUrl ?? null,
             "testUrl": software.testUrl ?? null,
-            "useCaseUrl": software.useCaseUrl ?? null,
+            "useCasesUrl": software.useCasesUrl,
             "services": services
                 .map(service => (service.softwareId !== undefined ? service : undefined))
                 .filter(exclude(undefined))
