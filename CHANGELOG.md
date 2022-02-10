@@ -1,3 +1,12 @@
+### **0.0.16** (2022-02-10)  
+  
+- There might be multiple urls, (separated by comas). useCaseUrl -> useCasesUrl  
+- Rename directory cards to useCases  
+- Droping the papillon name, incorporing servcies into the API data.  
+- Update readme, we no longer statically expose private data  
+- Update upload location  
+- Rollback publishing private data    
+  
 ### **0.0.13** (2022-02-10)  
   
 - Rename cardUrl -> useCaseUrl    
