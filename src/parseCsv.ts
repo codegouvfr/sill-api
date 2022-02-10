@@ -501,7 +501,7 @@ export function parseCsv(params: {
 
                 return value;
             })(),
-            "cardUrl": (() => {
+            "useCaseUrl": (() => {
                 const column = "fiche";
 
                 const value = row[column];

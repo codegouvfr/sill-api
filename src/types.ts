@@ -36,7 +36,7 @@ export type Software = {
     isReferentExpert?: true;
     workshopUrl?: string;
     testUrl?: string;
-    cardUrl?: string;
+    useCaseUrl?: string;
 };
 
 export type Referent = {
@@ -106,7 +106,7 @@ export namespace Api {
         versionMax: string | null;
         workshopUrl: string | null;
         testUrl: string | null;
-        cardUrl: string | null;
+        useCaseUrl: string | null;
         hasReferent: boolean;
         /*
         referent: {

@@ -72,7 +72,7 @@ export async function buildApiSoftwares(params: {
                 */
                 "workshopUrl": software.workshopUrl ?? null,
                 "testUrl": software.testUrl ?? null,
-                "cardUrl": software.cardUrl ?? null,
+                "useCaseUrl": software.useCaseUrl ?? null,
             }),
         );
 

@@ -1,6 +1,6 @@
 ### **0.0.11** (2022-02-10)  
   
-- Integrate workshopUrl testUrl and cardUrl  
+- Integrate workshopUrl testUrl and useCaseUrl  
 - commit hack migration  
 - debug  
 - update formating of target path  
