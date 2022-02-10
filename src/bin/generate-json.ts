@@ -36,7 +36,8 @@ if (require.main === module) {
         const { api } = await buildApiSoftwares({ softwares, referents, papillonServices });
 
         const softwaresWithoutReferent = api.softwares
-            .filter(({ referent }) => referent === null)
+            //.filter(({ referent }) => referent === null)
+            .filter(({ hasReferent }) => !hasReferent)
             .map(({ name, id }) => ({ id, name }));
 
         for (const [path, data] of [

@@ -59,6 +59,8 @@ export async function buildApiSoftwares(params: {
                 "mimGroup": software.mimGroup,
                 "versionMin": software.__versionMin,
                 "versionMax": software.versionMax ?? null,
+                "hasReferent": referent !== undefined,
+                /*
                 "referent":
                     referent === undefined
                         ? null
@@ -67,6 +69,7 @@ export async function buildApiSoftwares(params: {
                               "emailAlt": referent.emailAlt ?? null,
                               "isReferentExpert": software.isReferentExpert ?? null,
                           },
+                */
                 "workshopUrl": software.workshopUrl ?? null,
                 "testUrl": software.testUrl ?? null,
                 "cardUrl": software.cardUrl ?? null,

@@ -107,11 +107,14 @@ export namespace Api {
         workshopUrl: string | null;
         testUrl: string | null;
         cardUrl: string | null;
+        hasReferent: boolean;
+        /*
         referent: {
             email: string;
             emailAlt: string | null;
             isReferentExpert: boolean | null;
         } | null;
+        */
     };
 
     export type PapillonService = PapillonService.Known | PapillonService.Unknown;
