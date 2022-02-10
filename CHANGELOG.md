@@ -1,3 +1,7 @@
+### **0.0.12** (2022-02-10)  
+  
+- Stop publishing referent in data.json    
+  
 ### **0.0.11** (2022-02-10)  
   
 - Integrate workshopUrl testUrl and useCaseUrl  
