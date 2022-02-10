@@ -200,4 +200,4 @@ jobs:
           username: web
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "data/*.json"
-          target: "~/websites/code.gouv.fr/data/"
+          target: "~/websites/code.gouv.fr/"
