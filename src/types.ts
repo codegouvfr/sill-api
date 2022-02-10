@@ -108,13 +108,6 @@ export namespace Api {
         testUrl: string | null;
         useCaseUrl: string | null;
         hasReferent: boolean;
-        /*
-        referent: {
-            email: string;
-            emailAlt: string | null;
-            isReferentExpert: boolean | null;
-        } | null;
-        */
     };
 
     export type PapillonService = PapillonService.Known | PapillonService.Unknown;

@@ -60,16 +60,6 @@ export async function buildApiSoftwares(params: {
                 "versionMin": software.__versionMin,
                 "versionMax": software.versionMax ?? null,
                 "hasReferent": referent !== undefined,
-                /*
-                "referent":
-                    referent === undefined
-                        ? null
-                        : {
-                              "email": referent.email,
-                              "emailAlt": referent.emailAlt ?? null,
-                              "isReferentExpert": software.isReferentExpert ?? null,
-                          },
-                */
                 "workshopUrl": software.workshopUrl ?? null,
                 "testUrl": software.testUrl ?? null,
                 "useCaseUrl": software.useCaseUrl ?? null,

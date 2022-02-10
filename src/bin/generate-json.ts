@@ -17,7 +17,7 @@ const [jsonSoftwaresFilePath, jsonReferentsFilePath, jsonPapillonServicesPath] =
     csvReferentsPath,
     csvPapillonServicesPath,
 ].map(path => path.replace(/csv$/, "json"));
-const jsonApiFilePath = pathJoin(pathDirname(jsonSoftwaresFilePath), "..", "data.json");
+const jsonApiFilePath = pathJoin(pathDirname(jsonSoftwaresFilePath), "..", "sill2.json");
 const jsonSoftwaresWithoutReferentPath = pathJoin(
     pathDirname(jsonSoftwaresFilePath),
     "softwaresWithoutReferent.json",
@@ -36,7 +36,6 @@ if (require.main === module) {
         const { api } = await buildApiSoftwares({ softwares, referents, papillonServices });
 
         const softwaresWithoutReferent = api.softwares
-            //.filter(({ referent }) => referent === null)
             .filter(({ hasReferent }) => !hasReferent)
             .map(({ name, id }) => ({ id, name }));
 
