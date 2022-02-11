@@ -1,7 +1,8 @@
-import type { Software, Referent, Api, ComptoirDuLibre, Service } from "./types";
+import type { Software, Referent, Api, ComptoirDuLibre, Service, WikidataData } from "./types";
 import fetch from "node-fetch";
 import { assert } from "tsafe/assert";
 import { exclude } from "tsafe/exclude";
+import { fetchWikiDataData } from "./wikidata";
 
 const cdlUrl = "https://comptoir-du-libre.org/public/export/comptoir-du-libre_export_v1.json";
 
@@ -15,6 +16,27 @@ export async function buildApiData(params: {
     const { softwares: cdlSoftwares } = await fetch(cdlUrl)
         .then(res => res.text())
         .then(text => JSON.parse(text) as ComptoirDuLibre);
+
+    const wikiDataDataById: Record<string, WikidataData> = {};
+
+    for (const { wikidataId } of softwares) {
+        if (wikidataId === undefined) {
+            continue;
+        }
+
+        wikiDataDataById[wikidataId] = await fetchWikiDataData({ wikidataId });
+    }
+
+    /*
+    const wikiDataDataById: Record<string, WikidataData> = Object.fromEntries(
+        await Promise.all(
+            softwares
+                .map(({ wikidataId }) => wikidataId)
+                .filter(exclude(undefined))
+                .map(wikidataId => [wikidataId, fetchWikiDataData({ wikidataId })])
+        )
+    );
+    */
 
     const api = softwares
         .map(softwares => {
@@ -36,7 +58,8 @@ export async function buildApiData(params: {
             "isFromFrenchPublicService": software.isFromFrenchPublicService,
             "isPresentInSupportContract": software.isPresentInSupportContract,
             "alikeSoftwares": software.alikeSoftwares,
-            "wikidataId": software.wikidataId ?? null,
+            "wikidata":
+                software.wikidataId === undefined ? null : wikiDataDataById[software.wikidataId]!,
             "comptoirDuLibreSoftware":
                 software.comptoirDuLibreId === undefined
                     ? null

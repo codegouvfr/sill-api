@@ -87,7 +87,7 @@ export type Api = {
     isFromFrenchPublicService: boolean;
     isPresentInSupportContract: boolean;
     alikeSoftwares: SoftwareRef[];
-    wikidataId: string | null;
+    wikidata: WikidataData | null;
     comptoirDuLibreSoftware: ComptoirDuLibre.Software | null;
     license: string;
     whereAndInWhatContextIsItUsed: string | null;
@@ -234,3 +234,13 @@ export declare namespace ComptoirDuLibre {
         users: User[];
     }
 }
+
+export type WikidataData = Partial<{
+    descriptionFr: string;
+    descriptionEn: string;
+    logoUrl: string;
+    framaLibreId: string;
+    websiteUrl: string;
+    sourceUrl: string;
+    documentationUrl: string;
+}>;

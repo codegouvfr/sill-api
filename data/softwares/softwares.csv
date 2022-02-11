@@ -63,7 +63,7 @@ ID,nom,fonction,annees,statut,parent,public,support,similaire-a,wikidata,comptoi
 64,Jailer,Génération / Gestion des jeux de données,2018 ; 2019 ; 2020 ; 2021 ; 2022,R,,,,,,192,Apache-2.0,,,,,,MIMDEV,9.0,
 65,Javamelody,Outil de monitoring,2018 ; 2019 ; 2020 ; 2021 ; 2022,R,,,,,,195,Apache-2.0,,,,,,MIMDEV,1.86.0,
 66,Jenkins,"Outil d'aide à la livraison (dépôt, intégration continue...)",2018 ; 2019 ; 2020 ; 2021 ; 2022,R,,,Oui,,Q7491312,187,MIT,,,,,,MIMDEV,2.x,
-67,Jitsi,Webconférence,2018 ; 2019 ; 2020 ; 2021 ; 2022,R,,,,196,q87849488,65,Apache-2.0,,,,,,MIMO,2.9,
+67,Jitsi,Webconférence,2018 ; 2019 ; 2020 ; 2021 ; 2022,R,,,,196,Q87849488,65,Apache-2.0,,,,,,MIMO,2.9,
 68,Roundcube,Webmail,2018 ; 2021 ; 2022,R,,,Oui,171 ; 202,Q1769269,112,GPL-3.0,,,,,,MIMO,1.4.10,
 69,Junit,Outil de gestion des tests unitaires,2018 ; 2019 ; 2020 ; 2021 ; 2022,R,,,Oui,,Q847675,183,EPL-1.0,,,,,,MIMDEV,5.3,
 70,K-9 Mail,Client de messagerie,2019 ; 2020 ; 2021 ; 2022,O,,,,,Q14565723,,Apache-2.0,Client de Messagerie,,,,,MIMO,5.600,
