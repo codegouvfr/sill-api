@@ -510,7 +510,7 @@ export function parseCsv(params: {
                     return [];
                 }
 
-                const out = value.replace(/ /g, "").split(",");
+                const out = value.replace(/ /g, "").split(";");
 
                 const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
 
