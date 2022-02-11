@@ -1,3 +1,7 @@
+### **0.0.17** (2022-02-11)  
+  
+- Incoporate Wikidata infos    
+  
 ### **0.0.16** (2022-02-10)  
   
 - There might be multiple urls, (separated by comas). useCaseUrl -> useCasesUrl  
