@@ -81,9 +81,9 @@ To update the version of the [`src/types.ts`](/src/types.ts) published
 as [an NPM modules](https://www.npmjs.com/package/sillfr) just bump the version
 of the [`package.json`](/package.json) file.
 
-# Licence
+# Licences
 
-DINUM and contributors of the repo, 2019-2022.
+DINUM and contributors of the repository, 2019-2022.
 
--   The data are under licencied under [licence EPL-2.0](LICENSES/LICENSE.EPL-2.0.txt).
--   The source code is [MIT](LICENSES/LICENSE.MIT.md).
+-   The data are licensed under the [licence Ouverte 2.0](LICENSES/LICENSE.Etalab-2.0.md).
+-   The source code is licensed under the [MIT license](LICENSES/LICENSE.MIT.md).
