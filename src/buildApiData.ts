@@ -19,24 +19,17 @@ export async function buildApiData(params: {
 
     const wikiDataDataById: Record<string, WikidataData> = {};
 
-    for (const { wikidataId } of softwares) {
-        if (wikidataId === undefined) {
-            continue;
+    {
+        const wikidataIds = softwares.map(({ wikidataId }) => wikidataId).filter(exclude(undefined));
+
+        for (let i = 0; i < wikidataIds.length; i++) {
+            const wikidataId = wikidataIds[i];
+
+            console.log(`Fetching WikiData entry ${wikidataId} (${i + 1}/${wikidataIds.length})`);
+
+            wikiDataDataById[wikidataId] = await fetchWikiDataData({ wikidataId });
         }
-
-        wikiDataDataById[wikidataId] = await fetchWikiDataData({ wikidataId });
     }
-
-    /*
-    const wikiDataDataById: Record<string, WikidataData> = Object.fromEntries(
-        await Promise.all(
-            softwares
-                .map(({ wikidataId }) => wikidataId)
-                .filter(exclude(undefined))
-                .map(wikidataId => [wikidataId, fetchWikiDataData({ wikidataId })])
-        )
-    );
-    */
 
     const api = softwares
         .map(softwares => {
