@@ -8,7 +8,7 @@ import { exclude } from "tsafe/exclude";
 const projectDirPath = pathJoin(__dirname, "..", "..");
 
 const [csvSoftwaresPath, csvReferentsPath, csvServicesPath] = [
-    ["softwares", "softwares.csv"],
+    ["software", "software.csv"],
     ["referents", "referents.csv"],
     ["services", "services.csv"],
 ].map(path => pathJoin(...[projectDirPath, "data", ...path]));
