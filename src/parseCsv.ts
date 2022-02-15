@@ -312,7 +312,6 @@ export function parseCsv(params: {
                 }
 
                 const out = value
-                    .replace(/,/g, ";")
                     .replace(/ /g, "")
                     .split(";")
                     .map(idAsStringOrName => {
