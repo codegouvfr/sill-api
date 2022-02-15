@@ -154,7 +154,6 @@ export const csvSoftwareColumns = [
     "groupe",
     "version_min",
     "version_max",
-    "contexte-usage",
 ] as const;
 
 export type CsvSoftwareColumn = typeof csvSoftwareColumns[number];
