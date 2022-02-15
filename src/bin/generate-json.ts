@@ -7,31 +7,32 @@ import { exclude } from "tsafe/exclude";
 
 const projectDirPath = pathJoin(__dirname, "..", "..");
 
-const [csvSoftwaresPath, csvReferentsPath, csvServicesPath] = [
+export const [csvSoftwaresPath, csvReferentsPath, csvServicesPath] = [
     ["software", "software.csv"],
     ["referents", "referents.csv"],
     ["services", "services.csv"],
 ].map(path => pathJoin(...[projectDirPath, "data", ...path]));
 
-const [jsonSoftwaresFilePath, jsonReferentsFilePath, jsonServicesPath] = [
+export const [jsonSoftwaresFilePath, jsonReferentsFilePath, jsonServicesPath] = [
     csvSoftwaresPath,
     csvReferentsPath,
     csvServicesPath,
 ].map(path => path.replace(/csv$/, "json"));
-const jsonApiFilePath = pathJoin(pathDirname(jsonSoftwaresFilePath), "..", "sill2.json");
-const jsonSoftwaresWithoutReferentPath = pathJoin(
-    pathDirname(jsonSoftwaresFilePath),
-    "softwaresWithoutReferent.json",
-);
-
-const jsonServicesWithoutKnownSoftwarePath = pathJoin(
-    pathDirname(jsonServicesPath),
-    "servicesWithoutKnownSoftware.json",
-);
-
-const jsonReferentsStatsPath = pathJoin(pathDirname(jsonReferentsFilePath), "referentsStats.json");
 
 if (require.main === module) {
+    const jsonApiFilePath = pathJoin(pathDirname(jsonSoftwaresFilePath), "..", "sill2.json");
+    const jsonSoftwaresWithoutReferentPath = pathJoin(
+        pathDirname(jsonSoftwaresFilePath),
+        "softwaresWithoutReferent.json",
+    );
+
+    const jsonServicesWithoutKnownSoftwarePath = pathJoin(
+        pathDirname(jsonServicesPath),
+        "servicesWithoutKnownSoftware.json",
+    );
+
+    const jsonReferentsStatsPath = pathJoin(pathDirname(jsonReferentsFilePath), "referentsStats.json");
+
     (async () => {
         const { softwares, referents, services, referentsStats } = parseCsv({
             csvSoftwaresPath,
