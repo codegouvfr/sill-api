@@ -10,7 +10,8 @@
     "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc",
-        "start": "node dist/bin/generate-json.js",
+        "start": "node dist/server/main.js",
+        "build-json": "node dist/bin/generate-json.js",
         "lint:check": "eslint . --ext .ts,.tsx",
         "lint": "npm run lint:check -- --fix",
         "_format": "prettier '**/*.{ts,tsx,json,md}'",
