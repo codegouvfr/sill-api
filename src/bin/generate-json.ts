@@ -13,14 +13,17 @@ export const [csvSoftwaresPath, csvReferentsPath, csvServicesPath] = [
     ["services", "services.csv"],
 ].map(path => pathJoin(...[projectDirPath, "data", ...path]));
 
-export const [jsonSoftwaresFilePath, jsonReferentsFilePath, jsonServicesPath] = [
-    csvSoftwaresPath,
-    csvReferentsPath,
-    csvServicesPath,
-].map(path => path.replace(/csv$/, "json"));
+export const [jsonSoftwaresFilePath, jsonReferentsFilePath, jsonServicesPath] =
+    [csvSoftwaresPath, csvReferentsPath, csvServicesPath].map(path =>
+        path.replace(/csv$/, "json"),
+    );
 
 if (require.main === module) {
-    const jsonApiFilePath = pathJoin(pathDirname(jsonSoftwaresFilePath), "..", "sill2.json");
+    const jsonApiFilePath = pathJoin(
+        pathDirname(jsonSoftwaresFilePath),
+        "..",
+        "sill2.json",
+    );
     const jsonSoftwaresWithoutReferentPath = pathJoin(
         pathDirname(jsonSoftwaresFilePath),
         "softwaresWithoutReferent.json",
@@ -31,7 +34,10 @@ if (require.main === module) {
         "servicesWithoutKnownSoftware.json",
     );
 
-    const jsonReferentsStatsPath = pathJoin(pathDirname(jsonReferentsFilePath), "referentsStats.json");
+    const jsonReferentsStatsPath = pathJoin(
+        pathDirname(jsonReferentsFilePath),
+        "referentsStats.json",
+    );
 
     (async () => {
         const { softwares, referents, services, referentsStats } = parseCsv({
@@ -47,7 +53,9 @@ if (require.main === module) {
             .map(({ name, id }) => ({ id, name }));
 
         const servicesWithoutKnownSoftware = services
-            .map(services => (services.softwareId === undefined ? services : undefined))
+            .map(services =>
+                services.softwareId === undefined ? services : undefined,
+            )
             .filter(exclude(undefined));
 
         for (const [path, data] of [
@@ -57,7 +65,10 @@ if (require.main === module) {
             [jsonApiFilePath, api],
             [jsonSoftwaresWithoutReferentPath, softwaresWithoutReferent],
             [jsonReferentsStatsPath, referentsStats],
-            [jsonServicesWithoutKnownSoftwarePath, servicesWithoutKnownSoftware],
+            [
+                jsonServicesWithoutKnownSoftwarePath,
+                servicesWithoutKnownSoftware,
+            ],
         ] as const) {
             fs.writeFileSync(path, Buffer.from(JSON.stringify(data, null, 2)));
         }

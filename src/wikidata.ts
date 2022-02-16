@@ -3,16 +3,22 @@ import type { Entity, DataValue } from "./tools/WikidataEntity";
 import type { WikidataData } from "./types";
 
 // https://git.sr.ht/~etalab/sill-consolidate-data/tree/master/item/src/core.clj#L225-252
-export async function fetchWikiDataData(params: { wikidataId: string }): Promise<WikidataData> {
+export async function fetchWikiDataData(params: {
+    wikidataId: string;
+}): Promise<WikidataData> {
     const { wikidataId } = params;
 
-    const { entity } = await (async function callee(): Promise<{ entity: Entity }> {
+    const { entity } = await (async function callee(): Promise<{
+        entity: Entity;
+    }> {
         try {
             const entity = await fetch(
                 `https://www.wikidata.org/wiki/Special:EntityData/${wikidataId}.json`,
             )
                 .then(res => res.text())
-                .then(text => JSON.parse(text)["entities"][wikidataId] as Entity);
+                .then(
+                    text => JSON.parse(text)["entities"][wikidataId] as Entity,
+                );
 
             return { entity };
         } catch {
@@ -22,7 +28,9 @@ export async function fetchWikiDataData(params: { wikidataId: string }): Promise
         }
     })();
 
-    function getClaimDataValue<Type extends "string" | "wikibase-entityid">(property: `P${number}`) {
+    function getClaimDataValue<Type extends "string" | "wikibase-entityid">(
+        property: `P${number}`,
+    ) {
         const statementClaim = entity.claims[property];
 
         if (statementClaim === undefined) {
@@ -50,7 +58,9 @@ export async function fetchWikiDataData(params: { wikidataId: string }): Promise
 
             return value === undefined
                 ? undefined
-                : encodeURI(`https://www.wikidata.org/wiki/${wikidataId}#/media/File:${value}`);
+                : encodeURI(
+                      `https://www.wikidata.org/wiki/${wikidataId}#/media/File:${value}`,
+                  );
         })(),
         "framaLibreId": getClaimDataValue<"string">("P4107"),
         "websiteUrl": getClaimDataValue<"string">("P856"),

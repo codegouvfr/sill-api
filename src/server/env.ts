@@ -5,7 +5,9 @@ export const env = envsafe({
         url()._parse(input);
 
         if (input.endsWith("auth")) {
-            throw new InvalidEnvError(`Please remove the /auth at the end of ${input}`);
+            throw new InvalidEnvError(
+                `Please remove the /auth at the end of ${input}`,
+            );
         }
 
         return input;

@@ -1,10 +1,18 @@
-import type { Software, Referent, Api, ComptoirDuLibre, Service, WikidataData } from "./types";
+import type {
+    Software,
+    Referent,
+    Api,
+    ComptoirDuLibre,
+    Service,
+    WikidataData,
+} from "./types";
 import fetch from "node-fetch";
 import { assert } from "tsafe/assert";
 import { exclude } from "tsafe/exclude";
 import { fetchWikiDataData } from "./wikidata";
 
-const cdlUrl = "https://comptoir-du-libre.org/public/export/comptoir-du-libre_export_v1.json";
+const cdlUrl =
+    "https://comptoir-du-libre.org/public/export/comptoir-du-libre_export_v1.json";
 
 export async function buildApiData(params: {
     softwares: Software[];
@@ -20,14 +28,22 @@ export async function buildApiData(params: {
     const wikiDataDataById: Record<string, WikidataData> = {};
 
     {
-        const wikidataIds = softwares.map(({ wikidataId }) => wikidataId).filter(exclude(undefined));
+        const wikidataIds = softwares
+            .map(({ wikidataId }) => wikidataId)
+            .filter(exclude(undefined));
 
         for (let i = 0; i < wikidataIds.length; i++) {
             const wikidataId = wikidataIds[i];
 
-            console.log(`Fetching WikiData entry ${wikidataId} (${i + 1}/${wikidataIds.length})`);
+            console.log(
+                `Fetching WikiData entry ${wikidataId} (${i + 1}/${
+                    wikidataIds.length
+                })`,
+            );
 
-            wikiDataDataById[wikidataId] = await fetchWikiDataData({ wikidataId });
+            wikiDataDataById[wikidataId] = await fetchWikiDataData({
+                wikidataId,
+            });
         }
     }
 
@@ -39,20 +55,27 @@ export async function buildApiData(params: {
                 return [softwares, undefined] as const;
             }
 
-            return [softwares, referents.find(({ id }) => id === referentId)] as const;
+            return [
+                softwares,
+                referents.find(({ id }) => id === referentId),
+            ] as const;
         })
         .map(([software, referent]): Api[number] => ({
             "id": software._id,
             "name": software._name,
             "function": software._function,
-            "referencedSinceYear": new Date(software.__referencedSinceTime).getFullYear().toString(),
+            "referencedSinceYear": new Date(software.__referencedSinceTime)
+                .getFullYear()
+                .toString(),
             "recommendationStatus": software.recommendationStatus,
             "parentSoftware": software.parentSoftware ?? null,
             "isFromFrenchPublicService": software.isFromFrenchPublicService,
             "isPresentInSupportContract": software.isPresentInSupportContract,
             "alikeSoftwares": software.alikeSoftwares,
             "wikidata":
-                software.wikidataId === undefined ? null : wikiDataDataById[software.wikidataId]!,
+                software.wikidataId === undefined
+                    ? null
+                    : wikiDataDataById[software.wikidataId]!,
             "comptoirDuLibreSoftware":
                 software.comptoirDuLibreId === undefined
                     ? null
@@ -69,8 +92,10 @@ export async function buildApiData(params: {
                           return cdlSoftware;
                       })(),
             "license": software._license,
-            "whereAndInWhatContextIsItUsed": software.whereAndInWhatContextIsItUsed ?? null,
-            "catalogNumeriqueGouvFrId": software.catalogNumeriqueGouvFrId ?? null,
+            "whereAndInWhatContextIsItUsed":
+                software.whereAndInWhatContextIsItUsed ?? null,
+            "catalogNumeriqueGouvFrId":
+                software.catalogNumeriqueGouvFrId ?? null,
             "mimGroup": software.mimGroup,
             "versionMin": software.__versionMin,
             "versionMax": software.versionMax ?? null,
@@ -79,9 +104,14 @@ export async function buildApiData(params: {
             "testUrl": software.testUrl ?? null,
             "useCasesUrl": software.useCasesUrl,
             "services": services
-                .map(service => (service.softwareId !== undefined ? service : undefined))
+                .map(service =>
+                    service.softwareId !== undefined ? service : undefined,
+                )
                 .filter(exclude(undefined))
-                .filter(({ softwareId }) => softwareId !== undefined && softwareId === software._id),
+                .filter(
+                    ({ softwareId }) =>
+                        softwareId !== undefined && softwareId === software._id,
+                ),
         }));
 
     return { api };

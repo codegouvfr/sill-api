@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { stringifyParsedCsv } from "../tools/stringifyParsedCsv";
-import { softwaresToParsedCsv, referentsToParsedCsv, servicesToParsedCsv } from "../objectsToCsv";
+import {
+    softwaresToParsedCsv,
+    referentsToParsedCsv,
+    servicesToParsedCsv,
+} from "../objectsToCsv";
 import {
     csvSoftwaresPath,
     csvReferentsPath,
@@ -14,7 +18,11 @@ import * as fs from "fs";
 
 if (require.main === module) {
     const [softwares, referents, services] = (
-        [jsonSoftwaresFilePath, jsonReferentsFilePath, jsonServicesPath] as const
+        [
+            jsonSoftwaresFilePath,
+            jsonReferentsFilePath,
+            jsonServicesPath,
+        ] as const
     ).map(path => JSON.parse(fs.readFileSync(path).toString("utf8"))) as [
         Software[],
         Referent[],

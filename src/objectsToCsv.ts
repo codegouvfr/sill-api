@@ -42,7 +42,9 @@ export function softwaresToParsedCsv(params: {
             "annees": (() => {
                 const thisYear = new Date().getFullYear();
 
-                return new Array(thisYear - new Date(__referencedSinceTime).getFullYear())
+                return new Array(
+                    thisYear - new Date(__referencedSinceTime).getFullYear(),
+                )
                     .fill(NaN)
                     .map((_, i) => `${2022 - i}`)
                     .reverse()
@@ -62,7 +64,9 @@ export function softwaresToParsedCsv(params: {
                 (parentSoftware === undefined
                     ? undefined
                     : parentSoftware.isKnown
-                    ? softwares.find(({ _id }) => _id === parentSoftware.softwareId)!._name
+                    ? softwares.find(
+                          ({ _id }) => _id === parentSoftware.softwareId,
+                      )!._name
                     : parentSoftware.softwareName) ?? "",
             "public": isFromFrenchPublicService ? "Oui" : "",
             "support": isPresentInSupportContract ? "Oui" : "",
@@ -70,7 +74,9 @@ export function softwaresToParsedCsv(params: {
                 .map(softwareRef =>
                     !softwareRef.isKnown
                         ? softwareRef.softwareName
-                        : softwares.find(({ _id }) => _id === softwareRef.softwareId)!._name,
+                        : softwares.find(
+                              ({ _id }) => _id === softwareRef.softwareId,
+                          )!._name,
                 )
                 .join(" ; "),
             "wikidata": wikidataId ?? "",
@@ -100,13 +106,17 @@ export function referentsToParsedCsv(params: {
                 return undefined;
             }
 
-            const referent = referents.find(({ id }) => id === software.referentId)!;
+            const referent = referents.find(
+                ({ id }) => id === software.referentId,
+            )!;
 
             return {
                 "Logiciel": software._name,
                 "Courriel": referent.email,
                 "Courriel 2": referent.emailAlt ?? "",
-                "Référent : expert technique ?": software.isReferentExpert ? "Oui" : "",
+                "Référent : expert technique ?": software.isReferentExpert
+                    ? "Oui"
+                    : "",
             };
         })
         .filter(exclude(undefined));
@@ -145,12 +155,14 @@ export function servicesToParsedCsv(params: {
             "software_name":
                 rest.softwareId === undefined
                     ? rest.softwareName
-                    : softwares.find(({ _id }) => _id === rest.softwareId)!._name,
+                    : softwares.find(({ _id }) => _id === rest.softwareId)!
+                          ._name,
             "software_sill_id": `${rest.softwareId ?? ""}`,
             "software_comptoir_id": `${
                 (rest.softwareId === undefined
                     ? rest.comptoirDuLibreId
-                    : softwares.find(({ _id }) => _id === rest.softwareId)!.comptoirDuLibreId) ?? ""
+                    : softwares.find(({ _id }) => _id === rest.softwareId)!
+                          .comptoirDuLibreId) ?? ""
             }`,
             "publication_date": publicationDate,
             "last_update_date": lastUpdateDate,

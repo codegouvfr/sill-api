@@ -4,11 +4,12 @@ import { decodeAndVerifyKeycloakOidcAccessTokenFactory } from "./tools/decodeAnd
 import { env } from "./env";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 
-const { decodeAndVerifyKeycloakOidcAccessToken } = decodeAndVerifyKeycloakOidcAccessTokenFactory({
-    "keycloakUrl": env.KEYCLOAK_URL,
-    "keycloakRealm": env.KEYCLOAK_REALM,
-    "keycloakClientId": env.KEYCLOAK_CLIENT_ID,
-});
+const { decodeAndVerifyKeycloakOidcAccessToken } =
+    decodeAndVerifyKeycloakOidcAccessTokenFactory({
+        "keycloakUrl": env.KEYCLOAK_URL,
+        "keycloakRealm": env.KEYCLOAK_REALM,
+        "keycloakClientId": env.KEYCLOAK_CLIENT_ID,
+    });
 
 export async function createContext({ req }: CreateExpressContextOptions) {
     // Create your context based on the request object
@@ -21,7 +22,7 @@ export async function createContext({ req }: CreateExpressContextOptions) {
     }
 
     const parsedJwt = decodeAndVerifyKeycloakOidcAccessToken({
-        "keycloakOidcAccessToken": req.headers.authorization.split(" ")[1],
+        "keycloakOidcAccessToken": authorization.split(" ")[1],
     });
 
     return { parsedJwt };

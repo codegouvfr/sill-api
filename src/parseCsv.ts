@@ -1,8 +1,18 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import * as fs from "fs";
 import { parse as csvParseSync } from "csv-parse/sync";
-import { csvSoftwareColumns, csvReferentColumns, csvServiceColumns } from "./types";
-import type { Software, Referent, ReferentStats, SoftwareRef, Service } from "./types";
+import {
+    csvSoftwareColumns,
+    csvReferentColumns,
+    csvServiceColumns,
+} from "./types";
+import type {
+    Software,
+    Referent,
+    ReferentStats,
+    SoftwareRef,
+    Service,
+} from "./types";
 import { assert } from "tsafe/assert";
 import { mimGroups } from "./types";
 import { id } from "tsafe/id";
@@ -53,7 +63,8 @@ export function parseCsv(params: {
 
                 const value = row[column];
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 assert(value !== "", m("Can't be empty"));
 
@@ -69,7 +80,8 @@ export function parseCsv(params: {
 
                 const value = row[column];
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 assert(value !== "", m("Can't be void"));
 
@@ -81,9 +93,13 @@ export function parseCsv(params: {
 
                 const value = row[column];
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
-                assert(["", "Oui", "Non"].includes(value), m("Should either be '', 'Oui' or 'Non'"));
+                assert(
+                    ["", "Oui", "Non"].includes(value),
+                    m("Should either be '', 'Oui' or 'Non'"),
+                );
 
                 return value === "Oui" ? (true as const) : undefined;
             })();
@@ -93,7 +109,8 @@ export function parseCsv(params: {
 
                 const value = row[column];
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 if (value === "") {
                     return [undefined, m];
@@ -103,11 +120,16 @@ export function parseCsv(params: {
 
                 assert(emailRegexp.test(out), m("Not a valid email"));
 
-                assert(out !== email, m("Must be different from main email or empty"));
+                assert(
+                    out !== email,
+                    m("Must be different from main email or empty"),
+                );
 
                 assert(
                     !referents.map(({ email }) => email).includes(out),
-                    m("There is already a referent with this email as main email"),
+                    m(
+                        "There is already a referent with this email as main email",
+                    ),
                 );
 
                 assert(
@@ -119,7 +141,9 @@ export function parseCsv(params: {
             })();
 
             scope: {
-                const referent = referents.find(referent => referent.email === email);
+                const referent = referents.find(
+                    referent => referent.email === email,
+                );
 
                 if (referent === undefined) {
                     break scope;
@@ -133,8 +157,12 @@ export function parseCsv(params: {
                 );
 
                 assert(
-                    !referents.filter(r => r !== referent).find(({ emailAlt }) => emailAlt === email),
-                    m_email("There is another referent with this email as secondary email"),
+                    !referents
+                        .filter(r => r !== referent)
+                        .find(({ emailAlt }) => emailAlt === email),
+                    m_email(
+                        "There is another referent with this email as secondary email",
+                    ),
                 );
 
                 const softwaresName = softwaresByReferent.get(referent);
@@ -146,7 +174,9 @@ export function parseCsv(params: {
                         .flat()
                         .map(({ softwareName }) => softwareName)
                         .includes(softwareName),
-                    m_softwareName("There is already a referent for this software"),
+                    m_softwareName(
+                        "There is already a referent for this software",
+                    ),
                 );
 
                 softwaresName.push({ softwareName, isReferentExpert });
@@ -170,7 +200,9 @@ export function parseCsv(params: {
 
             referents.push(referent);
 
-            softwaresByReferent.set(referent, [{ softwareName, isReferentExpert }]);
+            softwaresByReferent.set(referent, [
+                { softwareName, isReferentExpert },
+            ]);
         });
     }
 
@@ -184,7 +216,8 @@ export function parseCsv(params: {
 
             const value = row[column];
 
-            const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+            const m = (reason: string) =>
+                creatAssertErrorMessage({ row, column, value, reason });
 
             const out = parseInt(value);
 
@@ -202,7 +235,8 @@ export function parseCsv(params: {
             const column = "nom";
 
             const value = row[column];
-            const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+            const m = (reason: string) =>
+                creatAssertErrorMessage({ row, column, value, reason });
 
             assert(value !== "", m("Should not be empty"));
 
@@ -222,7 +256,8 @@ export function parseCsv(params: {
 
                 const value = row[column];
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 assert(value !== "", m("Should not be empty"));
 
@@ -235,11 +270,14 @@ export function parseCsv(params: {
 
                 const firstYear = value.replace(/ /g, "").split(";")[0];
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 assert(
                     /^[0-9]{4,4}$/.test(firstYear),
-                    m("Should be a ';' separated list of years. E.g. '2021 ; 2022'"),
+                    m(
+                        "Should be a ';' separated list of years. E.g. '2021 ; 2022'",
+                    ),
                 );
 
                 return new Date(firstYear).getTime();
@@ -258,7 +296,8 @@ export function parseCsv(params: {
                         return "no longer recommended";
                 }
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 assert(
                     false,
@@ -285,9 +324,13 @@ export function parseCsv(params: {
 
                 const value = row[column];
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
-                assert(["", "Oui"].includes(value), m("Should either be 'Oui' or an empty string"));
+                assert(
+                    ["", "Oui"].includes(value),
+                    m("Should either be 'Oui' or an empty string"),
+                );
 
                 return value === "Oui";
             })(),
@@ -296,9 +339,13 @@ export function parseCsv(params: {
 
                 const value = row["support"];
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
-                assert(["", "Oui"].includes(value), m("Should either be empty or 'Oui' "));
+                assert(
+                    ["", "Oui"].includes(value),
+                    m("Should either be empty or 'Oui' "),
+                );
 
                 return value === "Oui";
             })(),
@@ -343,9 +390,13 @@ export function parseCsv(params: {
                     return undefined;
                 }
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
-                assert(/^[A-Z0-9]{3,}$/, m("Should be a valid wikidata identifier. E.g: Q43649390"));
+                assert(
+                    /^[A-Z0-9]{3,}$/,
+                    m("Should be a valid wikidata identifier. E.g: Q43649390"),
+                );
 
                 return value;
             })(),
@@ -360,7 +411,8 @@ export function parseCsv(params: {
 
                 const out = parseInt(value);
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 assert(!isNaN(out), m("Should be an integer"));
 
@@ -371,7 +423,8 @@ export function parseCsv(params: {
 
                 const value = row[column];
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 assert(value !== "", m("Should not be empty"));
 
@@ -400,13 +453,20 @@ export function parseCsv(params: {
 
                 const url = "https://catalogue.numerique.gouv.fr/solutions/";
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
-                assert(value.startsWith(url), m(`Is expected to start with ${url}`));
+                assert(
+                    value.startsWith(url),
+                    m(`Is expected to start with ${url}`),
+                );
 
                 const out = value.split("/").reverse()[0];
 
-                assert(out !== "", m(`The url do not point to a specific solution`));
+                assert(
+                    out !== "",
+                    m(`The url do not point to a specific solution`),
+                );
 
                 return out;
             })(),
@@ -415,7 +475,8 @@ export function parseCsv(params: {
 
                 const value = row[column];
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 assert(value !== "", m("Shouldn't be empty"));
                 assert(
@@ -433,7 +494,8 @@ export function parseCsv(params: {
 
                 const value = row[column];
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 assert(value !== "", m("Can't be empty"));
 
@@ -451,8 +513,12 @@ export function parseCsv(params: {
                 return value;
             })(),
             ...(() => {
-                const referentAndIsExpert = Array.from(softwaresByReferent.entries())
-                    .map(([referent, wraps]) => wraps.map(wrap => ({ referent, ...wrap })))
+                const referentAndIsExpert = Array.from(
+                    softwaresByReferent.entries(),
+                )
+                    .map(([referent, wraps]) =>
+                        wraps.map(wrap => ({ referent, ...wrap })),
+                    )
                     .flat()
                     .find(({ softwareName }) => softwareName === name);
 
@@ -479,7 +545,8 @@ export function parseCsv(params: {
                     return undefined;
                 }
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 assert(value.startsWith("http"), m("It should be an url"));
 
@@ -494,7 +561,8 @@ export function parseCsv(params: {
                     return undefined;
                 }
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 assert(value.startsWith("http"), m("It should be an url"));
 
@@ -511,7 +579,8 @@ export function parseCsv(params: {
 
                 const out = value.replace(/ /g, "").split(";");
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 assert(
                     out.every(url => url.startsWith("http")),
@@ -526,7 +595,9 @@ export function parseCsv(params: {
     });
 
     softwares.forEach(software => {
-        const parentSoftwareName = parentSoftwareNameBySoftwareId.get(software._id);
+        const parentSoftwareName = parentSoftwareNameBySoftwareId.get(
+            software._id,
+        );
 
         if (parentSoftwareName === undefined) {
             return;
@@ -555,7 +626,9 @@ export function parseCsv(params: {
             ([referent, softwareNamesAndIsReferentExpert]) =>
                 [
                     referent,
-                    softwareNamesAndIsReferentExpert.map(({ softwareName }) => softwareName),
+                    softwareNamesAndIsReferentExpert.map(
+                        ({ softwareName }) => softwareName,
+                    ),
                 ] as const,
         )
         .map(
@@ -569,11 +642,13 @@ export function parseCsv(params: {
                             const totalCount = softwaresName.length;
 
                             const unknownSoftwaresName = softwaresName.filter(
-                                softwareName => !allSoftwaresName.includes(softwareName),
+                                softwareName =>
+                                    !allSoftwaresName.includes(softwareName),
                             );
 
                             return {
-                                "softwaresCount": totalCount - unknownSoftwaresName.length,
+                                "softwaresCount":
+                                    totalCount - unknownSoftwaresName.length,
                                 "unknownSoftwares": unknownSoftwaresName,
                             };
                         })(),
@@ -599,7 +674,8 @@ export function parseCsv(params: {
 
                 const out = parseInt(value);
 
-                const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+                const m = (reason: string) =>
+                    creatAssertErrorMessage({ row, column, value, reason });
 
                 assert(!isNaN(out), m("Must be an integer"));
 
@@ -635,7 +711,8 @@ export function parseCsv(params: {
 
             const out = parseInt(value);
 
-            const m = (reason: string) => creatAssertErrorMessage({ row, column, value, reason });
+            const m = (reason: string) =>
+                creatAssertErrorMessage({ row, column, value, reason });
 
             assert(!isNaN(out), m("Must be an integer"));
 
@@ -664,13 +741,25 @@ export function parseCsv(params: {
                           const out = parseInt(value);
 
                           const m = (reason: string) =>
-                              creatAssertErrorMessage({ row, column, value, reason });
+                              creatAssertErrorMessage({
+                                  row,
+                                  column,
+                                  value,
+                                  reason,
+                              });
 
                           assert(!isNaN(out), m("Must be an integer"));
 
                           assert(
-                              !softwares.map(({ comptoirDuLibreId }) => comptoirDuLibreId).includes(out),
-                              m("This is a valid cdl id for a known software known, check the sill id"),
+                              !softwares
+                                  .map(
+                                      ({ comptoirDuLibreId }) =>
+                                          comptoirDuLibreId,
+                                  )
+                                  .includes(out),
+                              m(
+                                  "This is a valid cdl id for a known software known, check the sill id",
+                              ),
                           );
 
                           return out;
@@ -690,13 +779,21 @@ function assertsCsv<Columns extends string>(
     csv: any[],
     columns: readonly Columns[],
 ): asserts csv is Record<Columns, string>[] {
-    const { added, removed } = arrDiff(id<readonly string[]>(columns), Object.keys(csv[0]));
+    const { added, removed } = arrDiff(
+        id<readonly string[]>(columns),
+        Object.keys(csv[0]),
+    );
 
     assert(
         removed.length === 0,
-        `The following expected columns are missing from the CSV: ${removed.join(", ")}`,
+        `The following expected columns are missing from the CSV: ${removed.join(
+            ", ",
+        )}`,
     );
-    assert(added.length === 0, `The following CSV columns are not expected: ${added.join(", ")}`);
+    assert(
+        added.length === 0,
+        `The following CSV columns are not expected: ${added.join(", ")}`,
+    );
 }
 
 function creatAssertErrorMessage<Columns extends string>(params: {

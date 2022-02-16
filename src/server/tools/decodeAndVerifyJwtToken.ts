@@ -3,8 +3,6 @@ import urlJoin from "url-join";
 import memoize from "memoizee";
 import createKeycloakBacked from "keycloak-backend";
 
-//https://lists.jboss.org/pipermail/keycloak-user/2018-June/014306.html
-
 export function decodeAndVerifyKeycloakOidcAccessTokenFactory(params: {
     keycloakUrl: string;
     keycloakRealm: string;
@@ -29,7 +27,10 @@ export function decodeAndVerifyKeycloakOidcAccessTokenFactory(params: {
                 keycloakOidcAccessToken: string;
             }): Promise<Record<string, unknown>> {
                 const { keycloakOidcAccessToken } = params;
-                return keycloakBackend.jwt.verifyOffline(keycloakOidcAccessToken, cert);
+                return keycloakBackend.jwt.verifyOffline(
+                    keycloakOidcAccessToken,
+                    cert,
+                );
             }
 
             return { keycloakBackendVerifyOffline };
@@ -37,10 +38,13 @@ export function decodeAndVerifyKeycloakOidcAccessTokenFactory(params: {
         { "promise": true },
     );
 
-    async function decodeAndVerifyKeycloakOidcAccessToken(params: { keycloakOidcAccessToken: string }) {
+    async function decodeAndVerifyKeycloakOidcAccessToken(params: {
+        keycloakOidcAccessToken: string;
+    }) {
         const { keycloakOidcAccessToken } = params;
 
-        const { keycloakBackendVerifyOffline } = await getKeycloakBackendVerifyOffline();
+        const { keycloakBackendVerifyOffline } =
+            await getKeycloakBackendVerifyOffline();
 
         return keycloakBackendVerifyOffline({ keycloakOidcAccessToken });
     }
@@ -48,14 +52,24 @@ export function decodeAndVerifyKeycloakOidcAccessTokenFactory(params: {
     return { decodeAndVerifyKeycloakOidcAccessToken };
 }
 
-async function fetchKeycloakRealmPublicCert(params: { keycloakUrl: string; keycloakRealm: string }) {
+async function fetchKeycloakRealmPublicCert(params: {
+    keycloakUrl: string;
+    keycloakRealm: string;
+}) {
     const { keycloakUrl, keycloakRealm } = params;
 
     const obj = await fetch(
-        urlJoin(keycloakUrl, "auth/realms", keycloakRealm, "protocol/openid-connect/certs"),
+        urlJoin(
+            keycloakUrl,
+            "auth/realms",
+            keycloakRealm,
+            "protocol/openid-connect/certs",
+        ),
     ).then(res => res.json());
 
-    return ["-----BEGIN CERTIFICATE-----", obj["keys"][0]["x5c"][0], "-----END CERTIFICATE-----"].join(
-        "\n",
-    );
+    return [
+        "-----BEGIN CERTIFICATE-----",
+        obj["keys"][0]["x5c"][0],
+        "-----END CERTIFICATE-----",
+    ].join("\n");
 }
