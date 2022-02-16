@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { join as pathJoin, dirname as pathDirname } from "path";
-import { parseCsv } from "../lib/parseCsv";
-import { buildApiData } from "../lib/buildApiData";
+import { parseCsv } from "../model/parseCsv";
+import { buildApiData } from "../model/buildApiData";
 import * as fs from "fs";
 import { exclude } from "tsafe/exclude";
 

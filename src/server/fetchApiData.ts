@@ -3,7 +3,7 @@ import { Deferred } from "evt/tools/Deferred";
 import * as fs from "fs";
 import { relative as pathRelative } from "path";
 import { dataDirPath, jsonApiFilePath } from "../bin/generate-json";
-import type { Api } from "../lib/types";
+import type { Api } from "../model/types";
 
 export function fetchApiData(params: {
     githubPersonalAccessToken: string;

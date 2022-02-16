@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import { stringifyParsedCsv } from "../lib/tools/stringifyParsedCsv";
+import { stringifyParsedCsv } from "../model/tools/stringifyParsedCsv";
 import {
     softwaresToParsedCsv,
     referentsToParsedCsv,
     servicesToParsedCsv,
-} from "../lib/objectsToCsv";
+} from "../model/objectsToCsv";
 import {
     csvSoftwaresPath,
     csvReferentsPath,
@@ -13,7 +13,7 @@ import {
     jsonReferentsFilePath,
     jsonServicesPath,
 } from "./generate-json";
-import type { Service, Referent, Software } from "../lib/types";
+import type { Service, Referent, Software } from "../model/types";
 import * as fs from "fs";
 
 if (require.main === module) {
