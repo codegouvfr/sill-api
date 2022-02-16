@@ -1,6 +1,10 @@
 import { str, envsafe, url, makeValidator, InvalidEnvError } from "envsafe";
 
 export const env = envsafe({
+    "NODE_ENV": str({
+        "devDefault": "development",
+        "choices": ["development", "production"],
+    }),
     "KEYCLOAK_URL": makeValidator<string>(input => {
         url()._parse(input);
 
@@ -24,8 +28,7 @@ export const env = envsafe({
     }),
     "KEYCLOAK_CLIENT_ID": str({
         "allowEmpty": false,
-        "devDefault": "sill",
+        "devDefault": "sill2",
+        "default": "ok",
     }),
 });
-
-console.log(env);
