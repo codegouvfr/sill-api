@@ -42,17 +42,24 @@
     "keywords": [],
     "homepage": "https://github.com/etalab/sill",
     "devDependencies": {
+        "@trpc/server": "^9.18.0",
+        "@types/memoizee": "^0.4.7",
         "@types/node": "^16.4.9",
+        "@types/node-fetch": "^2.5.7",
         "@typescript-eslint/eslint-plugin": "^4.28.5",
         "@typescript-eslint/parser": "^4.28.5",
-        "@types/node-fetch": "^2.5.7",
         "csv-parse": "^5.0.4",
+        "envsafe": "^2.0.3",
         "eslint": "^7.32.0",
         "eslint-config-prettier": "^8.3.0",
         "husky": "^4.3.8",
+        "keycloak-backend": "^2.0.1",
         "lint-staged": "^11.1.1",
+        "memoizee": "^0.4.15",
         "prettier": "^2.3.2",
-        "typescript": "^4.5.5"
+        "typescript": "^4.5.5",
+        "url-join": "^4.0.1",
+        "zod": "^3.11.6"
     },
     "dependencies": {
         "csv-stringify": "^6.0.5",
