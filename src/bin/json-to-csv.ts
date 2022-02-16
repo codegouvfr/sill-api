@@ -4,7 +4,7 @@ import {
     softwaresToParsedCsv,
     referentsToParsedCsv,
     servicesToParsedCsv,
-} from "../objectsToCsv";
+} from "../lib/objectsToCsv";
 import {
     csvSoftwaresPath,
     csvReferentsPath,
@@ -13,7 +13,7 @@ import {
     jsonReferentsFilePath,
     jsonServicesPath,
 } from "./generate-json";
-import type { Service, Referent, Software } from "../types";
+import type { Service, Referent, Software } from "../lib/types";
 import * as fs from "fs";
 
 if (require.main === module) {
