@@ -4,7 +4,7 @@
     "description": "Ongoing work with the SILL 2.0",
     "repository": {
         "type": "git",
-        "url": "git://github.com/etalab/sill.git"
+        "url": "git://github.com/etalab/sill-web.git"
     },
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
