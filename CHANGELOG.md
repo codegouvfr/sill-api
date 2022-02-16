@@ -1,3 +1,18 @@
+### **0.0.18** (2022-02-16)  
+  
+- Publish type of the API  
+- The start script is now for launching the server  
+- Refactor  
+- Lay the ground for autenticated API  
+- Feature restoring parsed data to CSV  
+- Remove duplicate columns from type definition  
+- Coma si a reserved symbol in a csv  
+- #7  
+- Provide advancement feedback fetching wikidata  
+- #8  
+- Fix "Licenses" section  
+- Multiple entries can't be separated by comas, use ; instead    
+  
 ### **0.0.17** (2022-02-11)  
   
 - Incoporate Wikidata infos    
