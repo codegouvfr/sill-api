@@ -1,29 +1,31 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { join as pathJoin, dirname as pathDirname } from "path";
-import { parseCsv } from "../parseCsv";
-import { buildApiData } from "../buildApiData";
+import { parseCsv } from "../lib/parseCsv";
+import { buildApiData } from "../lib/buildApiData";
 import * as fs from "fs";
 import { exclude } from "tsafe/exclude";
 
-const projectDirPath = pathJoin(__dirname, "..", "..");
+export const projectDirPath = pathJoin(__dirname, "..", "..");
+export const dataDirPath = pathJoin(projectDirPath, "data");
 
 export const [csvSoftwaresPath, csvReferentsPath, csvServicesPath] = [
     ["software", "software.csv"],
     ["referents", "referents.csv"],
     ["services", "services.csv"],
-].map(path => pathJoin(...[projectDirPath, "data", ...path]));
+].map(path => pathJoin(...[dataDirPath, ...path]));
 
 export const [jsonSoftwaresFilePath, jsonReferentsFilePath, jsonServicesPath] =
     [csvSoftwaresPath, csvReferentsPath, csvServicesPath].map(path =>
         path.replace(/csv$/, "json"),
     );
 
+export const jsonApiFilePath = pathJoin(
+    pathDirname(jsonSoftwaresFilePath),
+    "..",
+    "sill2.json",
+);
+
 if (require.main === module) {
-    const jsonApiFilePath = pathJoin(
-        pathDirname(jsonSoftwaresFilePath),
-        "..",
-        "sill2.json",
-    );
     const jsonSoftwaresWithoutReferentPath = pathJoin(
         pathDirname(jsonSoftwaresFilePath),
         "softwaresWithoutReferent.json",

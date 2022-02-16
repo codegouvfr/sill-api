@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import { stringifyParsedCsv } from "../tools/stringifyParsedCsv";
+import { stringifyParsedCsv } from "../lib/tools/stringifyParsedCsv";
 import {
     softwaresToParsedCsv,
     referentsToParsedCsv,

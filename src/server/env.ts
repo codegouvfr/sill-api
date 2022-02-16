@@ -1,4 +1,11 @@
-import { str, envsafe, url, makeValidator, InvalidEnvError } from "envsafe";
+import {
+    str,
+    envsafe,
+    url,
+    num,
+    makeValidator,
+    InvalidEnvError,
+} from "envsafe";
 
 export const env = envsafe({
     "NODE_ENV": str({
@@ -28,7 +35,14 @@ export const env = envsafe({
     }),
     "KEYCLOAK_CLIENT_ID": str({
         "allowEmpty": false,
-        "devDefault": "sill2",
-        "default": "ok",
+        "devDefault": "sill",
+    }),
+    "GITHUB_PERSONAL_ACCESS_TOKEN": str({
+        "allowEmpty": false,
+    }),
+    "PORT": num({
+        "allowEmpty": true,
+        "devDefault": 8080,
+        "default": 80,
     }),
 });

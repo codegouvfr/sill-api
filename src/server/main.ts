@@ -4,15 +4,18 @@ import { decodeAndVerifyKeycloakOidcAccessTokenFactory } from "./tools/decodeAnd
 import { env } from "./env";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import express from "express";
-import { z } from "zod";
+//import { z } from "zod";
 import * as trpcExpress from "@trpc/server/adapters/express";
+import { fetchApiData } from "./fetchApiData";
+
+const keycloakParams = {
+    "keycloakUrl": env.KEYCLOAK_URL,
+    "keycloakRealm": env.KEYCLOAK_REALM,
+    "keycloakClientId": env.KEYCLOAK_CLIENT_ID,
+};
 
 const { decodeAndVerifyKeycloakOidcAccessToken } =
-    decodeAndVerifyKeycloakOidcAccessTokenFactory({
-        "keycloakUrl": env.KEYCLOAK_URL,
-        "keycloakRealm": env.KEYCLOAK_REALM,
-        "keycloakClientId": env.KEYCLOAK_CLIENT_ID,
-    });
+    decodeAndVerifyKeycloakOidcAccessTokenFactory(keycloakParams);
 
 export async function createContext({ req }: CreateExpressContextOptions) {
     // Create your context based on the request object
@@ -31,30 +34,39 @@ export async function createContext({ req }: CreateExpressContextOptions) {
     return { parsedJwt };
 }
 
-const router = trpc.router<ReturnType<typeof createContext>>().query("hello", {
-    "input": z.string().nullish(),
-    "resolve": ({ input, ctx }) => `hello world ${input} ${ctx}`,
-});
+async function createRouter() {
+    const apiData = await fetchApiData({
+        "githubPersonalAccessToken": env.GITHUB_PERSONAL_ACCESS_TOKEN,
+    });
 
-export type Router = typeof router;
+    return trpc
+        .router<ReturnType<typeof createContext>>()
+        .query("getKeycloakParams", { "resolve": () => keycloakParams })
+        .query("getSoftwares", { "resolve": () => apiData });
+}
 
-{
+export type Router = ReturnType<typeof createRouter>;
+
+(async function main() {
     // express implementation
     const app = express();
 
     app.use((req, _res, next) => {
         // request logger
-        console.log("⬅️ ", req.method, req.path, req.body ?? req.query);
+        console.log("⬅", req.method, req.path, req.body ?? req.query);
 
         next();
     });
 
     app.use(
-        "/trpc",
-        trpcExpress.createExpressMiddleware({ router, createContext }),
+        "/api",
+        trpcExpress.createExpressMiddleware({
+            "router": await createRouter(),
+            createContext,
+        }),
     );
 
     app.get("/", (_req, res) => res.send("hello"));
 
-    app.listen(2021, () => console.log("listening on port 2021"));
-}
+    app.listen(env.PORT, () => console.log(`Listening on port ${env.PORT}`));
+})();
