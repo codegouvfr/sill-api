@@ -43,7 +43,6 @@
     "keywords": [],
     "homepage": "https://github.com/etalab/sill",
     "devDependencies": {
-        "@trpc/server": "^9.18.0",
         "@types/express": "^4.17.13",
         "@types/memoizee": "^0.4.7",
         "@types/node": "^16.4.9",
@@ -62,12 +61,13 @@
         "prettier": "^2.3.2",
         "typescript": "^4.5.5",
         "url-join": "^4.0.1",
-        "zod": "^3.11.6"
-    },
-    "dependencies": {
         "csv-stringify": "^6.0.5",
         "evt": "^2.0.0-beta.39",
         "node-fetch": "^2.6.7",
-        "tsafe": "^0.9.0"
+        "zod": "^3.11.6"
+    },
+    "dependencies": {
+        "tsafe": "^0.9.0",
+        "@trpc/server": "^9.18.0"
     }
 }
