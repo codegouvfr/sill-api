@@ -1,2 +1,2 @@
 export type { Software } from "./model/types";
-export type { Router } from "./server/main";
+export type { TrpcRouter } from "./server/main";

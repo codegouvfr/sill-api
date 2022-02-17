@@ -11,6 +11,7 @@
     "scripts": {
         "build": "tsc",
         "start": "node dist/server/main.js",
+        "dev": "./start-dev.sh",
         "build-json": "node dist/bin/generate-json.js",
         "lint:check": "eslint . --ext .ts,.tsx",
         "lint": "npm run lint:check -- --fix",
@@ -49,25 +50,27 @@
         "@types/node-fetch": "^2.5.7",
         "@typescript-eslint/eslint-plugin": "^4.28.5",
         "@typescript-eslint/parser": "^4.28.5",
+        "comment-json": "^4.2.2",
+        "cra-envs": "^1.2.1",
         "csv-parse": "^5.0.4",
-        "envsafe": "^2.0.3",
+        "csv-stringify": "^6.0.5",
         "eslint": "^7.32.0",
         "eslint-config-prettier": "^8.3.0",
+        "evt": "^2.0.0-beta.39",
         "express": "^4.17.2",
         "husky": "^4.3.8",
         "keycloak-backend": "^2.0.1",
         "lint-staged": "^11.1.1",
         "memoizee": "^0.4.15",
+        "node-fetch": "^2.6.7",
         "prettier": "^2.3.2",
         "typescript": "^4.5.5",
         "url-join": "^4.0.1",
-        "csv-stringify": "^6.0.5",
-        "evt": "^2.0.0-beta.39",
-        "node-fetch": "^2.6.7",
         "zod": "^3.11.6"
     },
     "dependencies": {
+        "@trpc/server": "^9.18.0",
         "tsafe": "^0.9.0",
-        "@trpc/server": "^9.18.0"
+        "jwt-simple": "^0.5.6"
     }
 }

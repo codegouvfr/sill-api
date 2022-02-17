@@ -1,21 +1,24 @@
 import * as trpc from "@trpc/server";
 import type { ReturnType } from "tsafe";
-import { decodeAndVerifyKeycloakOidcAccessTokenFactory } from "../tools/decodeAndVerifyJwtToken";
-import { env } from "./env";
+import { getConfiguration } from "./configuration";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import express from "express";
 //import { z } from "zod";
 import * as trpcExpress from "@trpc/server/adapters/express";
-import { fetchSoftware } from "./fetchApiData";
+import { fetchArchive } from "./fetchArchive";
+import { createDecodeJwtKeycloakFactory } from "../tools/decodeJwt/adapter/keycloak";
+import { createDecodeJwtNoVerify } from "../tools/decodeJwt/adapter/noVerify";
 
-const keycloakParams = {
-    "keycloakUrl": env.KEYCLOAK_URL,
-    "keycloakRealm": env.KEYCLOAK_REALM,
-    "keycloakClientId": env.KEYCLOAK_CLIENT_ID,
-};
+const configuration = getConfiguration();
 
-const { decodeAndVerifyKeycloakOidcAccessToken } =
-    decodeAndVerifyKeycloakOidcAccessTokenFactory(keycloakParams);
+const { createDecodeJwt } =
+    configuration.keycloakParams === undefined
+        ? { "createDecodeJwt": createDecodeJwtNoVerify }
+        : createDecodeJwtKeycloakFactory(configuration.keycloakParams);
+
+const { decodeJwt } = createDecodeJwt({
+    "jwtClaims": configuration.jwtClaims,
+});
 
 async function createContext({ req }: CreateExpressContextOptions) {
     // Create your context based on the request object
@@ -27,36 +30,42 @@ async function createContext({ req }: CreateExpressContextOptions) {
         return null;
     }
 
-    const parsedJwt = decodeAndVerifyKeycloakOidcAccessToken({
-        "keycloakOidcAccessToken": authorization.split(" ")[1],
+    const parsedJwt = await decodeJwt({
+        "jwtToken": authorization.split(" ")[1],
     });
 
     return { parsedJwt };
 }
 
 async function createRouter() {
-    const softwares = await fetchSoftware({
-        "githubPersonalAccessToken": env.GITHUB_PERSONAL_ACCESS_TOKEN,
+    const softwares = await fetchArchive({
+        "githubPersonalAccessToken": configuration.githubPersonalAccessToken,
     });
 
     return trpc
         .router<ReturnType<typeof createContext>>()
-        .query("getKeycloakParams", { "resolve": () => keycloakParams })
+        .query("getOidcParams", {
+            "resolve": (() => {
+                const { keycloakParams, jwtClaims } = configuration;
+
+                return () => ({ keycloakParams, jwtClaims });
+            })(),
+        })
         .query("getSoftware", { "resolve": () => softwares });
 }
 
-export type Router = ReturnType<typeof createRouter>;
+export type TrpcRouter = ReturnType<typeof createRouter>;
 
 (async function main() {
     // express implementation
     const app = express();
 
-    app.use((req, _res, next) => {
-        // request logger
-        console.log("⬅", req.method, req.path, req.body ?? req.query);
-
-        next();
-    });
+    app.use(
+        (req, _res, next) => (
+            console.log("⬅", req.method, req.path, req.body ?? req.query),
+            next()
+        ),
+    );
 
     app.use(
         "/api",
@@ -66,7 +75,7 @@ export type Router = ReturnType<typeof createRouter>;
         }),
     );
 
-    app.get("/", (_req, res) => res.send("hello"));
-
-    app.listen(env.PORT, () => console.log(`Listening on port ${env.PORT}`));
+    app.listen(configuration.port, () =>
+        console.log(`Listening on port ${configuration.port}`),
+    );
 })();

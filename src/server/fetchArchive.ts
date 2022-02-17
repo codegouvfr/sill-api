@@ -5,7 +5,7 @@ import { relative as pathRelative } from "path";
 import { dataDirPath, sillFilePath } from "../bin/generate-json";
 import type { Software } from "../model/types";
 
-export function fetchSoftware(params: {
+export function fetchArchive(params: {
     githubPersonalAccessToken: string;
 }): Promise<Software[]> {
     const { githubPersonalAccessToken } = params;

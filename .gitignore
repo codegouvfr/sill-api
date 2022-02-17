@@ -42,3 +42,4 @@ jspm_packages
 
 /dist
 /data/**/*.json
+/.env.local
