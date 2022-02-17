@@ -1,12 +1,12 @@
 import { exec } from "./exec";
 
-export async function gitCommit(params: {
+export async function git(params: {
     owner: string;
     repo: string;
     shaish?: string;
     commitAuthorEmail?: string;
     github_token: string;
-    performChanges: () => Promise<
+    action: () => Promise<
         | { doCommit: false }
         | { doCommit: true; doAddAll: boolean; message: string }
     >;
@@ -16,7 +16,7 @@ export async function gitCommit(params: {
         repo,
         shaish,
         commitAuthorEmail = "actions@github.com",
-        performChanges,
+        action,
         github_token,
     } = params;
 
@@ -34,7 +34,7 @@ export async function gitCommit(params: {
 
     const changesResult = await (async () => {
         try {
-            return await performChanges();
+            return await action();
         } catch (error) {
             return error as Error;
         }

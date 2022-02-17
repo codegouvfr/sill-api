@@ -1,63 +1,39 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import * as fs from "fs";
-import { parse as csvParseSync } from "csv-parse/sync";
-import {
-    csvSoftwareColumns,
-    csvReferentColumns,
-    csvServiceColumns,
-} from "./types";
-import type {
-    Software,
-    Referent,
-    ReferentStats,
-    SoftwareRef,
-    Service,
-} from "./types";
+import type { SoftwareRef } from "./types";
+import { SoftwareCsvRow, ReferentCsvRow, ServiceCsvRow } from "./types";
 import { assert } from "tsafe/assert";
 import { mimGroups } from "./types";
 import { id } from "tsafe/id";
 import { typeGuard } from "tsafe/typeGuard";
 import { arrDiff } from "evt/tools/reducers/diff";
 
-export function parseCsv(params: {
-    csvSoftwaresPath: string;
-    csvReferentsPath: string;
-    csvServicesPath: string;
+export function csvToModel(params: {
+    rawSoftwareCsvRows: Record<string, string>[];
+    rawReferentCsvRows: Record<string, string>[];
+    rawServiceCsvRow: Record<string, string>[];
 }): {
-    softwares: Software[];
-    referents: Referent[];
-    services: Service[];
-    referentsStats: ReferentStats[];
+    softwareCsvRows: SoftwareCsvRow[];
+    referentCsvRows: ReferentCsvRow[];
+    servicesCsvRows: ServiceCsvRow[];
+    referentsStats: ReferentCsvRow.Stats[];
 } {
-    const { csvSoftwaresPath, csvReferentsPath, csvServicesPath } = params;
+    const { rawSoftwareCsvRows, rawReferentCsvRows, rawServiceCsvRow } = params;
 
-    const [csvSoftwares, csvReferents, csvServices] = [
-        csvSoftwaresPath,
-        csvReferentsPath,
-        csvServicesPath,
-    ].map(
-        path =>
-            csvParseSync(fs.readFileSync(path).toString("utf8"), {
-                "columns": true,
-                "skip_empty_lines": true,
-            }) as any[],
-    );
-
-    assertsCsv(csvSoftwares, csvSoftwareColumns);
-    assertsCsv(csvReferents, csvReferentColumns);
-    assertsCsv(csvServices, csvServiceColumns);
+    assertsCsv(rawSoftwareCsvRows, SoftwareCsvRow.columns);
+    assertsCsv(rawReferentCsvRows, ReferentCsvRow.columns);
+    assertsCsv(rawServiceCsvRow, ServiceCsvRow.columns);
 
     const softwaresByReferent = new Map<
-        Referent,
+        ReferentCsvRow,
         { softwareName: string; isReferentExpert: true | undefined }[]
     >();
 
-    const referents: Referent[] = [];
+    const referentCsvRows: ReferentCsvRow[] = [];
 
     {
         const emailRegexp = /^[^@ ]+@[^@ ]+$/;
 
-        csvReferents.forEach(row => {
+        rawReferentCsvRows.forEach(row => {
             const [email, m_email] = (() => {
                 const column = "Courriel";
 
@@ -126,14 +102,16 @@ export function parseCsv(params: {
                 );
 
                 assert(
-                    !referents.map(({ email }) => email).includes(out),
+                    !referentCsvRows.map(({ email }) => email).includes(out),
                     m(
                         "There is already a referent with this email as main email",
                     ),
                 );
 
                 assert(
-                    !referents.map(({ emailAlt }) => emailAlt).includes(out),
+                    !referentCsvRows
+                        .map(({ emailAlt }) => emailAlt)
+                        .includes(out),
                     m("The is a referent with this email as secondary email"),
                 );
 
@@ -141,7 +119,7 @@ export function parseCsv(params: {
             })();
 
             scope: {
-                const referent = referents.find(
+                const referent = referentCsvRows.find(
                     referent => referent.email === email,
                 );
 
@@ -157,7 +135,7 @@ export function parseCsv(params: {
                 );
 
                 assert(
-                    !referents
+                    !referentCsvRows
                         .filter(r => r !== referent)
                         .find(({ emailAlt }) => emailAlt === email),
                     m_email(
@@ -184,7 +162,7 @@ export function parseCsv(params: {
                 return;
             }
 
-            const referent: Referent = {
+            const referent: ReferentCsvRow = {
                 "id": (function hashCode(s) {
                     let out = NaN;
                     for (let h = 0, i = 0; i < s.length; h &= h) {
@@ -198,7 +176,7 @@ export function parseCsv(params: {
                 emailAlt,
             };
 
-            referents.push(referent);
+            referentCsvRows.push(referent);
 
             softwaresByReferent.set(referent, [
                 { softwareName, isReferentExpert },
@@ -208,9 +186,9 @@ export function parseCsv(params: {
 
     const parentSoftwareNameBySoftwareId = new Map<number, string>();
 
-    const softwares: Software[] = [];
+    const softwareCsvRows: SoftwareCsvRow[] = [];
 
-    csvSoftwares.forEach(row => {
+    rawSoftwareCsvRows.forEach(row => {
         const softwareId = (() => {
             const column = "ID";
 
@@ -224,7 +202,7 @@ export function parseCsv(params: {
             assert(!isNaN(out), m("It should be an integer"));
 
             assert(
-                !softwares.map(({ _id }) => _id).includes(out),
+                !softwareCsvRows.map(({ _id }) => _id).includes(out),
                 m("There is another software with this id"),
             );
 
@@ -241,14 +219,14 @@ export function parseCsv(params: {
             assert(value !== "", m("Should not be empty"));
 
             assert(
-                !softwares.map(({ _name }) => _name).includes(value),
+                !softwareCsvRows.map(({ _name }) => _name).includes(value),
                 m("There is another software with this name"),
             );
 
             return value;
         })();
 
-        const software: Software = {
+        const software: SoftwareCsvRow = {
             "_id": softwareId,
             "_name": name,
             "_function": (() => {
@@ -591,10 +569,10 @@ export function parseCsv(params: {
             })(),
         };
 
-        softwares.push(software);
+        softwareCsvRows.push(software);
     });
 
-    softwares.forEach(software => {
+    softwareCsvRows.forEach(software => {
         const parentSoftwareName = parentSoftwareNameBySoftwareId.get(
             software._id,
         );
@@ -603,7 +581,7 @@ export function parseCsv(params: {
             return;
         }
 
-        const parentSoftware = softwares.find(({ _name }) => {
+        const parentSoftware = softwareCsvRows.find(({ _name }) => {
             const t = (name: string) => name.toLowerCase().replace(/ /g, "");
 
             return t(_name) === t(parentSoftwareName);
@@ -633,7 +611,9 @@ export function parseCsv(params: {
         )
         .map(
             (() => {
-                const allSoftwaresName = softwares.map(({ _name }) => _name);
+                const allSoftwaresName = softwareCsvRows.map(
+                    ({ _name }) => _name,
+                );
 
                 return ([referent, softwaresName]) =>
                     [
@@ -655,7 +635,6 @@ export function parseCsv(params: {
                     ] as const;
             })(),
         )
-        //.filter(([, { unknownSoftwares }]) => unknownSoftwares.length !== 0)
         .map(([{ id, ...referent }, { softwaresCount, unknownSoftwares }]) => ({
             ...referent,
             softwaresCount,
@@ -663,10 +642,10 @@ export function parseCsv(params: {
         }))
         .sort((a, b) => b.softwaresCount - a.softwaresCount);
 
-    const services: Service[] = [];
+    const servicesCsvRows: ServiceCsvRow[] = [];
 
-    csvServices.forEach(row => {
-        const common: Service.Common = {
+    rawServiceCsvRow.forEach(row => {
+        const common: ServiceCsvRow.Common = {
             "id": (() => {
                 const column = "id";
 
@@ -680,7 +659,7 @@ export function parseCsv(params: {
                 assert(!isNaN(out), m("Must be an integer"));
 
                 assert(
-                    !services.map(({ id }) => id).includes(out),
+                    !servicesCsvRows.map(({ id }) => id).includes(out),
                     m(`There is another service with the same id`),
                 );
 
@@ -717,16 +696,16 @@ export function parseCsv(params: {
             assert(!isNaN(out), m("Must be an integer"));
 
             assert(
-                softwares.map(({ _id }) => _id).includes(out),
+                softwareCsvRows.map(({ _id }) => _id).includes(out),
                 m("This id does not correspond to a software"),
             );
 
             return out;
         })();
 
-        services.push(
+        servicesCsvRows.push(
             softwareId === undefined
-                ? id<Service.UnknownSoftware>({
+                ? id<ServiceCsvRow.UnknownSoftware>({
                       ...common,
                       "softwareName": row["software_name"],
                       "comptoirDuLibreId": (() => {
@@ -751,7 +730,7 @@ export function parseCsv(params: {
                           assert(!isNaN(out), m("Must be an integer"));
 
                           assert(
-                              !softwares
+                              !softwareCsvRows
                                   .map(
                                       ({ comptoirDuLibreId }) =>
                                           comptoirDuLibreId,
@@ -765,14 +744,19 @@ export function parseCsv(params: {
                           return out;
                       })(),
                   })
-                : id<Service.KnownSoftware>({
+                : id<ServiceCsvRow.KnownSoftware>({
                       ...common,
                       softwareId,
                   }),
         );
     });
 
-    return { softwares, referents, referentsStats, services };
+    return {
+        softwareCsvRows,
+        referentCsvRows,
+        servicesCsvRows,
+        referentsStats,
+    };
 }
 
 function assertsCsv<Columns extends string>(

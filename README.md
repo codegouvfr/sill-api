@@ -18,7 +18,7 @@
 -   [Contributing](#contributing)
     -   [Editing `referent.csv`](#editing-referentcsv)
     -   [Publishing a new version of the types definitions](#publishing-a-new-version-of-the-types-definitions)
--   [Licence](#licence)
+-   [Licences](#licences)
 
 # Purpose
 

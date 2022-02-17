@@ -1,12 +1,12 @@
 import * as trpc from "@trpc/server";
 import type { ReturnType } from "tsafe";
-import { decodeAndVerifyKeycloakOidcAccessTokenFactory } from "./tools/decodeAndVerifyJwtToken";
+import { decodeAndVerifyKeycloakOidcAccessTokenFactory } from "../tools/decodeAndVerifyJwtToken";
 import { env } from "./env";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import express from "express";
 //import { z } from "zod";
 import * as trpcExpress from "@trpc/server/adapters/express";
-import { fetchApiData } from "./fetchApiData";
+import { fetchSoftware } from "./fetchApiData";
 
 const keycloakParams = {
     "keycloakUrl": env.KEYCLOAK_URL,
@@ -17,7 +17,7 @@ const keycloakParams = {
 const { decodeAndVerifyKeycloakOidcAccessToken } =
     decodeAndVerifyKeycloakOidcAccessTokenFactory(keycloakParams);
 
-export async function createContext({ req }: CreateExpressContextOptions) {
+async function createContext({ req }: CreateExpressContextOptions) {
     // Create your context based on the request object
     // Will be available as `ctx` in all your resolvers
 
@@ -35,14 +35,14 @@ export async function createContext({ req }: CreateExpressContextOptions) {
 }
 
 async function createRouter() {
-    const apiData = await fetchApiData({
+    const softwares = await fetchSoftware({
         "githubPersonalAccessToken": env.GITHUB_PERSONAL_ACCESS_TOKEN,
     });
 
     return trpc
         .router<ReturnType<typeof createContext>>()
         .query("getKeycloakParams", { "resolve": () => keycloakParams })
-        .query("getSoftwares", { "resolve": () => apiData });
+        .query("getSoftware", { "resolve": () => softwares });
 }
 
 export type Router = ReturnType<typeof createRouter>;

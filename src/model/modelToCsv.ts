@@ -1,19 +1,12 @@
-import type {
-    Software,
-    CsvSoftwareColumn,
-    Referent,
-    CsvReferentColumn,
-    Service,
-    CsvServiceColumn,
-} from "./types";
+import type { SoftwareCsvRow, ReferentCsvRow, ServiceCsvRow } from "./types";
 import { exclude } from "tsafe/exclude";
 
-export function softwaresToParsedCsv(params: {
-    softwares: Software[];
-}): Record<CsvSoftwareColumn, string>[] {
-    const { softwares } = params;
+function softwareCsvRowsToRawSoftwareCsvRows(params: {
+    softwareCsvRows: SoftwareCsvRow[];
+}): Record<SoftwareCsvRow.Column, string>[] {
+    const { softwareCsvRows } = params;
 
-    return softwares.map(
+    return softwareCsvRows.map(
         ({
             _id,
             _name,
@@ -64,7 +57,7 @@ export function softwaresToParsedCsv(params: {
                 (parentSoftware === undefined
                     ? undefined
                     : parentSoftware.isKnown
-                    ? softwares.find(
+                    ? softwareCsvRows.find(
                           ({ _id }) => _id === parentSoftware.softwareId,
                       )!._name
                     : parentSoftware.softwareName) ?? "",
@@ -74,7 +67,7 @@ export function softwaresToParsedCsv(params: {
                 .map(softwareRef =>
                     !softwareRef.isKnown
                         ? softwareRef.softwareName
-                        : softwares.find(
+                        : softwareCsvRows.find(
                               ({ _id }) => _id === softwareRef.softwareId,
                           )!._name,
                 )
@@ -94,19 +87,19 @@ export function softwaresToParsedCsv(params: {
     );
 }
 
-export function referentsToParsedCsv(params: {
-    referents: Referent[];
-    softwares: Software[];
-}): Record<CsvReferentColumn, string>[] {
-    const { referents, softwares } = params;
+function referentCsvRowsToRawReferentCsvRows(params: {
+    referentCsvRows: ReferentCsvRow[];
+    softwareCsvRows: SoftwareCsvRow[];
+}): Record<ReferentCsvRow.Column, string>[] {
+    const { referentCsvRows, softwareCsvRows } = params;
 
-    return softwares
+    return softwareCsvRows
         .map(software => {
             if (software.referentId === undefined) {
                 return undefined;
             }
 
-            const referent = referents.find(
+            const referent = referentCsvRows.find(
                 ({ id }) => id === software.referentId,
             )!;
 
@@ -122,13 +115,13 @@ export function referentsToParsedCsv(params: {
         .filter(exclude(undefined));
 }
 
-export function servicesToParsedCsv(params: {
-    services: Service[];
-    softwares: Software[];
-}): Record<CsvServiceColumn, string>[] {
-    const { services, softwares } = params;
+function serviceCsvRowsToRawServiceCsvRows(params: {
+    serviceCsvRows: ServiceCsvRow[];
+    softwareCsvRows: SoftwareCsvRow[];
+}): Record<ServiceCsvRow.Column, string>[] {
+    const { serviceCsvRows, softwareCsvRows } = params;
 
-    return services.map(
+    return serviceCsvRows.map(
         ({
             id,
             agencyName,
@@ -155,14 +148,16 @@ export function servicesToParsedCsv(params: {
             "software_name":
                 rest.softwareId === undefined
                     ? rest.softwareName
-                    : softwares.find(({ _id }) => _id === rest.softwareId)!
-                          ._name,
+                    : softwareCsvRows.find(
+                          ({ _id }) => _id === rest.softwareId,
+                      )!._name,
             "software_sill_id": `${rest.softwareId ?? ""}`,
             "software_comptoir_id": `${
                 (rest.softwareId === undefined
                     ? rest.comptoirDuLibreId
-                    : softwares.find(({ _id }) => _id === rest.softwareId)!
-                          .comptoirDuLibreId) ?? ""
+                    : softwareCsvRows.find(
+                          ({ _id }) => _id === rest.softwareId,
+                      )!.comptoirDuLibreId) ?? ""
             }`,
             "publication_date": publicationDate,
             "last_update_date": lastUpdateDate,
@@ -172,4 +167,30 @@ export function servicesToParsedCsv(params: {
             "content_moderation_method": contentModerationMethod,
         }),
     );
+}
+
+export function modelToCsv(params: {
+    softwareCsvRows: SoftwareCsvRow[];
+    referentCsvRows: ReferentCsvRow[];
+    serviceCsvRows: ServiceCsvRow[];
+}): {
+    rawSoftwareCsvRows: Record<SoftwareCsvRow.Column, string>[];
+    rawReferentCsvRows: Record<ReferentCsvRow.Column, string>[];
+    rawServiceCsvRows: Record<ServiceCsvRow.Column, string>[];
+} {
+    const { softwareCsvRows, referentCsvRows, serviceCsvRows } = params;
+
+    return {
+        "rawSoftwareCsvRows": softwareCsvRowsToRawSoftwareCsvRows({
+            softwareCsvRows,
+        }),
+        "rawReferentCsvRows": referentCsvRowsToRawReferentCsvRows({
+            referentCsvRows,
+            softwareCsvRows,
+        }),
+        "rawServiceCsvRows": serviceCsvRowsToRawServiceCsvRows({
+            serviceCsvRows,
+            softwareCsvRows,
+        }),
+    };
 }

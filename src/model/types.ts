@@ -5,7 +5,7 @@
  * An API will gather all the missing infos so that sill.etalab.gouv.fr and code.gouv.fr work with it.
  * All the fields with __ will be deduced from other metadata.
  */
-export type Software = {
+export type SoftwareCsvRow = {
     //The id should be the one of Wikidata
     _id: number;
     _name: string;
@@ -39,15 +39,61 @@ export type Software = {
     useCasesUrl: string[];
 };
 
-export type Referent = {
+export namespace SoftwareCsvRow {
+    export const columns = [
+        "ID",
+        "nom",
+        "fonction",
+        "annees",
+        "statut",
+        "parent",
+        "public",
+        "support",
+        "similaire-a",
+        "wikidata",
+        "comptoir-du-libre",
+        "licence",
+        "contexte-usage",
+        "label",
+        "fiche",
+        "atelier",
+        "test",
+        "groupe",
+        "version_min",
+        "version_max",
+    ] as const;
+
+    export type Column = typeof columns[number];
+}
+
+export type ReferentCsvRow = {
     id: number;
     email: string;
     emailAlt?: string;
 };
 
-export type Service = Service.KnownSoftware | Service.UnknownSoftware;
+export namespace ReferentCsvRow {
+    export const columns = [
+        "Logiciel",
+        "Courriel",
+        "Courriel 2",
+        "Référent : expert technique ?",
+    ] as const;
 
-export namespace Service {
+    export type Column = typeof columns[number];
+
+    export type Stats = Omit<ReferentCsvRow, "id"> & {
+        softwaresCount: number;
+        //Always at least one element if array defined
+        unknownSoftwares?: string[];
+    };
+}
+
+export type ServiceCsvRow =
+    | ServiceCsvRow.KnownSoftware
+    | ServiceCsvRow.UnknownSoftware;
+
+export namespace ServiceCsvRow {
     export type Common = {
         id: number;
         agencyName: string;
@@ -74,9 +120,30 @@ export namespace Service {
         softwareName: string;
         comptoirDuLibreId?: number;
     };
+
+    export const columns = [
+        "id",
+        "agency_name",
+        "public_sector",
+        "agency_url",
+        "service_name",
+        "service_url",
+        "description",
+        "software_name",
+        "software_sill_id",
+        "software_comptoir_id",
+        "publication_date",
+        "last_update_date",
+        "signup_scope",
+        "usage_scope",
+        "signup_validation_method",
+        "content_moderation_method",
+    ] as const;
+
+    export type Column = typeof columns[number];
 }
 
-export type Api = {
+export type SoftwareX = {
     id: number;
     name: string;
     function: string;
@@ -99,13 +166,7 @@ export type Api = {
     testUrl: string | null;
     useCasesUrl: string[];
     hasReferent: boolean;
-    services: Omit<Service.KnownSoftware[], "softwareId">;
-}[];
-
-export type ReferentStats = Omit<Referent, "id"> & {
-    softwaresCount: number;
-    //Always at least one element if array defined
-    unknownSoftwares?: string[];
+    services: Omit<ServiceCsvRow.KnownSoftware[], "softwareId">;
 };
 
 export type SoftwareRef = SoftwareRef.Known | SoftwareRef.Unknown;
@@ -132,65 +193,6 @@ export type RecommendationStatus = typeof recommendationStatuses[number];
 export const mimGroups = ["MIMO", "MIMDEV", "MIMPROD", "MIMDEVOPS"] as const;
 
 export type MimGroup = typeof mimGroups[number];
-
-export const csvSoftwareColumns = [
-    "ID",
-    "nom",
-    "fonction",
-    "annees",
-    "statut",
-    "parent",
-    "public",
-    "support",
-    "similaire-a",
-    "wikidata",
-    "comptoir-du-libre",
-    "licence",
-    "contexte-usage",
-    "label",
-    "fiche",
-    "atelier",
-    "test",
-    "groupe",
-    "version_min",
-    "version_max",
-] as const;
-
-export type CsvSoftwareColumn = typeof csvSoftwareColumns[number];
-
-//export type CsvSoftware = Record<CsvSoftwareColumn, string>;
-
-export const csvReferentColumns = [
-    "Logiciel",
-    "Courriel",
-    "Courriel 2",
-    "Référent : expert technique ?",
-] as const;
-
-export type CsvReferentColumn = typeof csvReferentColumns[number];
-
-//export type CsvReferent = Record<CsvReferentColumn, string>;
-
-export const csvServiceColumns = [
-    "id",
-    "agency_name",
-    "public_sector",
-    "agency_url",
-    "service_name",
-    "service_url",
-    "description",
-    "software_name",
-    "software_sill_id",
-    "software_comptoir_id",
-    "publication_date",
-    "last_update_date",
-    "signup_scope",
-    "usage_scope",
-    "signup_validation_method",
-    "content_moderation_method",
-] as const;
-
-export type CsvServiceColumn = typeof csvServiceColumns[number];
 
 export type ComptoirDuLibre = {
     date_of_export: Date;

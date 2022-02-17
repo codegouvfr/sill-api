@@ -1,74 +1,96 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { join as pathJoin, dirname as pathDirname } from "path";
-import { parseCsv } from "../model/parseCsv";
-import { buildApiData } from "../model/buildApiData";
+import { csvToModel } from "../model/csvToModel";
+import { collectSoftware } from "../model/collectSoftware";
 import * as fs from "fs";
 import { exclude } from "tsafe/exclude";
+import { rawCsvFileToRawCsvRows } from "../tools/parseAndStringifyCsv";
 
 export const projectDirPath = pathJoin(__dirname, "..", "..");
 export const dataDirPath = pathJoin(projectDirPath, "data");
 
-export const [csvSoftwaresPath, csvReferentsPath, csvServicesPath] = [
+export const [softwareCsvFilePath, referentsCsvFilePath, csvServicesPath] = [
     ["software", "software.csv"],
     ["referents", "referents.csv"],
     ["services", "services.csv"],
 ].map(path => pathJoin(...[dataDirPath, ...path]));
 
-export const [jsonSoftwaresFilePath, jsonReferentsFilePath, jsonServicesPath] =
-    [csvSoftwaresPath, csvReferentsPath, csvServicesPath].map(path =>
-        path.replace(/csv$/, "json"),
-    );
+export const [softwareJsonFilePath, referentsJsonFilePath, servicesJsonPath] = [
+    softwareCsvFilePath,
+    referentsCsvFilePath,
+    csvServicesPath,
+].map(path => path.replace(/csv$/, "json"));
 
-export const jsonApiFilePath = pathJoin(
-    pathDirname(jsonSoftwaresFilePath),
+export const sillFilePath = pathJoin(
+    pathDirname(softwareJsonFilePath),
     "..",
     "sill2.json",
 );
 
 if (require.main === module) {
-    const jsonSoftwaresWithoutReferentPath = pathJoin(
-        pathDirname(jsonSoftwaresFilePath),
+    const softwareWithoutReferentJsonFilePath = pathJoin(
+        pathDirname(softwareJsonFilePath),
         "softwaresWithoutReferent.json",
     );
 
-    const jsonServicesWithoutKnownSoftwarePath = pathJoin(
-        pathDirname(jsonServicesPath),
+    const servicesWithoutKnownSoftwareJsonFilePath = pathJoin(
+        pathDirname(servicesJsonPath),
         "servicesWithoutKnownSoftware.json",
     );
 
-    const jsonReferentsStatsPath = pathJoin(
-        pathDirname(jsonReferentsFilePath),
+    const referentsStatsJsonFilePath = pathJoin(
+        pathDirname(referentsJsonFilePath),
         "referentsStats.json",
     );
 
+    const [rawSoftwareCsvRows, rawReferentCsvRows, rawServiceCsvRow] = [
+        softwareCsvFilePath,
+        referentsCsvFilePath,
+        csvServicesPath,
+    ].map(path =>
+        rawCsvFileToRawCsvRows({
+            "rawCsvFile": fs.readFileSync(path).toString("utf8"),
+        }),
+    );
+
     (async () => {
-        const { softwares, referents, services, referentsStats } = parseCsv({
-            csvSoftwaresPath,
-            csvReferentsPath,
-            csvServicesPath,
+        const {
+            softwareCsvRows,
+            referentCsvRows,
+            servicesCsvRows,
+            referentsStats,
+        } = csvToModel({
+            rawSoftwareCsvRows,
+            rawReferentCsvRows,
+            rawServiceCsvRow,
         });
 
-        const { api } = await buildApiData({ softwares, referents, services });
+        const softwares = await collectSoftware({
+            softwareCsvRows,
+            referentCsvRows,
+            servicesCsvRows,
+            "log": console.log,
+        });
 
-        const softwaresWithoutReferent = api
+        const softwaresWithoutReferent = softwares
             .filter(({ hasReferent }) => !hasReferent)
             .map(({ name, id }) => ({ id, name }));
 
-        const servicesWithoutKnownSoftware = services
+        const servicesWithoutKnownSoftware = servicesCsvRows
             .map(services =>
                 services.softwareId === undefined ? services : undefined,
             )
             .filter(exclude(undefined));
 
         for (const [path, data] of [
-            [jsonSoftwaresFilePath, softwares],
-            [jsonReferentsFilePath, referents],
-            [jsonServicesPath, services],
-            [jsonApiFilePath, api],
-            [jsonSoftwaresWithoutReferentPath, softwaresWithoutReferent],
-            [jsonReferentsStatsPath, referentsStats],
+            [softwareJsonFilePath, softwareCsvRows],
+            [referentsJsonFilePath, referentCsvRows],
+            [servicesJsonPath, servicesCsvRows],
+            [sillFilePath, softwares],
+            [softwareWithoutReferentJsonFilePath, softwaresWithoutReferent],
+            [referentsStatsJsonFilePath, referentsStats],
             [
-                jsonServicesWithoutKnownSoftwarePath,
+                servicesWithoutKnownSoftwareJsonFilePath,
                 servicesWithoutKnownSoftware,
             ],
         ] as const) {

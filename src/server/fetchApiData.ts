@@ -1,29 +1,27 @@
-import { gitCommit } from "./tools/gitCommit";
+import { git } from "../tools/git";
 import { Deferred } from "evt/tools/Deferred";
 import * as fs from "fs";
 import { relative as pathRelative } from "path";
-import { dataDirPath, jsonApiFilePath } from "../bin/generate-json";
-import type { Api } from "../model/types";
+import { dataDirPath, sillFilePath } from "../bin/generate-json";
+import type { SoftwareX } from "../model/types";
 
-export function fetchApiData(params: {
+export function fetchSoftware(params: {
     githubPersonalAccessToken: string;
-}): Promise<Api> {
+}): Promise<SoftwareX[]> {
     const { githubPersonalAccessToken } = params;
 
-    const dApiData = new Deferred<Api>();
+    const dApiData = new Deferred<SoftwareX[]>();
 
-    gitCommit({
+    git({
         "owner": "etalab",
         "repo": "sill-referents",
         "shaish": "archive",
         "github_token": githubPersonalAccessToken,
-        "performChanges": async () => {
+        "action": async () => {
             dApiData.resolve(
                 JSON.parse(
                     fs
-                        .readFileSync(
-                            pathRelative(dataDirPath, jsonApiFilePath),
-                        )
+                        .readFileSync(pathRelative(dataDirPath, sillFilePath))
                         .toString("utf8"),
                 ),
             );

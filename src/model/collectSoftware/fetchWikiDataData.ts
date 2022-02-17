@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
-import type { Entity, DataValue } from "./tools/WikidataEntity";
-import type { WikidataData } from "./types";
+import type { Entity, DataValue } from "../../tools/WikidataEntity";
+import type { WikidataData } from "../types";
 
 // https://git.sr.ht/~etalab/sill-consolidate-data/tree/master/item/src/core.clj#L225-252
 export async function fetchWikiDataData(params: {
