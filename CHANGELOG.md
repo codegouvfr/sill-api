@@ -1,3 +1,7 @@
+### **0.0.24** (2022-02-17)  
+  
+- Only includes dependencies needed for types definitions    
+  
 ### **0.0.23** (2022-02-17)  
   
 - Rename SoftwareX -> Software    
