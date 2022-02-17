@@ -3,14 +3,14 @@ import { Deferred } from "evt/tools/Deferred";
 import * as fs from "fs";
 import { relative as pathRelative } from "path";
 import { dataDirPath, sillFilePath } from "../bin/generate-json";
-import type { SoftwareX } from "../model/types";
+import type { Software } from "../model/types";
 
 export function fetchSoftware(params: {
     githubPersonalAccessToken: string;
-}): Promise<SoftwareX[]> {
+}): Promise<Software[]> {
     const { githubPersonalAccessToken } = params;
 
-    const dApiData = new Deferred<SoftwareX[]>();
+    const dApiData = new Deferred<Software[]>();
 
     git({
         "owner": "etalab",

@@ -143,7 +143,7 @@ export namespace ServiceCsvRow {
     export type Column = typeof columns[number];
 }
 
-export type SoftwareX = {
+export type Software = {
     id: number;
     name: string;
     function: string;

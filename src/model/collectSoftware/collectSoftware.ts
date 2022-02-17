@@ -1,5 +1,5 @@
 import type {
-    SoftwareX,
+    Software,
     SoftwareCsvRow,
     ReferentCsvRow,
     ServiceCsvRow,
@@ -15,7 +15,7 @@ export async function collectSoftware(params: {
     referentCsvRows: ReferentCsvRow[];
     servicesCsvRows: ServiceCsvRow[];
     log: typeof console.log;
-}): Promise<SoftwareX[]> {
+}): Promise<Software[]> {
     const { softwareCsvRows, referentCsvRows, servicesCsvRows, log } = params;
 
     const { softwares: cdlSoftwares } = await fetchComptoirDuLibre();
@@ -56,7 +56,7 @@ export async function collectSoftware(params: {
             ] as const;
         })
         .map(
-            ([software, referent]): SoftwareX => ({
+            ([software, referent]): Software => ({
                 "id": software._id,
                 "name": software._name,
                 "function": software._function,
