@@ -1,3 +1,10 @@
+### **0.0.21** (2022-02-17)  
+  
+- Implement strict isolation of concern  
+- Rename lib/ -> model/  
+- Fix build  
+- Change directory structure    
+  
 ### **0.0.20** (2022-02-16)  
   
 - Rename the module  
