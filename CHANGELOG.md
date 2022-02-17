@@ -1,3 +1,7 @@
+### **0.0.22** (2022-02-17)  
+  
+- Rename npm module sill-api (it was an error to call it sill-web)    
+  
 ### **0.0.21** (2022-02-17)  
   
 - Implement strict isolation of concern  
