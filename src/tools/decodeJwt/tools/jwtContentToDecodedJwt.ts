@@ -14,13 +14,13 @@ export function jwtContentToDecodedJwt<ClaimName extends string>(params: {
                     const value = jwtPayload[propertyNameInJwtPayload];
 
                     assert(
-                        typeof value === "string",
+                        typeof value !== undefined,
                         `${propertyName} could not be read from JWT payload, ${propertyNameInJwtPayload} is not defined in ${JSON.stringify(
                             jwtPayload,
                         )}`,
                     );
 
-                    return [propertyName, value] as const;
+                    return [propertyName, JSON.stringify(value)] as const;
                 },
             ),
         ),
