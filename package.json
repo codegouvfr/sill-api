@@ -11,7 +11,7 @@
     "scripts": {
         "build": "tsc",
         "start": "node dist/server/main.js",
-        "dev": "./start-dev.sh",
+        "dev": "./.env.local.sh yarn start",
         "build-json": "node dist/bin/generate-json.js",
         "lint:check": "eslint . --ext .ts,.tsx",
         "lint": "npm run lint:check -- --fix",

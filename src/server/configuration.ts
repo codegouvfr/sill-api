@@ -356,3 +356,7 @@ export const getConfiguration = memoize(
         };
     },
 );
+
+if (require.main === module) {
+    console.log(getConfiguration());
+}

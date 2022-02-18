@@ -26,4 +26,4 @@ export CONFIGURATION=$(cat << EOF
 EOF
 ) 
 
-node dist/server/main.js
+$@
