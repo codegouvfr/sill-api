@@ -3,7 +3,7 @@ import memoize from "memoizee";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { arrDiff } from "evt/tools/reducers/diff";
-import * as commentJson from "comment-json";
+import * as JSONC from "comment-json";
 
 export type Configuration = {
     //If not defined we will not check the signature and just trust the claims in the JWT.
@@ -52,7 +52,7 @@ export const getConfiguration = memoize(
         let configuration: Configuration;
 
         try {
-            configuration = commentJson.parse(CONFIGURATION) as any;
+            configuration = JSONC.parse(CONFIGURATION) as any;
         } catch {
             throw new Error(
                 m(
