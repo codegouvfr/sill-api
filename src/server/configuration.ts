@@ -130,7 +130,7 @@ export const getConfiguration = memoize(
 
                 const { added } = arrDiff(
                     propertiesNames,
-                    Object.keys(configuration),
+                    Object.keys(keycloakParams),
                 );
 
                 assert(
@@ -213,7 +213,7 @@ export const getConfiguration = memoize(
 
                 const { added } = arrDiff(
                     propertiesNames,
-                    Object.keys(configuration),
+                    Object.keys(jwtClaims),
                 );
 
                 assert(
@@ -280,7 +280,7 @@ export const getConfiguration = memoize(
 
                     const { added } = arrDiff(
                         propertiesNames,
-                        Object.keys(configuration),
+                        Object.keys(githubPersonalAccessToken),
                     );
 
                     assert(
