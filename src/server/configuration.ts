@@ -64,11 +64,18 @@ export const getConfiguration = memoize(
         assert(configuration instanceof Object, m("Should be a JSON object"));
 
         {
+            const {
+                keycloakParams,
+                jwtClaims,
+                githubPersonalAccessToken,
+                port,
+            } = configuration;
+
             const propertiesNames = [
-                "keycloakParams",
-                "jwtClaims",
-                "githubPersonalAccessToken",
-                "port",
+                symToStr({ keycloakParams }),
+                symToStr({ jwtClaims }),
+                symToStr({ githubPersonalAccessToken }),
+                symToStr({ port }),
             ] as const;
 
             assert<
@@ -106,6 +113,35 @@ export const getConfiguration = memoize(
             );
 
             const { url, realm, clientId } = keycloakParams;
+
+            {
+                const propertiesNames = [
+                    symToStr({ url }),
+                    symToStr({ realm }),
+                    symToStr({ clientId }),
+                ] as const;
+
+                assert<
+                    Equals<
+                        typeof propertiesNames[number],
+                        keyof NonNullable<Configuration["keycloakParams"]>
+                    >
+                >();
+
+                const { added } = arrDiff(
+                    propertiesNames,
+                    Object.keys(configuration),
+                );
+
+                assert(
+                    added.length === 0,
+                    m_1(
+                        `The following properties are not recognized: ${added.join(
+                            " ",
+                        )}`,
+                    ),
+                );
+            }
 
             for (const [propertyName, propertyValue] of [
                 [symToStr({ url }), url],
@@ -158,6 +194,38 @@ export const getConfiguration = memoize(
             const { email, familyName, firstName, groups, local, username } =
                 jwtClaims;
 
+            {
+                const propertiesNames = [
+                    symToStr({ email }),
+                    symToStr({ familyName }),
+                    symToStr({ firstName }),
+                    symToStr({ groups }),
+                    symToStr({ local }),
+                    symToStr({ username }),
+                ] as const;
+
+                assert<
+                    Equals<
+                        typeof propertiesNames[number],
+                        keyof NonNullable<Configuration["jwtClaims"]>
+                    >
+                >();
+
+                const { added } = arrDiff(
+                    propertiesNames,
+                    Object.keys(configuration),
+                );
+
+                assert(
+                    added.length === 0,
+                    m_1(
+                        `The following properties are not recognized: ${added.join(
+                            " ",
+                        )}`,
+                    ),
+                );
+            }
+
             for (const [propertyName, propertyValue] of [
                 [symToStr({ email }), email],
                 [symToStr({ familyName }), familyName],
@@ -196,6 +264,34 @@ export const getConfiguration = memoize(
 
                 const m_1 = (reason: string) =>
                     m(`${symToStr({ githubPersonalAccessToken })}: ${reason}`);
+
+                {
+                    const propertiesNames = [symToStr({ envName })] as const;
+
+                    assert<
+                        Equals<
+                            typeof propertiesNames[number],
+                            keyof Exclude<
+                                Configuration["githubPersonalAccessToken"],
+                                undefined | string
+                            >
+                        >
+                    >();
+
+                    const { added } = arrDiff(
+                        propertiesNames,
+                        Object.keys(configuration),
+                    );
+
+                    assert(
+                        added.length === 0,
+                        m_1(
+                            `The following properties are not recognized: ${added.join(
+                                " ",
+                            )}`,
+                        ),
+                    );
+                }
 
                 assert(
                     envName !== undefined,
