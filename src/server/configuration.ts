@@ -23,13 +23,14 @@ export type Configuration = {
     };
     //Needed to open PRs and pull etalab/sill-referents#archive
     githubPersonalAccessToken: string | { envName: string };
-    //Port we listen to
-    port: number;
+    //Port we listen to, default 8080
+    port?: number;
 };
 
 export const getConfiguration = memoize(
-    (): Omit<Configuration, "githubPersonalAccessToken"> & {
+    (): Omit<Configuration, "githubPersonalAccessToken" | "port"> & {
         githubPersonalAccessToken: string;
+        port: number;
     } => {
         const { CONFIGURATION } = process.env;
 
@@ -340,19 +341,31 @@ export const getConfiguration = memoize(
             );
         }
 
-        {
+        let resolvedPort: number;
+
+        scope: {
             const { port } = configuration;
 
-            assert(port !== undefined, m(`${symToStr({ port })} is missing`));
+            if (port === undefined) {
+                resolvedPort = 8080;
+                break scope;
+            }
+
             assert(
                 typeof port === "number",
                 m(`${symToStr({ port })} is supposed to be a number`),
             );
+
+            resolvedPort = port;
         }
 
+        const { port, githubPersonalAccessToken, ...rest } = configuration;
+
         return {
-            ...configuration,
-            "githubPersonalAccessToken": resolvedGithubPersonalAccessToken,
+            ...rest,
+            [symToStr({ port })]: resolvedPort,
+            [symToStr({ githubPersonalAccessToken })]:
+                resolvedGithubPersonalAccessToken,
         };
     },
 );
