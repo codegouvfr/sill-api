@@ -4,6 +4,32 @@ import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { arrDiff } from "evt/tools/reducers/diff";
 import * as JSONC from "comment-json";
+import { objectKeys } from "tsafe/objectKeys";
+import { id } from "tsafe/id";
+
+const kcLanguageTags = [
+    "en",
+    "fr",
+    "ca",
+    "cs",
+    "da",
+    "de",
+    "es",
+    "hu",
+    "it",
+    "ja",
+    "lt",
+    "nl",
+    "no",
+    "pl",
+    "pt-BR",
+    "ru",
+    "sk",
+    "sv",
+    "tr",
+    "zh-CN",
+] as const;
+type KcLanguageTag = typeof kcLanguageTags[number];
 
 export type Configuration = {
     //If not defined we will not check the signature and just trust the claims in the JWT.
@@ -11,6 +37,7 @@ export type Configuration = {
         url: `https://${string}`; //Without the '/auth' at the end
         realm: string;
         clientId: string;
+        termsOfServices?: string | Partial<Record<KcLanguageTag, string>>;
     };
     //The name of the properties in the JWT parsed token.
     jwtClaims: {
@@ -113,13 +140,14 @@ export const getConfiguration = memoize(
                 m_1("Is supposed to be an object"),
             );
 
-            const { url, realm, clientId } = keycloakParams;
+            const { url, realm, clientId, termsOfServices } = keycloakParams;
 
             {
                 const propertiesNames = [
                     symToStr({ url }),
                     symToStr({ realm }),
                     symToStr({ clientId }),
+                    symToStr({ termsOfServices }),
                 ] as const;
 
                 assert<
@@ -179,6 +207,63 @@ export const getConfiguration = memoize(
                     })} The '/auth' portion of the path should be removed`,
                 ),
             );
+
+            scope_1: {
+                if (termsOfServices === undefined) {
+                    break scope_1;
+                }
+
+                if (typeof termsOfServices === "string") {
+                    assert(
+                        termsOfServices.startsWith("https"),
+                        m_1(
+                            `If ${symToStr({
+                                termsOfServices,
+                            })} is a string it should be an url (starting with http) pointing to a .md file`,
+                        ),
+                    );
+
+                    break scope_1;
+                }
+
+                {
+                    const languages = objectKeys(termsOfServices);
+
+                    assert(
+                        languages.length !== 0,
+                        m_1(
+                            `${symToStr({
+                                termsOfServices,
+                            })} if an object is provided it should have at least one tos for one language`,
+                        ),
+                    );
+
+                    languages.forEach(lng =>
+                        assert(
+                            id<readonly string[]>(kcLanguageTags).includes(lng),
+                            m_1(
+                                `${symToStr({
+                                    termsOfServices,
+                                })}: ${lng} is not a supported languages, supported languages are: ${kcLanguageTags.join(
+                                    ", ",
+                                )}`,
+                            ),
+                        ),
+                    );
+
+                    languages.forEach(lng => {
+                        const url = termsOfServices[lng];
+                        assert(
+                            typeof url === "string" && url.startsWith("http"),
+                            m_1(
+                                `${symToStr({
+                                    termsOfServices,
+                                })} malformed (${lng}). It is supposed to be an url (starting with http) pointing to a .md file`,
+                            ),
+                        );
+                    });
+                }
+            }
         }
 
         {

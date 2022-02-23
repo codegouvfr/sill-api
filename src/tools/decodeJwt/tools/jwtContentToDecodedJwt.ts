@@ -20,7 +20,12 @@ export function jwtContentToDecodedJwt<ClaimName extends string>(params: {
                         )}`,
                     );
 
-                    return [propertyName, JSON.stringify(value)] as const;
+                    return [
+                        propertyName,
+                        typeof value === "string"
+                            ? value
+                            : JSON.stringify(value),
+                    ] as const;
                 },
             ),
         ),
