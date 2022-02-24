@@ -93,7 +93,7 @@ export async function fetchWikiDataData(params: {
 
             const url = $(
                 `a[href$="${encodeURI(
-                    `File:${value.replace(/ /g, "_")}`,
+                    `File:${encodeURIComponent(value.replace(/ /g, "_"))}`,
                 )}"] img`,
             ).attr("src");
 
