@@ -1,6 +1,8 @@
 import fetch from "node-fetch";
 import type { Entity, DataValue } from "../../tools/WikidataEntity";
 import type { WikidataData } from "../types";
+import cheerio from "cheerio";
+import { assert } from "tsafe/assert";
 
 // https://git.sr.ht/~etalab/sill-consolidate-data/tree/master/item/src/core.clj#L225-252
 export async function fetchWikiDataData(params: {
@@ -53,14 +55,54 @@ export async function fetchWikiDataData(params: {
                 "descriptionEn": descriptions["en"]?.value,
             };
         })(),
-        "logoUrl": (() => {
+        "logoUrl": await (async () => {
             const value = getClaimDataValue<"string">("P154");
 
-            return value === undefined
-                ? undefined
-                : encodeURI(
-                      `https://www.wikidata.org/wiki/${wikidataId}#/media/File:${value}`,
-                  );
+            if (value === undefined) {
+                return undefined;
+            }
+
+            const previewUrl = encodeURI(
+                `https://www.wikidata.org/wiki/${wikidataId}#/media/File:${value}`,
+            );
+
+            const raw = await (async function callee(): Promise<string> {
+                const out = await fetch(previewUrl).then(res => {
+                    switch (res.status) {
+                        case 429:
+                            return undefined;
+                        case 200:
+                            return res.text();
+                    }
+
+                    throw new Error(
+                        `Request to ${previewUrl} failed for unknown reason`,
+                    );
+                });
+
+                if (out === undefined) {
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+
+                    return callee();
+                }
+
+                return out;
+            })();
+
+            const $ = cheerio.load(raw);
+
+            const url = $(
+                `a[href$="${encodeURI(
+                    `File:${value.replace(/ /g, "_")}`,
+                )}"] img`,
+            ).attr("src");
+
+            assert(
+                url !== undefined,
+                `Wikidata scrapper needs to be updated ${previewUrl}`,
+            );
+
+            return url;
         })(),
         "framaLibreId": getClaimDataValue<"string">("P4107"),
         "websiteUrl": getClaimDataValue<"string">("P856"),
