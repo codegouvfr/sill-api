@@ -91,19 +91,17 @@ export async function fetchWikiDataData(params: {
 
             const $ = cheerio.load(raw);
 
-            const url = $(
-                `a[href$="${encodeURI(
-                    `File:${
-                        encodeURIComponent(value)
-                            .replace(/%2C/g, ",") //Preserve ','
-                            .replace(/%20/g, "_") //Replace ' ' by '_'
-                    }`,
-                )}"] img`,
-            ).attr("src");
+            const endOfHref =
+                "File:" +
+                encodeURIComponent(value)
+                    .replace(/%2C/g, ",") //Preserve ','
+                    .replace(/%20/g, "_"); //Replace ' ' by '_'
+
+            const url = $(`a[href$="${endOfHref}"] img`).attr("src");
 
             assert(
                 url !== undefined,
-                `Wikidata scrapper needs to be updated ${previewUrl} ${value}`,
+                `Wikidata scrapper needs to be updated ${previewUrl} ${value}, endOfHref: ${endOfHref}`,
             );
 
             return url;
@@ -117,6 +115,6 @@ export async function fetchWikiDataData(params: {
 
 /*
 fetchWikiDataData({
-    "wikidataId": "Q87849488"
+    "wikidataId": "Q2033"
 }).then(console.log)
 */
