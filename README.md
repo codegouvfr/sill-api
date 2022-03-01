@@ -2,8 +2,8 @@
     <i>Ongoing work toward a new version of sill.etalab.gouv.fr</i>
     <br>
     <br>
-    <a href="https://github.com/etalab/sill/actions">
-      <img src="https://github.com/etalab/sill/workflows/ci/badge.svg?branch=main">
+    <a href="https://github.com/etalab/sill-api/actions">
+      <img src="https://github.com/etalab/sill-api/workflows/ci/badge.svg?branch=main">
     </a>
     <a href="https://github.com/etalab/sill#licence">
       <img src="https://img.shields.io/npm/l/sillfr">
