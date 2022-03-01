@@ -1,3 +1,27 @@
+### **0.0.26** (2022-03-01)  
+  
+- :bookmark:  Bump version  
+- :label: (model) Anticipate "isReferentExpert?" to be obsolete at some point
+
+Closes #13  
+- :label: (model) Rename whereAndInWhatContextIsItUsed to contextOfUse
+
+Closes #12  
+- :arrow_down:  Downgrade TS to work with TRPC
+
+We have to wait for @trpc/server to be updated to work with TS4.6
+
+Closes  
+- :label: (model) Add deprecation warning for RecommendationStatus
+
+Closes #10  
+- :label: (model) Removing underscores
+
+Closes #9  
+- :chart_with_upwards_trend:  Configure commitizen and cz-emoji
+
+It helps quickly see what a commit is about    
+  
 ### **0.0.25** (2022-02-26)  
   
 - Fix previous commit  
