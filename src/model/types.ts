@@ -18,7 +18,7 @@ export type SoftwareCsvRow = {
     // https://spdx.org/licenses/
     // https://www.data.gouv.fr/fr/pages/legal/licences/
     license: string;
-    whereAndInWhatContextIsItUsed?: string;
+    contextOfUse?: string;
     //Lien vers catalogue.numerique.gouv.fr
     /* cspell: disable-next-line */
     catalogNumeriqueGouvFrId?: string;
@@ -151,7 +151,7 @@ export type Software = {
     wikidata: WikidataData | null;
     comptoirDuLibreSoftware: ComptoirDuLibre.Software | null;
     license: string;
-    whereAndInWhatContextIsItUsed: string | null;
+    contextOfUse: string | null;
     catalogNumeriqueGouvFrId: string | null;
     mimGroup: MimGroup;
     versionMin: string;

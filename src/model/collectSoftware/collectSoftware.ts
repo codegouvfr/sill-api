@@ -89,8 +89,7 @@ export async function collectSoftware(params: {
                               return cdlSoftware;
                           })(),
                 "license": software.license,
-                "whereAndInWhatContextIsItUsed":
-                    software.whereAndInWhatContextIsItUsed ?? null,
+                "contextOfUse": software.contextOfUse ?? null,
                 "catalogNumeriqueGouvFrId":
                     software.catalogNumeriqueGouvFrId ?? null,
                 "mimGroup": software.mimGroup,

@@ -408,7 +408,7 @@ export function csvToModel(params: {
 
                 return value;
             })(),
-            "whereAndInWhatContextIsItUsed": (() => {
+            "contextOfUse": (() => {
                 const column = "contexte-usage";
 
                 const src = row[column];
