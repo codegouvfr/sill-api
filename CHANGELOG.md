@@ -32,7 +32,7 @@ It helps quickly see what a commit is about
 - Do not make port mandatory, use 8080 default  
 - Fix build problems  
 - Fix build error related to comment-json  
-- Strigify values that might not be string in JWT token  
+- Stringify values that might not be string in JWT token  
 - Improve launch mechanism  
 - Fix bug in configuration  
 - Do not allow unknown properties in CONFIGURATION env  
