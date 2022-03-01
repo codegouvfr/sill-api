@@ -26,6 +26,7 @@ export type SoftwareCsvRow = {
     versionMin: string;
     versionMax?: string;
     referentId: number | undefined;
+    /** @deprecated: A single software will have more than one referent in the future */
     isReferentExpert?: true;
     workshopUrl?: string;
     testUrl?: string;
