@@ -8,10 +8,10 @@ function softwareCsvRowsToRawSoftwareCsvRows(params: {
 
     return softwareCsvRows.map(
         ({
-            _id,
-            _name,
-            _function,
-            __referencedSinceTime,
+            id,
+            name,
+            function: softwareFunction,
+            referencedSinceTime,
             recommendationStatus,
             parentSoftware,
             isFromFrenchPublicService,
@@ -19,24 +19,24 @@ function softwareCsvRowsToRawSoftwareCsvRows(params: {
             alikeSoftwares,
             wikidataId,
             comptoirDuLibreId,
-            _license,
+            license,
             whereAndInWhatContextIsItUsed,
             catalogNumeriqueGouvFrId,
             useCasesUrl,
             workshopUrl,
             testUrl,
             mimGroup,
-            __versionMin,
+            versionMin,
             versionMax,
         }) => ({
-            "ID": `${_id}`,
-            "nom": _name,
-            "fonction": _function,
+            "ID": `${id}`,
+            "nom": name,
+            "fonction": softwareFunction,
             "annees": (() => {
                 const thisYear = new Date().getFullYear();
 
                 return new Array(
-                    thisYear - new Date(__referencedSinceTime).getFullYear(),
+                    thisYear - new Date(referencedSinceTime).getFullYear(),
                 )
                     .fill(NaN)
                     .map((_, i) => `${2022 - i}`)
@@ -58,8 +58,8 @@ function softwareCsvRowsToRawSoftwareCsvRows(params: {
                     ? undefined
                     : parentSoftware.isKnown
                     ? softwareCsvRows.find(
-                          ({ _id }) => _id === parentSoftware.softwareId,
-                      )!._name
+                          ({ id }) => id === parentSoftware.softwareId,
+                      )!.name
                     : parentSoftware.softwareName) ?? "",
             "public": isFromFrenchPublicService ? "Oui" : "",
             "support": isPresentInSupportContract ? "Oui" : "",
@@ -68,20 +68,20 @@ function softwareCsvRowsToRawSoftwareCsvRows(params: {
                     !softwareRef.isKnown
                         ? softwareRef.softwareName
                         : softwareCsvRows.find(
-                              ({ _id }) => _id === softwareRef.softwareId,
-                          )!._name,
+                              ({ id }) => id === softwareRef.softwareId,
+                          )!.name,
                 )
                 .join(" ; "),
             "wikidata": wikidataId ?? "",
             "comptoir-du-libre": `${comptoirDuLibreId}`,
-            "licence": _license,
+            "licence": license,
             "contexte-usage": whereAndInWhatContextIsItUsed ?? "",
             "label": catalogNumeriqueGouvFrId ?? "",
             "fiche": useCasesUrl.join(" ; "),
             "atelier": workshopUrl ?? "",
             "test": testUrl ?? "",
             "groupe": mimGroup,
-            "version_min": __versionMin,
+            "version_min": versionMin,
             "version_max": versionMax ?? "",
         }),
     );
@@ -104,7 +104,7 @@ function referentCsvRowsToRawReferentCsvRows(params: {
             )!;
 
             return {
-                "Logiciel": software._name,
+                "Logiciel": software.name,
                 "Courriel": referent.email,
                 "Courriel 2": referent.emailAlt ?? "",
                 "Référent : expert technique ?": software.isReferentExpert
@@ -148,16 +148,14 @@ function serviceCsvRowsToRawServiceCsvRows(params: {
             "software_name":
                 rest.softwareId === undefined
                     ? rest.softwareName
-                    : softwareCsvRows.find(
-                          ({ _id }) => _id === rest.softwareId,
-                      )!._name,
+                    : softwareCsvRows.find(({ id }) => id === rest.softwareId)!
+                          .name,
             "software_sill_id": `${rest.softwareId ?? ""}`,
             "software_comptoir_id": `${
                 (rest.softwareId === undefined
                     ? rest.comptoirDuLibreId
-                    : softwareCsvRows.find(
-                          ({ _id }) => _id === rest.softwareId,
-                      )!.comptoirDuLibreId) ?? ""
+                    : softwareCsvRows.find(({ id }) => id === rest.softwareId)!
+                          .comptoirDuLibreId) ?? ""
             }`,
             "publication_date": publicationDate,
             "last_update_date": lastUpdateDate,

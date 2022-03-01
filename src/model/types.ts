@@ -1,17 +1,9 @@
 // https://git.sr.ht/~etalab/sill
-/*
- * All fields with _ will eventually be fetched from wikiData and thus, removed from Software.
- * We will create a bot that automatically puts data into WikiData. See: http://baskauf.blogspot.com/2019/06/putting-data-into-wikidata-using.html
- * An API will gather all the missing infos so that sill.etalab.gouv.fr and code.gouv.fr work with it.
- * All the fields with __ will be deduced from other metadata.
- */
 export type SoftwareCsvRow = {
-    //The id should be the one of Wikidata
-    _id: number;
-    _name: string;
-    _function: string;
-    //This info could be fetched from git blame.
-    __referencedSinceTime: number;
+    id: number;
+    name: string;
+    function: string;
+    referencedSinceTime: number;
     recommendationStatus: RecommendationStatus;
     parentSoftware?: SoftwareRef;
     isFromFrenchPublicService: boolean;
@@ -24,13 +16,13 @@ export type SoftwareCsvRow = {
     comptoirDuLibreId?: number;
     // https://spdx.org/licenses/
     // https://www.data.gouv.fr/fr/pages/legal/licences/
-    _license: string;
+    license: string;
     whereAndInWhatContextIsItUsed?: string;
     //Lien vers catalogue.numerique.gouv.fr
     /* cspell: disable-next-line */
     catalogNumeriqueGouvFrId?: string;
     mimGroup: MimGroup;
-    __versionMin: string;
+    versionMin: string;
     versionMax?: string;
     referentId: number | undefined;
     isReferentExpert?: true;

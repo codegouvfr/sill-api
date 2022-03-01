@@ -202,7 +202,7 @@ export function csvToModel(params: {
             assert(!isNaN(out), m("It should be an integer"));
 
             assert(
-                !softwareCsvRows.map(({ _id }) => _id).includes(out),
+                !softwareCsvRows.map(({ id }) => id).includes(out),
                 m("There is another software with this id"),
             );
 
@@ -219,7 +219,7 @@ export function csvToModel(params: {
             assert(value !== "", m("Should not be empty"));
 
             assert(
-                !softwareCsvRows.map(({ _name }) => _name).includes(value),
+                !softwareCsvRows.map(({ name }) => name).includes(value),
                 m("There is another software with this name"),
             );
 
@@ -227,9 +227,9 @@ export function csvToModel(params: {
         })();
 
         const software: SoftwareCsvRow = {
-            "_id": softwareId,
-            "_name": name,
-            "_function": (() => {
+            "id": softwareId,
+            "name": name,
+            "function": (() => {
                 const column = "fonction";
 
                 const value = row[column];
@@ -241,7 +241,7 @@ export function csvToModel(params: {
 
                 return value;
             })(),
-            "__referencedSinceTime": (() => {
+            "referencedSinceTime": (() => {
                 const column = "annees";
 
                 const value = row[column];
@@ -396,7 +396,7 @@ export function csvToModel(params: {
 
                 return out;
             })(),
-            "_license": (() => {
+            "license": (() => {
                 const column = "licence";
 
                 const value = row[column];
@@ -467,7 +467,7 @@ export function csvToModel(params: {
 
                 return value;
             })(),
-            "__versionMin": (() => {
+            "versionMin": (() => {
                 const column = "version_min";
 
                 const value = row[column];
@@ -574,17 +574,17 @@ export function csvToModel(params: {
 
     softwareCsvRows.forEach(software => {
         const parentSoftwareName = parentSoftwareNameBySoftwareId.get(
-            software._id,
+            software.id,
         );
 
         if (parentSoftwareName === undefined) {
             return;
         }
 
-        const parentSoftware = softwareCsvRows.find(({ _name }) => {
+        const parentSoftware = softwareCsvRows.find(({ name }) => {
             const t = (name: string) => name.toLowerCase().replace(/ /g, "");
 
-            return t(_name) === t(parentSoftwareName);
+            return t(name) === t(parentSoftwareName);
         });
 
         software.parentSoftware =
@@ -595,7 +595,7 @@ export function csvToModel(params: {
                   }
                 : {
                       "isKnown": true,
-                      "softwareId": parentSoftware._id,
+                      "softwareId": parentSoftware.id,
                   };
     });
 
@@ -612,7 +612,7 @@ export function csvToModel(params: {
         .map(
             (() => {
                 const allSoftwaresName = softwareCsvRows.map(
-                    ({ _name }) => _name,
+                    ({ name }) => name,
                 );
 
                 return ([referent, softwaresName]) =>
@@ -696,7 +696,7 @@ export function csvToModel(params: {
             assert(!isNaN(out), m("Must be an integer"));
 
             assert(
-                softwareCsvRows.map(({ _id }) => _id).includes(out),
+                softwareCsvRows.map(({ id }) => id).includes(out),
                 m("This id does not correspond to a software"),
             );
 

@@ -57,10 +57,10 @@ export async function collectSoftware(params: {
         })
         .map(
             ([software, referent]): Software => ({
-                "id": software._id,
-                "name": software._name,
-                "function": software._function,
-                "referencedSinceYear": new Date(software.__referencedSinceTime)
+                "id": software.id,
+                "name": software.name,
+                "function": software.function,
+                "referencedSinceYear": new Date(software.referencedSinceTime)
                     .getFullYear()
                     .toString(),
                 "recommendationStatus": software.recommendationStatus,
@@ -88,13 +88,13 @@ export async function collectSoftware(params: {
 
                               return cdlSoftware;
                           })(),
-                "license": software._license,
+                "license": software.license,
                 "whereAndInWhatContextIsItUsed":
                     software.whereAndInWhatContextIsItUsed ?? null,
                 "catalogNumeriqueGouvFrId":
                     software.catalogNumeriqueGouvFrId ?? null,
                 "mimGroup": software.mimGroup,
-                "versionMin": software.__versionMin,
+                "versionMin": software.versionMin,
                 "versionMax": software.versionMax ?? null,
                 "hasReferent": referent !== undefined,
                 "workshopUrl": software.workshopUrl ?? null,
@@ -110,7 +110,7 @@ export async function collectSoftware(params: {
                     .filter(
                         ({ softwareId }) =>
                             softwareId !== undefined &&
-                            softwareId === software._id,
+                            softwareId === software.id,
                     ),
             }),
         );
