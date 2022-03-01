@@ -4,6 +4,7 @@ export type SoftwareCsvRow = {
     name: string;
     function: string;
     referencedSinceTime: number;
+    /** @deprecated */
     recommendationStatus: RecommendationStatus;
     parentSoftware?: SoftwareRef;
     isFromFrenchPublicService: boolean;
@@ -141,6 +142,7 @@ export type Software = {
     function: string;
     //"2018" | "2019" | "2020" | "2021" | "2022";
     referencedSinceYear: string;
+    /** @deprecated */
     recommendationStatus: RecommendationStatus;
     parentSoftware: SoftwareRef | null;
     isFromFrenchPublicService: boolean;
