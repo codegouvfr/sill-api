@@ -43,8 +43,8 @@ It will be used from [code.gouv.fr](https://code.gouv.fr/) to expose the SILL.
 ## Checking out the code
 
 ```bash
-git clone https://github.com/etalab/sill
-cd sill
+git clone https://github.com/etalab/sill-api
+cd sill-api
 git submodule update --init --recursive
 cd data/referents
 git checkout main
