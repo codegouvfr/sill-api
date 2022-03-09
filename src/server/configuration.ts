@@ -48,7 +48,10 @@ export type Configuration = {
         groups: string;
         local: string;
     };
-    //Needed to open PRs and pull etalab/sill-referents#archive
+    sillCsvRepoUrl: `https://${string}`;
+    archiveRepoUrl: `https://${string}`;
+    archiveRepoBranch: string;
+    //Needed to open pull and do pr on sillCsvUrl and sillArchiveRepoUrl#sillArchiveRepoBranch
     githubPersonalAccessToken: string | { envName: string };
     //Port we listen to, default 8080
     port?: number;
@@ -97,6 +100,9 @@ export const getConfiguration = memoize(
                 jwtClaims,
                 githubPersonalAccessToken,
                 port,
+                sillCsvRepoUrl,
+                archiveRepoUrl,
+                archiveRepoBranch,
             } = configuration;
 
             const propertiesNames = [
@@ -104,6 +110,9 @@ export const getConfiguration = memoize(
                 symToStr({ jwtClaims }),
                 symToStr({ githubPersonalAccessToken }),
                 symToStr({ port }),
+                symToStr({ sillCsvRepoUrl }),
+                symToStr({ archiveRepoUrl }),
+                symToStr({ archiveRepoBranch }),
             ] as const;
 
             assert<
@@ -442,6 +451,30 @@ export const getConfiguration = memoize(
             );
 
             resolvedPort = port;
+        }
+
+        {
+            const { sillCsvRepoUrl, archiveRepoUrl, archiveRepoBranch } =
+                configuration;
+
+            for (const [propertyName, propertyValue] of [
+                [symToStr({ sillCsvRepoUrl }), sillCsvRepoUrl],
+                [symToStr({ archiveRepoUrl }), archiveRepoUrl],
+                [symToStr({ archiveRepoBranch }), archiveRepoBranch],
+            ] as const) {
+                assert(
+                    propertyValue !== undefined,
+                    m(`${propertyName} missing`),
+                );
+                assert(
+                    typeof propertyValue === "string",
+                    m(`${propertyName} is supposed to be a string`),
+                );
+                assert(
+                    propertyValue !== "",
+                    m(`${propertyName} is supposed to be a non empty string`),
+                );
+            }
         }
 
         const { port, githubPersonalAccessToken, ...rest } = configuration;

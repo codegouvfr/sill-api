@@ -21,7 +21,9 @@ export async function git(params: {
     } = params;
 
     await exec(
-        `git clone --depth 1 https://${github_token}@github.com/${owner}/${repo}`,
+        `git clone ${
+            shaish === undefined ? "--depth 1 " : " "
+        }https://${github_token}@github.com/${owner}/${repo}`,
     );
 
     const cwd = process.cwd();

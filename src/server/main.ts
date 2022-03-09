@@ -8,6 +8,7 @@ import * as trpcExpress from "@trpc/server/adapters/express";
 import { fetchArchive } from "./fetchArchive";
 import { createDecodeJwtKeycloakFactory } from "../tools/decodeJwt/adapter/keycloak";
 import { createDecodeJwtNoVerify } from "../tools/decodeJwt/adapter/noVerify";
+import cors from "cors";
 
 const configuration = getConfiguration();
 
@@ -40,6 +41,8 @@ async function createContext({ req }: CreateExpressContextOptions) {
 async function createRouter() {
     const softwares = await fetchArchive({
         "githubPersonalAccessToken": configuration.githubPersonalAccessToken,
+        "archiveRepoUrl": configuration.archiveRepoUrl,
+        "archiveRepoBranch": configuration.archiveRepoBranch,
     });
 
     return trpc
@@ -51,31 +54,38 @@ async function createRouter() {
                 return () => ({ keycloakParams, jwtClaims });
             })(),
         })
-        .query("getSoftware", { "resolve": () => softwares });
+        .query("getSoftware", {
+            "resolve": ({ ctx }) => {
+                console.log(ctx?.parsedJwt);
+                return softwares;
+            },
+        });
 }
 
 export type TrpcRouter = ReturnType<typeof createRouter>;
 
 (async function main() {
-    // express implementation
-    const app = express();
-
-    app.use(
-        (req, _res, next) => (
-            console.log("⬅", req.method, req.path, req.body ?? req.query),
-            next()
-        ),
-    );
-
-    app.use(
-        "/api",
-        trpcExpress.createExpressMiddleware({
-            "router": await createRouter(),
-            createContext,
-        }),
-    );
-
-    app.listen(configuration.port, () =>
-        console.log(`Listening on port ${configuration.port}`),
-    );
+    express()
+        .use(cors())
+        .use(
+            (req, _res, next) => (
+                console.log("⬅", req.method, req.path, req.body ?? req.query),
+                next()
+            ),
+        )
+        .use(
+            (...[, res, next]) => (
+                res.header("Access-Control-Allow-Headers", "*"), next()
+            ),
+        )
+        .use(
+            "/api",
+            trpcExpress.createExpressMiddleware({
+                "router": await createRouter(),
+                createContext,
+            }),
+        )
+        .listen(configuration.port, () =>
+            console.log(`Listening on port ${configuration.port}`),
+        );
 })();
