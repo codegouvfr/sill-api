@@ -17,6 +17,7 @@ jobs:
       with:
         submodules: "recursive"
         token: ${{secrets.PAT}}
+    - run: du -a .
     - uses: actions/setup-node@v2.1.3
     - uses: bahmutov/npm-install@v1
     - name: If this step fails run 'npm run lint' and 'npm run format' then commit again.
