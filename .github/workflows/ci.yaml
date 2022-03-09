@@ -45,7 +45,7 @@ jobs:
       with:
         submodules: true
         token: ${{secrets.PAT}}
-    - run: ls -la
+    - run: du -a . 
     - uses: actions/setup-node@v2.1.3
       with:
         node-version: ${{ matrix.node }}
