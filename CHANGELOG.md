@@ -1,3 +1,30 @@
+### **0.0.27** (2022-03-10)  
+  
+- :bookmark:  Bump version  
+- :whale:  Use forver to automatically restart if process crashes  
+- :bug:  Fix bug in signature validation  
+- :bug:  Fix bug in contacts to reality  
+- :green_heart:  fix test script  
+- :pencil:  
+- :whale:  Publish the Docker image under etalab/sill-api  
+- :pencil:  Update README  
+- Update ci.yaml  
+- Update ci.yaml  
+- :construction_worker:  Update the version of actions/checkout used  
+- :construction_worker:  Remove du -a . (debug step)  
+- :construction_worker:  Clone submodules recursively  
+- :fire: (Remove ncc from deps, use it directly in Dockerfile instead)  
+- Update ci.yaml  
+- Update ci.yaml  
+- :whale:  Configure docker image  
+- :bug:  The server actually works  
+- :card_file_box:  Update db  
+- :card_file_box:  Update data  
+- :card_file_box:  Update data  
+- :recycle:  Using a single submodule for data  
+- :fire:  Removing data files  
+- :fire:  Remove sill-referents submodule    
+  
 ### **0.0.26** (2022-03-01)  
   
 - :bookmark:  Bump version  
