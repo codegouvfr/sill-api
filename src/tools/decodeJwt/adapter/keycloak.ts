@@ -19,7 +19,7 @@ export function createDecodeJwtKeycloakFactory(params: {
 
             const keycloakBackend = createKeycloakBacked({
                 realm,
-                "auth-server-url": url,
+                "auth-server-url": url.replace("/auth", ""),
                 "client_id": clientId,
             });
 
@@ -78,7 +78,7 @@ async function fetchKeycloakRealmPublicCert(params: {
 
     return [
         "-----BEGIN CERTIFICATE-----",
-        obj["keys"][0]["x5c"][0],
+        obj["keys"].find(({ use }: any) => use === "sig")["x5c"][0],
         "-----END CERTIFICATE-----",
     ].join("\n");
 }

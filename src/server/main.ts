@@ -55,10 +55,7 @@ async function createRouter() {
             })(),
         })
         .query("getSoftware", {
-            "resolve": ({ ctx }) => {
-                console.log(ctx?.parsedJwt);
-                return softwares;
-            },
+            "resolve": () => softwares,
         });
 }
 
