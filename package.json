@@ -1,6 +1,6 @@
 {
     "name": "sill-api",
-    "version": "0.0.27",
+    "version": "0.1.0",
     "description": "Ongoing work with the SILL 2.0",
     "repository": {
         "type": "git",
