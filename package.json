@@ -10,7 +10,7 @@
     "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc",
-        "dev": "./.env.local.sh yarn start",
+        "dev": "./.env.local.sh node dist/server/main.js",
         "pack": "npx ncc build dist/server/main.js",
         "build-json": "node dist/bin/generate-json.js",
         "lint:check": "eslint . --ext .ts,.tsx",

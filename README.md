@@ -86,6 +86,10 @@ To see what to put in configuration look at `src/server/configuration.ts` and `.
 docker run -it -p 8080:80 --env CONFIGURATION={...} etalab/sill-api:main
 ```
 
+To test that the container is up:
+
+http://localhost:80/api/getOidcParams
+
 # Licences
 
 DINUM and contributors of the repository, 2019-2022.
