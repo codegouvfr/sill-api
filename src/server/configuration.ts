@@ -34,7 +34,7 @@ type KcLanguageTag = typeof kcLanguageTags[number];
 export type Configuration = {
     //If not defined we will not check the signature and just trust the claims in the JWT.
     keycloakParams?: {
-        url: `https://${string}`; //Without the '/auth' at the end
+        url: string; //Example: https://etalab-auth.lab.sspcloud.fr/auth (with the /auth at the end)
         realm: string;
         clientId: string;
         termsOfServices?: string | Partial<Record<KcLanguageTag, string>>;
@@ -46,10 +46,10 @@ export type Configuration = {
         firstName: string;
         username: string;
         groups: string;
-        local: string;
+        locale: string;
     };
-    sillCsvRepoUrl: `https://${string}`;
-    archiveRepoUrl: `https://${string}`;
+    sillCsvRepoUrl: string;
+    archiveRepoUrl: string;
     archiveRepoBranch: string;
     //Needed to open pull and do pr on sillCsvUrl and sillArchiveRepoUrl#sillArchiveRepoBranch
     githubPersonalAccessToken: string | { envName: string };
@@ -201,19 +201,19 @@ export const getConfiguration = memoize(
             }
 
             assert(
-                /^https:\/\//.test(url),
+                /^https?:\/\//.test(url),
                 m_1(
                     `${symToStr({
                         url,
-                    })} should be an url (starting with 'https://')`,
+                    })} should be an url (starting with 'https?://')`,
                 ),
             );
             assert(
-                !/\/auth\/?$/.test(url),
+                /\/auth\/?$/.test(url),
                 m_1(
                     `${symToStr({
                         url,
-                    })} The '/auth' portion of the path should be removed`,
+                    })} The url is expected to end with /auth`,
                 ),
             );
 
@@ -224,7 +224,7 @@ export const getConfiguration = memoize(
 
                 if (typeof termsOfServices === "string") {
                     assert(
-                        termsOfServices.startsWith("https"),
+                        termsOfServices.startsWith("http"),
                         m_1(
                             `If ${symToStr({
                                 termsOfServices,
@@ -286,7 +286,7 @@ export const getConfiguration = memoize(
                 m_1("Is supposed to be an object"),
             );
 
-            const { email, familyName, firstName, groups, local, username } =
+            const { email, familyName, firstName, groups, locale, username } =
                 jwtClaims;
 
             {
@@ -295,7 +295,7 @@ export const getConfiguration = memoize(
                     symToStr({ familyName }),
                     symToStr({ firstName }),
                     symToStr({ groups }),
-                    symToStr({ local }),
+                    symToStr({ locale }),
                     symToStr({ username }),
                 ] as const;
 
@@ -326,7 +326,7 @@ export const getConfiguration = memoize(
                 [symToStr({ familyName }), familyName],
                 [symToStr({ firstName }), firstName],
                 [symToStr({ groups }), groups],
-                [symToStr({ local }), local],
+                [symToStr({ locale }), locale],
                 [symToStr({ username }), username],
             ] as const) {
                 assert(

@@ -73,7 +73,7 @@ async function fetchKeycloakRealmPublicCert(params: {
     const { url, realm } = params;
 
     const obj = await fetch(
-        urlJoin(url, "auth/realms", realm, "protocol/openid-connect/certs"),
+        urlJoin(url, "realms", realm, "protocol/openid-connect/certs"),
     ).then(res => res.json());
 
     return [

@@ -2,20 +2,18 @@
 
 export CONFIGURATION=$(cat << EOF
 {
-	/*
 	"keycloakParams": {
-		"url": "https://auth.sspcloud.fr",
-		"realm": "sspcloud",
+		"url": "https://etalab-auth.lab.sspcloud.fr/auth",
+		"realm": "etalab",
 		"clientId": "sill"
-	}
-	*/
+	},
 	"jwtClaims": {
 		"email": "email",
-		"familyName": "familyName",
-		"firstName": "familyName",
-		"username": "username",
+		"familyName": "family_name",
+		"firstName": "given_name",
+		"username": "preferred_username",
 		"groups": "groups",
-		"local": "local"
+		"locale": "locale"
 	},
     "sillCsvRepoUrl": "https://github.com/etalab/sill-csv",
     "archiveRepoUrl": "https://github.com/etalab/sill-csv-private",
