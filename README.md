@@ -83,6 +83,7 @@ This is a node program that constitute the backend of `sill-web`
 To see what to put in configuration look at `src/server/configuration.ts` and `.env.local.sh` for an example.
 
 ```bash
+docker build -t etalab/sill-api:main .
 docker run -it -p 8080:80 --env CONFIGURATION={...} etalab/sill-api:main
 ```
 
