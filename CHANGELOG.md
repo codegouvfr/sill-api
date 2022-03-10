@@ -1,3 +1,8 @@
+## **0.1.0** (2022-03-10)  
+  
+- :bookmark:  Bump version  
+- Trigger etalab/paris-sspcloud autoupdate    
+  
 ### **0.0.27** (2022-03-10)  
   
 - :bookmark:  Bump version  
