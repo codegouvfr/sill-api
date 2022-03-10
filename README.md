@@ -28,13 +28,6 @@ from the [sill-referent.csv](https://github.com/etalab/sill-referents/blob/main/
 Another problem is that the SILL updates are shared informally on a private mailing list, forcing the maintainer of the sill.csv file to centralize updates: this
 repository prepares a process that will be handled through a web interface where contributors will be able to update their own SILL entries by themselves.
 
-# Published data
-
-This repo publish a [`sill2.json`](https://code.gouv.fr/data/sill2.json) files that compiles data from [softwares.csv](data/softwares/softwares.csv)
-and [Le comptoir du libre](https://comptoir-du-libre.org/).
-
-It will be used from [code.gouv.fr](https://code.gouv.fr/) to expose the SILL.
-
 # Dev
 
 > This repo contains a private submodules that should be
@@ -50,19 +43,21 @@ cd data/referents
 git checkout main
 ```
 
-## Generating the json files
+## Model
+
+This repo publish a [`sill2.json`](https://code.gouv.fr/data/sill2.json) files that compiles data from [softwares.csv](data/softwares/softwares.csv)
+and [Le comptoir du libre](https://comptoir-du-libre.org/).
+
+It will be used from [code.gouv.fr](https://code.gouv.fr/) to expose the SILL.
+
+### Generating the json files under `data/`
 
 ```bash
 yarn build # Compile the code
-yarn start # Generate the data/**/*.json files
+yarn build-json # Generate the data/**/*.json files
 ```
 
-# Contributing
-
-All changes to the `data/**/*.csv` file will triggers
-new publication of updated `*.json` (assuming the changes are valid).
-
-## Editing `referent.csv`
+### Editing `referent.csv`
 
 ```bash
 cd data/referents
@@ -75,11 +70,21 @@ git commit -am "Update sill-referent submodule"
 git push
 ```
 
-## Publishing a new version of the types definitions
+### Publishing a new version of the types definitions
 
 To update the version of the [`src/types.ts`](/src/types.ts) published
 as [an NPM modules](https://www.npmjs.com/package/sillfr) just bump the version
 of the [`package.json`](/package.json) file.
+
+## Server
+
+This is a node program that constitute the backend of `sill-web`
+
+To see what to put in configuration look at `src/server/configuration.ts` and `.env.local.sh` for an example.
+
+```bash
+docker run -it -p 8080:80 --env CONFIGURATION={...} garronej/sill-api:main
+```
 
 # Licences
 
