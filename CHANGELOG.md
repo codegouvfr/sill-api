@@ -1,3 +1,8 @@
+### **0.2.2** (2022-03-11)  
+  
+- :bookmark:  Bump version  
+- :bug:  Fix getSoftware endpoint    
+  
 ### **0.2.1** (2022-03-11)  
   
 - :bookmark:  Bump version  
