@@ -1,3 +1,9 @@
+### **0.2.1** (2022-03-11)  
+  
+- :bookmark:  Bump version  
+- :label:  Exporting NoReferentCredentialsSoftware in the index  
+- :construction_worker:  Fix CI    
+  
 ## **0.2.0** (2022-03-11)  
   
 - :bookmark:  Bump version  
