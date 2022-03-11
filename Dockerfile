@@ -9,6 +9,7 @@ RUN npx ncc build src/server/main.ts
 
 # production environment
 FROM node:14.16.0-alpine
+RUN apk add --update git
 COPY --from=build /app/dist/index.js .    
 RUN npm install -g forever
 ENTRYPOINT sh -c "forever index.js"
