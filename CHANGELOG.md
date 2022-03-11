@@ -1,3 +1,8 @@
+### **0.1.2** (2022-03-11)  
+  
+- :bookmark: Bump version  
+- :whale:  include git in docker image    
+  
 ### **0.1.1** (2022-03-10)  
   
 - :bookmark:    
