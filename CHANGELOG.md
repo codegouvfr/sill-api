@@ -1,3 +1,8 @@
+## **0.2.0** (2022-03-11)  
+  
+- :bookmark:  Bump version  
+- :sparkles:  Add endpoint to fetch user softwares id    
+  
 ### **0.1.3** (2022-03-11)  
   
 - :bookmark:  Bump version  
