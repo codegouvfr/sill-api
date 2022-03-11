@@ -75,6 +75,7 @@ export type TrpcRouter = ReturnType<typeof createRouter>;
                 res.header("Access-Control-Allow-Headers", "*"), next()
             ),
         )
+        .use("/public/healthcheck", (...[, res]) => res.sendStatus(200))
         .use(
             "/api",
             trpcExpress.createExpressMiddleware({
