@@ -1,3 +1,9 @@
+### **0.1.3** (2022-03-11)  
+  
+- :bookmark:  Bump version  
+- :construction_worker:  Respond ok to Kubernetes healthchecks  
+- :pencil:  Add actual command to start docker image locally    
+  
 ### **0.1.2** (2022-03-11)  
   
 - :bookmark: Bump version  
