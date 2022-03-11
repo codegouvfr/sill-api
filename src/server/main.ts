@@ -80,7 +80,7 @@ async function createRouter() {
                             softwares.referentEmail?.toLowerCase() ===
                             email.toLowerCase(),
                     )
-                    .filter(({ id }) => id);
+                    .map(({ id }) => id);
             },
         });
 }
