@@ -215,7 +215,7 @@ jobs:
       - if: ${{ needs.publish_on_npm.result == 'failure' }}
         run: exit 1
       # The code for this action can be found here: 
-      # https://github.com/etalab/sill/blob/gh-actions/src/publish_easily_consumable_entries.ts
+      # https://github.com/etalab/sill/blob/gh-actions/src/publish_easily_consumable_entries.ts
       - uses: actions/checkout@v2.3.4
         with:
           repository: etalab/sill-csv-private
@@ -234,14 +234,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
       - run: npx -y -p gh-pages@3.0.0 gh-pages -b archive -d data -u "github-actions-bot <actions@github.com>"
+      - run: rm data/software.json
+      - run: mv data/noReferentCredential_software.json data/sill2.json
       - name: Send data via SSH to the server
         uses: appleboy/scp-action@v0.1.2
         with:
           host: 193.70.86.67
           username: web
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "data/noReferentCredential_software.json"
-          target: "~/websites/code.gouv.fr/data/sill2.json"
+          source: "data/*.json"
+          target: "~/websites/code.gouv.fr/"
           
   poke_gitops:
     runs-on: ubuntu-latest
