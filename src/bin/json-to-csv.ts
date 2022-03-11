@@ -5,9 +5,9 @@ import {
     softwareCsvFilePath,
     referentsCsvFilePath,
     csvServicesPath,
-    softwareJsonFilePath,
-    referentsJsonFilePath,
-    servicesJsonPath,
+    softwareCsvRowsJsonFilePath,
+    referentCsvRowsJsonFilePath,
+    serviceCsvRowsJsonPath,
 } from "./generate-json";
 import type {
     SoftwareCsvRow,
@@ -18,7 +18,11 @@ import * as fs from "fs";
 
 if (require.main === module) {
     const [softwareCsvRows, referentCsvRows, serviceCsvRows] = (
-        [softwareJsonFilePath, referentsJsonFilePath, servicesJsonPath] as const
+        [
+            softwareCsvRowsJsonFilePath,
+            referentCsvRowsJsonFilePath,
+            serviceCsvRowsJsonPath,
+        ] as const
     ).map(path => JSON.parse(fs.readFileSync(path).toString("utf8"))) as [
         SoftwareCsvRow[],
         ReferentCsvRow[],

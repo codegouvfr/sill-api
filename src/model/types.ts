@@ -160,8 +160,12 @@ export type Software = {
     workshopUrl: string | null;
     testUrl: string | null;
     useCasesUrl: string[];
-    hasReferent: boolean;
+    referentEmail: string | null;
     services: Omit<ServiceCsvRow.KnownSoftware[], "softwareId">;
+};
+
+export type NoReferentCredentialsSoftware = Omit<Software, "referentEmail"> & {
+    hasReferent: boolean;
 };
 
 export type SoftwareRef = SoftwareRef.Known | SoftwareRef.Unknown;

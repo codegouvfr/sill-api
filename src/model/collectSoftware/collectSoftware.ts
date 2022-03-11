@@ -95,7 +95,7 @@ export async function collectSoftware(params: {
                 "mimGroup": software.mimGroup,
                 "versionMin": software.versionMin,
                 "versionMax": software.versionMax ?? null,
-                "hasReferent": referent !== undefined,
+                "referentEmail": referent?.email ?? null,
                 "workshopUrl": software.workshopUrl ?? null,
                 "testUrl": software.testUrl ?? null,
                 "useCasesUrl": software.useCasesUrl,

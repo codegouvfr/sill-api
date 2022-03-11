@@ -240,8 +240,8 @@ jobs:
           host: 193.70.86.67
           username: web
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "data/*.json"
-          target: "~/websites/code.gouv.fr/"
+          source: "data/noReferentCredential_software.json"
+          target: "~/websites/code.gouv.fr/data/sill2.json"
           
   poke_gitops:
     runs-on: ubuntu-latest

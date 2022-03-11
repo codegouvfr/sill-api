@@ -2,7 +2,7 @@ import { git } from "../tools/git";
 import { Deferred } from "evt/tools/Deferred";
 import * as fs from "fs";
 import { relative as pathRelative } from "path";
-import { dataDirPath, sillFilePath } from "../bin/generate-json";
+import { dataDirPath, softwareJsonFilePath } from "../bin/generate-json";
 import type { Software } from "../model/types";
 import { URL } from "url";
 import { assert } from "tsafe/assert";
@@ -45,7 +45,9 @@ export function fetchArchive(params: {
             dApiData.resolve(
                 JSON.parse(
                     fs
-                        .readFileSync(pathRelative(dataDirPath, sillFilePath))
+                        .readFileSync(
+                            pathRelative(dataDirPath, softwareJsonFilePath),
+                        )
                         .toString("utf8"),
                 ),
             );

@@ -8,6 +8,8 @@ import * as trpcExpress from "@trpc/server/adapters/express";
 import { fetchArchive } from "./fetchArchive";
 import { createDecodeJwtKeycloakFactory } from "../tools/decodeJwt/adapter/keycloak";
 import { createDecodeJwtNoVerify } from "../tools/decodeJwt/adapter/noVerify";
+import { NoReferentCredentialsSoftware } from "../model/types";
+import { TRPCError } from "@trpc/server";
 import cors from "cors";
 
 const configuration = getConfiguration();
@@ -45,6 +47,13 @@ async function createRouter() {
         "archiveRepoBranch": configuration.archiveRepoBranch,
     });
 
+    const noReferentCredentialSoftwares = softwares.map(
+        ({ referentEmail, ...rest }): NoReferentCredentialsSoftware => ({
+            ...rest,
+            "hasReferent": referentEmail !== null,
+        }),
+    );
+
     return trpc
         .router<ReturnType<typeof createContext>>()
         .query("getOidcParams", {
@@ -55,7 +64,24 @@ async function createRouter() {
             })(),
         })
         .query("getSoftware", {
-            "resolve": () => softwares,
+            "resolve": () => noReferentCredentialSoftwares,
+        })
+        .query("getUserSoftwareIds", {
+            "resolve": ({ ctx }) => {
+                if (ctx === null) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+
+                const { email } = ctx.parsedJwt;
+
+                return softwares
+                    .filter(
+                        softwares =>
+                            softwares.referentEmail?.toLowerCase() ===
+                            email.toLowerCase(),
+                    )
+                    .filter(({ id }) => id);
+            },
         });
 }
 
@@ -68,11 +94,6 @@ export type TrpcRouter = ReturnType<typeof createRouter>;
             (req, _res, next) => (
                 console.log("⬅", req.method, req.path, req.body ?? req.query),
                 next()
-            ),
-        )
-        .use(
-            (...[, res, next]) => (
-                res.header("Access-Control-Allow-Headers", "*"), next()
             ),
         )
         .use("/public/healthcheck", (...[, res]) => res.sendStatus(200))
