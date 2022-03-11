@@ -84,7 +84,7 @@ To see what to put in configuration look at `src/server/configuration.ts` and `.
 
 ```bash
 docker build -t etalab/sill-api:main .
-docker run -it -p 8080:80 --env CONFIGURATION={...} etalab/sill-api:main
+docker run -it -p 8080:80 --env GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_PERSONAL_ACCESS_TOKEN --env CONFIGURATION='{ "keycloakParams": { "url": "https://etalab-auth.lab.sspcloud.fr/auth", "realm": "etalab", "clientId": "sill" }, "jwtClaims": { "email": "email", "familyName": "family_name", "firstName": "given_name", "username": "preferred_username", "groups": "groups", "locale": "locale" }, "sillCsvRepoUrl": "https://github.com/etalab/sill-csv", "archiveRepoUrl": "https://github.com/etalab/sill-csv-private", "archiveRepoBranch": "archive", "githubPersonalAccessToken": { /* This env need to be defined in your .bashrc */ "envName": "GITHUB_PERSONAL_ACCESS_TOKEN" }, "port": 8080 }' etalab/sill-api:main
 ```
 
 To test that the container is up:
