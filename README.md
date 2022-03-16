@@ -20,14 +20,6 @@
     -   [Publishing a new version of the types definitions](#publishing-a-new-version-of-the-types-definitions)
 -   [Licences](#licences)
 
-# Purpose
-
-Private and public data about software in the SILL catalog come from scattered sources: from the original [sill.csv](data/softwares/sill.csv) file,
-from the [sill-referent.csv](https://github.com/etalab/sill-referents/blob/main/referents.csv) file in [a private repo](https://github.com/etalab/sill-referents), from Wikidata, [Le comptoir du libre](https://comptoir-du-libre.org/), etc.
-
-Another problem is that the SILL updates are shared informally on a private mailing list, forcing the maintainer of the sill.csv file to centralize updates: this
-repository prepares a process that will be handled through a web interface where contributors will be able to update their own SILL entries by themselves.
-
 # Dev
 
 > This repo contains a private submodules that should be
