@@ -234,15 +234,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
       - run: npx -y -p gh-pages@3.0.0 gh-pages -b build -d build-data -u "github-actions-bot <actions@github.com>"
-      - run: rm build-data/compiledData.json
-      - run: mv build-data/compiledData_withoutReferents.json build-data/sill3.json
+      - run: mv build-data data
+      - run: rm data/compiledData.json
+      - run: mv data/compiledData_withoutReferents.json data/sill3.json
       - name: Send data via SSH to the server
         uses: appleboy/scp-action@v0.1.2
         with:
           host: 193.70.86.67
           username: web
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "build-data/*.json"
+          source: "data/*.json"
           target: "~/websites/code.gouv.fr/"
           
   poke_gitops:
