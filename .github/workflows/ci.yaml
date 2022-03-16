@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3.0.0
       with:
-        submodules: "recursive"
+        submodules: true
         token: ${{secrets.PAT}}
     - uses: actions/setup-node@v2.1.3
     - uses: bahmutov/npm-install@v1
@@ -43,7 +43,7 @@ jobs:
         action_name: tell_if_project_uses_npm_or_yarn
     - uses: actions/checkout@v3.0.0
       with:
-        submodules: "recursive"
+        submodules: true
         token: ${{secrets.PAT}}
     - uses: actions/setup-node@v2.1.3
       with:
@@ -59,8 +59,8 @@ jobs:
         npm run build-json
     - uses: actions/upload-artifact@v2
       with:
-        name: json-files
-        path: data/**/*.json
+        name: build-data
+        path: data/build/*.json
 
   check_if_version_upgraded:
     name: Check if version upgrade
@@ -222,27 +222,27 @@ jobs:
           token: ${{secrets.PAT}}
       - uses: actions/download-artifact@v2
         with:
-          name: json-files
-          path: data/
+          name: build-data
+          path: build-data/
       - uses: geekyeggo/delete-artifact@v1
         with:
-          name: json-files
+          name: build-data
       - uses: actions/setup-node@v2.1.3
         with:
           node-version: '16'
       - run: git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/etalab/sill-csv-private.git
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
-      - run: npx -y -p gh-pages@3.0.0 gh-pages -b archive -d data -u "github-actions-bot <actions@github.com>"
-      - run: rm data/software.json
-      - run: mv data/noReferentCredential_software.json data/sill2.json
+      - run: npx -y -p gh-pages@3.0.0 gh-pages -b build -d build-data -u "github-actions-bot <actions@github.com>"
+      - run: rm build-data/compiledData.json
+      - run: mv build-data/compiledData_withoutReferents.json build-data/sill3.json
       - name: Send data via SSH to the server
         uses: appleboy/scp-action@v0.1.2
         with:
           host: 193.70.86.67
           username: web
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "data/*.json"
+          source: "build-data/*.json"
           target: "~/websites/code.gouv.fr/"
           
   poke_gitops:

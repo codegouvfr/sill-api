@@ -11,8 +11,7 @@
     "scripts": {
         "build": "tsc",
         "dev": "./.env.local.sh node dist/server/main.js",
-        "pack": "npx ncc build dist/server/main.js",
-        "build-json": "node dist/bin/generate-json.js",
+        "build-data": "node dist/bin/build-data.js",
         "lint:check": "eslint . --ext .ts,.tsx",
         "lint": "npm run lint:check -- --fix",
         "_format": "prettier '**/*.{ts,tsx,json,md}'",

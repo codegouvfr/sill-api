@@ -5,10 +5,12 @@ import type { CreateExpressContextOptions } from "@trpc/server/adapters/express"
 import express from "express";
 //import { z } from "zod";
 import * as trpcExpress from "@trpc/server/adapters/express";
-import { fetchArchive } from "./fetchArchive";
+import { fetchCompiledData } from "./fetchCompiledData";
+import { fetchDb } from "./fetchDb";
 import { createDecodeJwtKeycloakFactory } from "../tools/decodeJwt/adapter/keycloak";
 import { createDecodeJwtNoVerify } from "../tools/decodeJwt/adapter/noVerify";
-import { NoReferentCredentialsSoftware } from "../model/types";
+import { CompiledData } from "../model/types";
+import { removeReferent } from "../model/buildCatalog";
 import { TRPCError } from "@trpc/server";
 import cors from "cors";
 
@@ -41,18 +43,21 @@ async function createContext({ req }: CreateExpressContextOptions) {
 }
 
 async function createRouter() {
-    const softwares = await fetchArchive({
+    const compiledData = await fetchCompiledData({
         "githubPersonalAccessToken": configuration.githubPersonalAccessToken,
-        "archiveRepoUrl": configuration.archiveRepoUrl,
-        "archiveRepoBranch": configuration.archiveRepoBranch,
+        "dataRepoUrl": configuration.dataRepoUrl,
+        "buildBranch": configuration.buildBranch,
     });
 
-    const noReferentCredentialSoftwares = softwares.map(
-        ({ referentEmail, ...rest }): NoReferentCredentialsSoftware => ({
-            ...rest,
-            "hasReferent": referentEmail !== null,
-        }),
-    );
+    const compiledData_withoutReferents: CompiledData<"without referents"> = {
+        ...compiledData,
+        "catalog": compiledData.catalog.map(removeReferent),
+    };
+
+    const { softwareReferentRows } = await fetchDb({
+        "dataRepoUrl": configuration.dataRepoUrl,
+        "githubPersonalAccessToken": configuration.githubPersonalAccessToken,
+    });
 
     return trpc
         .router<ReturnType<typeof createContext>>()
@@ -63,24 +68,21 @@ async function createRouter() {
                 return () => ({ keycloakParams, jwtClaims });
             })(),
         })
-        .query("getSoftware", {
-            "resolve": () => noReferentCredentialSoftwares,
+        .query("getCompiledData", {
+            "resolve": () => compiledData_withoutReferents,
         })
-        .query("getUserSoftwareIds", {
+        .query("getIdOfSoftwareUserIsReferentOf", {
             "resolve": ({ ctx }) => {
                 if (ctx === null) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const { email } = ctx.parsedJwt;
-
-                return softwares
+                return softwareReferentRows
                     .filter(
-                        softwares =>
-                            softwares.referentEmail?.toLowerCase() ===
-                            email.toLowerCase(),
+                        ({ referentEmail }) =>
+                            ctx.parsedJwt.email === referentEmail,
                     )
-                    .map(({ id }) => id);
+                    .map(({ softwareId }) => softwareId);
             },
         });
 }

@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import type { ComptoirDuLibre } from "../types";
+import type { ComptoirDuLibre } from "./types";
 
 const url =
     "https://comptoir-du-libre.org/public/export/comptoir-du-libre_export_v1.json";

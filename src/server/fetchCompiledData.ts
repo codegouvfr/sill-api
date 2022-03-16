@@ -1,30 +1,28 @@
 import { git } from "../tools/git";
 import { Deferred } from "evt/tools/Deferred";
 import * as fs from "fs";
-import { relative as pathRelative } from "path";
-import { dataDirPath, softwareJsonFilePath } from "../bin/generate-json";
-import type { Software } from "../model/types";
+import { compiledDataJsonRelativeFilePath } from "../bin/build-data";
+import { CompiledData } from "../model/types";
 import { URL } from "url";
 import { assert } from "tsafe/assert";
 import { symToStr } from "tsafe/symToStr";
 
-export function fetchArchive(params: {
-    archiveRepoUrl: string;
-    archiveRepoBranch: string;
+export function fetchCompiledData(params: {
+    dataRepoUrl: string;
+    buildBranch: string;
     githubPersonalAccessToken: string;
-}): Promise<Software[]> {
-    const { archiveRepoUrl, archiveRepoBranch, githubPersonalAccessToken } =
-        params;
+}): Promise<CompiledData<"with referents">> {
+    const { dataRepoUrl, buildBranch, githubPersonalAccessToken } = params;
 
-    const dApiData = new Deferred<Software[]>();
+    const dOut = new Deferred<CompiledData<"with referents">>();
 
     const { owner, repo } = (() => {
-        const { host, pathname } = new URL(archiveRepoUrl);
+        const { host, pathname } = new URL(dataRepoUrl);
 
         assert(
             host === "github.com",
             `${symToStr({
-                archiveRepoUrl,
+                dataRepoUrl,
             })} is expected to be a GitHub url (until we support other forges)`,
         );
 
@@ -39,15 +37,13 @@ export function fetchArchive(params: {
     git({
         owner,
         repo,
-        "shaish": archiveRepoBranch,
+        "shaish": buildBranch,
         "github_token": githubPersonalAccessToken,
         "action": async () => {
-            dApiData.resolve(
+            dOut.resolve(
                 JSON.parse(
                     fs
-                        .readFileSync(
-                            pathRelative(dataDirPath, softwareJsonFilePath),
-                        )
+                        .readFileSync(compiledDataJsonRelativeFilePath)
                         .toString("utf8"),
                 ),
             );
@@ -56,5 +52,5 @@ export function fetchArchive(params: {
         },
     });
 
-    return dApiData.pr;
+    return dOut.pr;
 }

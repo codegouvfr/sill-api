@@ -1,5 +1,5 @@
 // https://git.sr.ht/~etalab/sill
-export type SoftwareCsvRow = {
+export type SoftwareRow = {
     id: number;
     name: string;
     function: string;
@@ -25,69 +25,26 @@ export type SoftwareCsvRow = {
     mimGroup: MimGroup;
     versionMin: string;
     versionMax?: string;
-    referentId: number | undefined;
-    /** @deprecated: A single software will have more than one referent in the future */
-    isReferentExpert?: true;
     workshopUrl?: string;
     testUrl?: string;
     useCasesUrl: string[];
 };
 
-export namespace SoftwareCsvRow {
-    export const columns = [
-        "ID",
-        "nom",
-        "fonction",
-        "annees",
-        "statut",
-        "parent",
-        "public",
-        "support",
-        "similaire-a",
-        "wikidata",
-        "comptoir-du-libre",
-        "licence",
-        "contexte-usage",
-        "label",
-        "fiche",
-        "atelier",
-        "test",
-        "groupe",
-        "version_min",
-        "version_max",
-    ] as const;
-
-    export type Column = typeof columns[number];
-}
-
-export type ReferentCsvRow = {
-    id: number;
+export type ReferentRow = {
     email: string;
-    emailAlt?: string;
+    familyName: string;
+    firstName: string;
 };
 
-export namespace ReferentCsvRow {
-    export const columns = [
-        "Logiciel",
-        "Courriel",
-        "Courriel 2",
-        "Référent : expert technique ?",
-    ] as const;
+export type SoftwareReferentRow = {
+    softwareId: number;
+    referentEmail: string;
+    isExpert: boolean;
+};
 
-    export type Column = typeof columns[number];
+export type ServiceRow = ServiceRow.KnownSoftware | ServiceRow.UnknownSoftware;
 
-    export type Stats = Omit<ReferentCsvRow, "id"> & {
-        softwaresCount: number;
-        //Always at least one element if array defined
-        unknownSoftwares?: string[];
-    };
-}
-
-export type ServiceCsvRow =
-    | ServiceCsvRow.KnownSoftware
-    | ServiceCsvRow.UnknownSoftware;
-
-export namespace ServiceCsvRow {
+export namespace ServiceRow {
     export type Common = {
         id: number;
         agencyName: string;
@@ -114,59 +71,7 @@ export namespace ServiceCsvRow {
         softwareName: string;
         comptoirDuLibreId?: number;
     };
-
-    export const columns = [
-        "id",
-        "agency_name",
-        "public_sector",
-        "agency_url",
-        "service_name",
-        "service_url",
-        "description",
-        "software_name",
-        "software_sill_id",
-        "software_comptoir_id",
-        "publication_date",
-        "last_update_date",
-        "signup_scope",
-        "usage_scope",
-        "signup_validation_method",
-        "content_moderation_method",
-    ] as const;
-
-    export type Column = typeof columns[number];
 }
-
-export type Software = {
-    id: number;
-    name: string;
-    function: string;
-    //"2018" | "2019" | "2020" | "2021" | "2022";
-    referencedSinceYear: string;
-    /** @deprecated */
-    recommendationStatus: RecommendationStatus;
-    parentSoftware: SoftwareRef | null;
-    isFromFrenchPublicService: boolean;
-    isPresentInSupportContract: boolean;
-    alikeSoftwares: SoftwareRef[];
-    wikidata: WikidataData | null;
-    comptoirDuLibreSoftware: ComptoirDuLibre.Software | null;
-    license: string;
-    contextOfUse: string | null;
-    catalogNumeriqueGouvFrId: string | null;
-    mimGroup: MimGroup;
-    versionMin: string;
-    versionMax: string | null;
-    workshopUrl: string | null;
-    testUrl: string | null;
-    useCasesUrl: string[];
-    referentEmail: string | null;
-    services: Omit<ServiceCsvRow.KnownSoftware[], "softwareId">;
-};
-
-export type NoReferentCredentialsSoftware = Omit<Software, "referentEmail"> & {
-    hasReferent: boolean;
-};
 
 export type SoftwareRef = SoftwareRef.Known | SoftwareRef.Unknown;
 export namespace SoftwareRef {
@@ -244,3 +149,38 @@ export type WikidataData = Partial<{
     sourceUrl: string;
     documentationUrl: string;
 }>;
+
+export type CompiledData<
+    T extends "with referents" | "without referents" = "without referents",
+> = {
+    catalog: CompiledData.Software<T>[];
+    services: ServiceRow[];
+};
+
+export namespace CompiledData {
+    export type Software<
+        T extends "with referents" | "without referents" = "without referents",
+    > = T extends "with referents"
+        ? Software.WithReferent
+        : Software.WithoutReferent;
+    export namespace Software {
+        export type Common = Omit<
+            SoftwareRow,
+            "wikidataId" | "comptoirDuLibreId"
+        > & {
+            wikidataData?: WikidataData;
+            comptoirDuLibreSoftware?: ComptoirDuLibre.Software;
+        };
+
+        export type WithoutReferent = Common & {
+            referentCount: number;
+            hasExpertReferent: boolean;
+        };
+
+        export type WithReferent = Common & {
+            referents: (ReferentRow & {
+                isExpert: boolean;
+            })[];
+        };
+    }
+}

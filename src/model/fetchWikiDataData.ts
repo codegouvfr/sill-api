@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
-import type { Entity, DataValue } from "../../tools/WikidataEntity";
-import type { WikidataData } from "../types";
+import type { Entity, DataValue } from "../tools/WikidataEntity";
+import type { WikidataData } from "./types";
 import cheerio from "cheerio";
 import { assert } from "tsafe/assert";
 

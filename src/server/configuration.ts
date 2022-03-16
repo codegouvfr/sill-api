@@ -48,10 +48,8 @@ export type Configuration = {
         groups: string;
         locale: string;
     };
-    sillCsvRepoUrl: string;
-    archiveRepoUrl: string;
-    archiveRepoBranch: string;
-    //Needed to open pull and do pr on sillCsvUrl and sillArchiveRepoUrl#sillArchiveRepoBranch
+    dataRepoUrl: string;
+    buildBranch: string;
     githubPersonalAccessToken: string | { envName: string };
     //Port we listen to, default 8080
     port?: number;
@@ -100,9 +98,8 @@ export const getConfiguration = memoize(
                 jwtClaims,
                 githubPersonalAccessToken,
                 port,
-                sillCsvRepoUrl,
-                archiveRepoUrl,
-                archiveRepoBranch,
+                dataRepoUrl,
+                buildBranch,
             } = configuration;
 
             const propertiesNames = [
@@ -110,9 +107,8 @@ export const getConfiguration = memoize(
                 symToStr({ jwtClaims }),
                 symToStr({ githubPersonalAccessToken }),
                 symToStr({ port }),
-                symToStr({ sillCsvRepoUrl }),
-                symToStr({ archiveRepoUrl }),
-                symToStr({ archiveRepoBranch }),
+                symToStr({ dataRepoUrl }),
+                symToStr({ buildBranch }),
             ] as const;
 
             assert<
@@ -454,13 +450,11 @@ export const getConfiguration = memoize(
         }
 
         {
-            const { sillCsvRepoUrl, archiveRepoUrl, archiveRepoBranch } =
-                configuration;
+            const { dataRepoUrl, buildBranch } = configuration;
 
             for (const [propertyName, propertyValue] of [
-                [symToStr({ sillCsvRepoUrl }), sillCsvRepoUrl],
-                [symToStr({ archiveRepoUrl }), archiveRepoUrl],
-                [symToStr({ archiveRepoBranch }), archiveRepoBranch],
+                [symToStr({ dataRepoUrl }), dataRepoUrl],
+                [symToStr({ buildBranch }), buildBranch],
             ] as const) {
                 assert(
                     propertyValue !== undefined,

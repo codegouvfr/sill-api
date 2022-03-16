@@ -15,9 +15,8 @@ export CONFIGURATION=$(cat << EOF
 		"groups": "groups",
 		"locale": "locale"
 	},
-    "sillCsvRepoUrl": "https://github.com/etalab/sill-csv",
-    "archiveRepoUrl": "https://github.com/etalab/sill-csv-private",
-    "archiveRepoBranch": "archive",
+    "dataRepoUrl": "https://github.com/etalab/sill-data",
+    "buildBranch": "build",
 	"githubPersonalAccessToken": { 
 		/* This env need to be defined in your .bashrc */
 		"envName": "GITHUB_PERSONAL_ACCESS_TOKEN" 
