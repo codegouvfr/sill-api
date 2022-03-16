@@ -45,7 +45,7 @@ git checkout main
 
 ## Model
 
-This repo publish a [`sill2.json`](https://code.gouv.fr/data/sill2.json) files that compiles data from [softwares.csv](data/softwares/softwares.csv)
+This repo publish a [`sill3.json`](https://code.gouv.fr/data/sill3.json) files that compiles data from [the data private submodule](/data)
 and [Le comptoir du libre](https://comptoir-du-libre.org/).
 
 It will be used from [code.gouv.fr](https://code.gouv.fr/) to expose the SILL.
@@ -65,7 +65,7 @@ To see what to put in configuration look at `src/server/configuration.ts` and `.
 ```bash
 docker build -t etalab/sill-api:main .
 docker run -it -p 8080:8080 --env GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_PERSONAL_ACCESS_TOKEN --env CONFIGURATION='
-{ "keycloakParams": { "url": "https://etalab-auth.lab.sspcloud.fr/auth", "realm": "etalab", "clientId": "sill" }, "jwtClaims": { "email": "email", "familyName": "family_name", "firstName": "given_name", "username": "preferred_username", "groups": "groups", "locale": "locale" }, "dataRepoUrl": "https://github.com/etalab/sill-data", "buildBranch": "build", "githubPersonalAccessToken": { /* This env need to be defined in your .bashrc */ "envName": "GITHUB_PERSONAL_ACCESS_TOKEN" }, "port": 8080 }' etalab/sill-api:main
+{ "keycloakParams": { "url": "https://etalab-auth.lab.sspcloud.fr/auth", "realm": "etalab", "clientId": "sill" }, "jwtClaims": { "email": "email", "familyName": "family_name", "firstName": "given_name", "username": "preferred_username", "groups": "groups", "locale": "locale" }, "dataRepoUrl": "https://github.com/etalab/sill-data", "buildBranch": "build", "githubPersonalAccessToken": { "envName": "GITHUB_PERSONAL_ACCESS_TOKEN" }, "port": 8080 }' etalab/sill-api:main
 ```
 
 To test that the container is up:
