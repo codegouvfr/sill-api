@@ -50,26 +50,6 @@ and [Le comptoir du libre](https://comptoir-du-libre.org/).
 
 It will be used from [code.gouv.fr](https://code.gouv.fr/) to expose the SILL.
 
-### Generating the json files under `data/`
-
-```bash
-yarn build # Compile the code
-yarn build-json # Generate the data/**/*.json files
-```
-
-### Editing `referent.csv`
-
-```bash
-cd data/referents
-git add -A
-git commit -am "<Describe the changes made on data/referents/referents.csv>"
-git push
-cd ../..
-git add -A
-git commit -am "Update sill-referent submodule"
-git push
-```
-
 ### Publishing a new version of the types definitions
 
 To update the version of the [`src/types.ts`](/src/types.ts) published
@@ -84,12 +64,13 @@ To see what to put in configuration look at `src/server/configuration.ts` and `.
 
 ```bash
 docker build -t etalab/sill-api:main .
-docker run -it -p 8080:8080 --env GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_PERSONAL_ACCESS_TOKEN --env CONFIGURATION='{ "keycloakParams": { "url": "https://etalab-auth.lab.sspcloud.fr/auth", "realm": "etalab", "clientId": "sill" }, "jwtClaims": { "email": "email", "familyName": "family_name", "firstName": "given_name", "username": "preferred_username", "groups": "groups", "locale": "locale" }, "sillCsvRepoUrl": "https://github.com/etalab/sill-csv", "archiveRepoUrl": "https://github.com/etalab/sill-csv-private", "archiveRepoBranch": "archive", "githubPersonalAccessToken": { "envName": "GITHUB_PERSONAL_ACCESS_TOKEN" }, "port": 8080 }' etalab/sill-api:main
+docker run -it -p 8080:8080 --env GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_PERSONAL_ACCESS_TOKEN --env CONFIGURATION='
+{ "keycloakParams": { "url": "https://etalab-auth.lab.sspcloud.fr/auth", "realm": "etalab", "clientId": "sill" }, "jwtClaims": { "email": "email", "familyName": "family_name", "firstName": "given_name", "username": "preferred_username", "groups": "groups", "locale": "locale" }, "dataRepoUrl": "https://github.com/etalab/sill-data", "buildBranch": "build", "githubPersonalAccessToken": { /* This env need to be defined in your .bashrc */ "envName": "GITHUB_PERSONAL_ACCESS_TOKEN" }, "port": 8080 }' etalab/sill-api:main
 ```
 
 To test that the container is up:
 
-http://localhost:80/api/getOidcParams
+http://localhost:80/api/getKeycloakParams
 
 # Licences
 

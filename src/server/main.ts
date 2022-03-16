@@ -61,7 +61,7 @@ async function createRouter() {
 
     return trpc
         .router<ReturnType<typeof createContext>>()
-        .query("getOidcParams", {
+        .query("getKeycloakParams", {
             "resolve": (() => {
                 const { keycloakParams, jwtClaims } = configuration;
 
