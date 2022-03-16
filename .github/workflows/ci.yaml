@@ -218,7 +218,7 @@ jobs:
       # https://github.com/etalab/sill/blob/gh-actions/src/publish_easily_consumable_entries.ts
       - uses: actions/checkout@v2.3.4
         with:
-          repository: etalab/sill-csv-private
+          repository: etalab/sill-data
           token: ${{secrets.PAT}}
       - uses: actions/download-artifact@v2
         with:
@@ -230,7 +230,7 @@ jobs:
       - uses: actions/setup-node@v2.1.3
         with:
           node-version: '16'
-      - run: git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/etalab/sill-csv-private.git
+      - run: git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/etalab/sill-data.git
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
       - run: npx -y -p gh-pages@3.0.0 gh-pages -b build -d build-data -u "github-actions-bot <actions@github.com>"
