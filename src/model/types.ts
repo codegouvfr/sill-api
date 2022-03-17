@@ -25,10 +25,30 @@ export type SoftwareRow = {
     mimGroup: MimGroup;
     versionMin: string;
     versionMax?: string;
-    workshopUrl?: string;
-    testUrl?: string;
-    useCasesUrl: string[];
+    workshopUrls: string[];
+    sandboxes: Sandbox[];
+    useCaseUrls: string[];
 };
+
+export type Sandbox = Sandbox.Onyxia | Sandbox.Publisher | Sandbox.Yunohost;
+
+export namespace Sandbox {
+    export type Common = {
+        url: string;
+    };
+
+    export type Onyxia = Common & {
+        type: "onyxia";
+    };
+
+    export type Publisher = Common & {
+        type: "onyxia";
+    };
+
+    export type Yunohost = Common & {
+        type: "yunohost";
+    };
+}
 
 export type ReferentRow = {
     email: string;
