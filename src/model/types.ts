@@ -54,6 +54,7 @@ export type ReferentRow = {
     email: string;
     familyName: string;
     firstName: string;
+    agencyName: string;
 };
 
 export type SoftwareReferentRow = {
