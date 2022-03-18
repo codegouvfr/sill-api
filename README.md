@@ -30,9 +30,7 @@
 ```bash
 git clone https://github.com/etalab/sill-api
 cd sill-api
-git submodule update --init --recursive
-cd data/referents
-git checkout main
+git submodule update --init
 ```
 
 ## Model
