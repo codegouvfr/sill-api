@@ -224,6 +224,10 @@ jobs:
       - uses: actions/setup-node@v2.1.3
         with:
           node-version: '16'
+      - uses: actions/checkout@v2.3.4
+        with:
+          repository: etalab/sill-data
+          token: ${{secrets.PAT}}
       - run: git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/etalab/sill-data.git
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
