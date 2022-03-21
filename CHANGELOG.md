@@ -1,3 +1,11 @@
+### **0.3.3** (2022-03-21)  
+  
+- :bookmark:  Bump version  
+- :bug:  Fix the bugs at launch  
+- :construction_worker:  Try to fix CI  
+- :construction_worker:  Try to fix the ci  
+- :construction_worker:  Fix ci    
+  
 ## **0.3.2** (2022-03-21)  
   
 - :bookmark:  Bump version  
