@@ -26,29 +26,12 @@ export type SoftwareRow = {
     versionMin: string;
     versionMax?: string;
     workshopUrls: string[];
-    sandboxes: Sandbox[];
+    testUrls: {
+        description: string;
+        url: string;
+    }[];
     useCaseUrls: string[];
 };
-
-export type Sandbox = Sandbox.Onyxia | Sandbox.Publisher | Sandbox.Yunohost;
-
-export namespace Sandbox {
-    export type Common = {
-        url: string;
-    };
-
-    export type Onyxia = Common & {
-        type: "onyxia";
-    };
-
-    export type Publisher = Common & {
-        type: "onyxia";
-    };
-
-    export type Yunohost = Common & {
-        type: "yunohost";
-    };
-}
 
 export type ReferentRow = {
     email: string;
@@ -120,7 +103,7 @@ export const mimGroups = ["MIMO", "MIMDEV", "MIMPROD", "MIMDEVOPS"] as const;
 export type MimGroup = typeof mimGroups[number];
 
 export type ComptoirDuLibre = {
-    date_of_export: Date;
+    date_of_export: string;
     number_of_software: number;
     softwares: ComptoirDuLibre.Software[];
 };
@@ -147,8 +130,8 @@ export declare namespace ComptoirDuLibre {
 
     export interface Software {
         id: number;
-        created: Date;
-        modified: Date;
+        created: string;
+        modified: string;
         url: string;
         name: string;
         licence: string;
