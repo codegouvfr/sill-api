@@ -27,40 +27,14 @@ jobs:
         fi
         $PACKAGE_MANAGER run lint:check
         $PACKAGE_MANAGER run format:check
-  build-data:
-    runs-on: ${{ matrix.os }}
+  test:
     needs: test_lint
-    strategy:
-      matrix:
-        node: [ '16' ]
-        os: [ ubuntu-latest ]
-    name: Test with Node v${{ matrix.node }} on ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
-    - name: Tell if project is using npm or yarn
-      id: step1
-      uses: garronej/ts-ci@v1.1.4
-      with: 
-        action_name: tell_if_project_uses_npm_or_yarn
     - uses: actions/checkout@v3.0.0
-      with:
-        submodules: true
-        token: ${{secrets.PAT}}
     - uses: actions/setup-node@v2.1.3
-      with:
-        node-version: ${{ matrix.node }}
     - uses: bahmutov/npm-install@v1
-    - if: steps.step1.outputs.npm_or_yarn == 'yarn'
-      run: |
-        yarn build
-        yarn build-data
-    - if: steps.step1.outputs.npm_or_yarn == 'npm'
-      run: |
-        npm run build
-        npm run build-data
-    - uses: actions/upload-artifact@v2
-      with:
-        name: build-data
-        path: data/build/*.json
+    - run: yarn build
 
   check_if_version_upgraded:
     name: Check if version upgrade
@@ -71,7 +45,7 @@ jobs:
       github.event_name == 'push' || 
       github.event.pull_request.head.repo.owner.login == github.event.pull_request.base.repo.owner.login 
     runs-on: ubuntu-latest
-    needs: build-data
+    needs: test
     outputs:
       from_version: ${{ steps.step1.outputs.from_version }}
       to_version: ${{ steps.step1.outputs.to_version }}
@@ -87,7 +61,7 @@ jobs:
   docker:
     needs: 
       - check_if_version_upgraded
-      - build-data
+      - test
     runs-on: ubuntu-latest
     # We publish the the docker image only if it's a push on the default branch or if it's a PR from a 
     # branch (meaning not a PR from a fork). It would be more straightforward to test if secrets.DOCKERHUB_TOKEN is 
@@ -206,44 +180,6 @@ jobs:
         VERSION: ${{ needs.check_if_version_upgraded.outputs.to_version }}
         IS_BETA: ${{ needs.check_if_version_upgraded.outputs.is_release_beta }}
 
-  upload_json_files:
-    runs-on: ubuntu-latest
-    needs: publish_on_npm
-    # Run after publish_on_npm if we do. See https://stackoverflow.com/a/69252812/3731798
-    if: always()
-    steps:
-      - if: ${{ needs.publish_on_npm.result == 'failure' }}
-        run: exit 1
-      - uses: actions/checkout@v2.3.4
-        with:
-          repository: etalab/sill-data
-          token: ${{secrets.PAT}}
-      - uses: actions/download-artifact@v2
-        with:
-          name: build-data
-          path: build-data/
-      - uses: geekyeggo/delete-artifact@v1
-        with:
-          name: build-data
-      - uses: actions/setup-node@v2.1.3
-        with:
-          node-version: '16'
-      - run: git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/etalab/sill-data.git
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-      - run: du -a .
-      - run: npx -y -p gh-pages@3.0.0 gh-pages -b build -d build-data -u "github-actions-bot <actions@github.com>"
-      - run: mv build-data data
-      - run: rm data/compiledData.json
-      - run: mv data/compiledData_withoutReferents.json data/sill3.json
-      - name: Send data via SSH to the server
-        uses: appleboy/scp-action@v0.1.2
-        with:
-          host: 193.70.86.67
-          username: web
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "data/*.json"
-          target: "~/websites/code.gouv.fr/"
           
   poke_gitops:
     runs-on: ubuntu-latest

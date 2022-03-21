@@ -2,6 +2,7 @@ import { buildCatalog, removeReferent } from "../model/buildCatalog";
 import { join as pathJoin } from "path";
 import type { CompiledData } from "../model/types";
 import * as fs from "fs";
+import * as child_process from "child_process";
 
 export const softwareJsonRelativeFilePath = "software.json";
 export const referentJsonRelativeFilePath = "referent.json";
@@ -17,6 +18,10 @@ if (require.main === module) {
         const buildDirPath = pathJoin(dataDirPath, "build");
         const compiledDataWithoutReferentJsonRelativeFilePath =
             "compiledData_withoutReferents.json";
+
+        child_process.execSync(
+            `git clone --depth 1 https://${process.env["GITHUB_TOKEN"]}@github.com/${process.argv[2]} ${dataDirPath}`,
+        );
 
         const { compiledData } = await (async () => {
             const read = (relativeFilePath: string) =>
