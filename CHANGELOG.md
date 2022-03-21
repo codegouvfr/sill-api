@@ -1,3 +1,26 @@
+## **0.3.2** (2022-03-21)  
+  
+- :bookmark:  Bump version  
+- :boom:  Changing naming convention  
+- :pencil:  Update readme instructions  
+- Update data  
+- :label:  Add "agencyName" in referentRow
+
+Closes #15  
+- Addresses #14  
+- :card_file_box:  Update data  
+- :pencil:  Removing section of the readme that are no longer relevent  
+- :pencil:  Update README  
+- :construction_worker:  Fix upload to codegouv server  
+- :construction_worker:  Updat repo we update the computed data to  
+- :construction_worker:  Fix CI workflow  
+- :card_file_box:  Update data submodule  
+- :pencil:  Updating docs  
+- :recycle:  Refactor using only a private repo for data
+
+Only private repo for data and json files as source of truth  
+- :fire:  Remove data submodule (to be replaced)    
+  
 ### **0.2.2** (2022-03-11)  
   
 - :bookmark:  Bump version  
