@@ -99,6 +99,9 @@ export type TrpcRouter = ReturnType<typeof createRouter>;
             ),
         )
         .use("/public/healthcheck", (...[, res]) => res.sendStatus(200))
+        .post("/api/ondataupdated", req => {
+            console.log("====>", req);
+        })
         .use(
             "/api",
             trpcExpress.createExpressMiddleware({
