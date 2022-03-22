@@ -21,6 +21,7 @@ export CONFIGURATION=$(cat << EOF
 		/* This env need to be defined in your .bashrc */
 		"envName": "GITHUB_PERSONAL_ACCESS_TOKEN" 
 	},
+    "githubWebhookSecret": "NO VERIFY",
 	"port": 8080
 }
 EOF

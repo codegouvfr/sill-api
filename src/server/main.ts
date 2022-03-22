@@ -13,6 +13,11 @@ import { CompiledData } from "../model/types";
 import { removeReferent } from "../model/buildCatalog";
 import { TRPCError } from "@trpc/server";
 import cors from "cors";
+import * as crypto from "crypto";
+import { parseBody } from "../tools/parseBody";
+import memoize from "memoizee";
+import { assert } from "tsafe/assert";
+import type { Equals } from "tsafe";
 
 const configuration = getConfiguration();
 
@@ -42,24 +47,43 @@ async function createContext({ req }: CreateExpressContextOptions) {
     return { parsedJwt };
 }
 
-async function createRouter() {
-    const compiledData = await fetchCompiledData({
-        "githubPersonalAccessToken": configuration.githubPersonalAccessToken,
-        "dataRepoUrl": configuration.dataRepoUrl,
-        "buildBranch": configuration.buildBranch,
-    });
+const getCachedData = memoize(
+    async () => {
+        const compiledData = await fetchCompiledData({
+            "githubPersonalAccessToken":
+                configuration.githubPersonalAccessToken,
+            "dataRepoUrl": configuration.dataRepoUrl,
+            "buildBranch": configuration.buildBranch,
+        });
 
-    const compiledData_withoutReferents: CompiledData<"without referents"> = {
-        ...compiledData,
-        "catalog": compiledData.catalog.map(removeReferent),
-    };
+        const compiledData_withoutReferents = {
+            ...compiledData,
+            "catalog": compiledData.catalog.map(removeReferent),
+        };
 
-    const { softwareReferentRows } = await fetchDb({
-        "dataRepoUrl": configuration.dataRepoUrl,
-        "githubPersonalAccessToken": configuration.githubPersonalAccessToken,
-    });
+        assert<
+            Equals<
+                typeof compiledData_withoutReferents,
+                CompiledData<"without referents">
+            >
+        >();
 
-    return trpc
+        const { softwareReferentRows } = await fetchDb({
+            "dataRepoUrl": configuration.dataRepoUrl,
+            "githubPersonalAccessToken":
+                configuration.githubPersonalAccessToken,
+        });
+
+        return {
+            compiledData_withoutReferents,
+            softwareReferentRows,
+        };
+    },
+    { "promise": true },
+);
+
+const createRouter = () =>
+    trpc
         .router<ReturnType<typeof createContext>>()
         .query("getOidcParams", {
             "resolve": (() => {
@@ -69,15 +93,16 @@ async function createRouter() {
             })(),
         })
         .query("getCompiledData", {
-            "resolve": () => compiledData_withoutReferents,
+            "resolve": async () =>
+                (await getCachedData()).compiledData_withoutReferents,
         })
         .query("getIdOfSoftwareUserIsReferentOf", {
-            "resolve": ({ ctx }) => {
+            "resolve": async ({ ctx }) => {
                 if (ctx === null) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                return softwareReferentRows
+                return (await getCachedData()).softwareReferentRows
                     .filter(
                         ({ referentEmail }) =>
                             ctx.parsedJwt.email === referentEmail,
@@ -85,11 +110,13 @@ async function createRouter() {
                     .map(({ softwareId }) => softwareId);
             },
         });
-}
 
 export type TrpcRouter = ReturnType<typeof createRouter>;
 
-(async function main() {
+(function main() {
+    //NOTE: For pre fetching
+    getCachedData();
+
     express()
         .use(cors())
         .use(
@@ -99,13 +126,52 @@ export type TrpcRouter = ReturnType<typeof createRouter>;
             ),
         )
         .use("/public/healthcheck", (...[, res]) => res.sendStatus(200))
-        .post("/api/ondataupdated", req => {
-            console.log("====>", req);
+        .post("/api/ondataupdated", async (req, res) => {
+            check_signature: {
+                if (configuration.githubWebhookSecret === "NO VERIFY") {
+                    console.log("Skipping signature validation");
+
+                    break check_signature;
+                }
+
+                const receivedHash = req.header("HTTP_X_HUB_SIGNATURE_256");
+
+                if (receivedHash === undefined) {
+                    res.sendStatus(401);
+                    return;
+                }
+
+                const hash =
+                    "sha256=" +
+                    crypto
+                        .createHmac("sha256", configuration.githubWebhookSecret)
+                        .update(await parseBody(req))
+                        .digest("hex");
+
+                if (
+                    !crypto.timingSafeEqual(
+                        Buffer.from(receivedHash, "utf8"),
+                        Buffer.from(hash, "utf8"),
+                    )
+                ) {
+                    res.sendStatus(403);
+                    return;
+                }
+
+                console.log("Webhook signature OK");
+            }
+
+            console.log("Refreshing data");
+
+            getCachedData.clear();
+            getCachedData();
+
+            res.sendStatus(200);
         })
         .use(
             "/api",
             trpcExpress.createExpressMiddleware({
-                "router": await createRouter(),
+                "router": createRouter(),
                 createContext,
             }),
         )
