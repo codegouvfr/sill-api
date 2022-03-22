@@ -19,13 +19,14 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.PAT }}
     - run: npx -y -p gh-pages@3.0.0 gh-pages -b build -d data/build -u "github-actions-bot <actions@github.com>"
+    - run: cp data/build/compiledData_withoutReferents.json sill3.json
     - uses: appleboy/scp-action@v0.1.2
       with:
         host: 193.70.86.67
         username: web
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        source: "data/build/compiledData_withoutReferents.json"
-        target: "~/websites/code.gouv.fr/data/sill3.json"
+        source: "sill3.json"
+        target: "~/websites/code.gouv.fr/data/"
 
   debug:
     runs-on: ubuntu-latest
