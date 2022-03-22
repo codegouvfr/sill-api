@@ -5,8 +5,8 @@ on:
 jobs:
   build-data:
     runs-on: ubuntu-latest
-    #env: 
-    #  DATA_REPOSITORY: ${{github.event.client_payload.repository}}
+    env: 
+      DATA_REPOSITORY: ${{ github.event.client_payload.repository }}
     steps:
     - uses: actions/checkout@v3.0.0
     - uses: actions/setup-node@v2.1.3
@@ -15,11 +15,9 @@ jobs:
     - run: node dist/bin/build-data.js $DATA_REPOSITORY
       env:
         GITHUB_TOKEN: ${{ secrets.PAT }}
-        DATA_REPOSITORY: ${{ github.event.client_payload.repository }}
     - run: git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${DATA_REPOSITORY}.git
       env:
         GITHUB_TOKEN: ${{ secrets.PAT }}
-        DATA_REPOSITORY: ${{ github.event.client_payload.repository }}
     - run: npx -y -p gh-pages@3.0.0 gh-pages -b build -d data/build -u "github-actions-bot <actions@github.com>"
     - run: cp data/build/compiledData_withoutReferents.json sill3.json
     - uses: appleboy/scp-action@v0.1.2
