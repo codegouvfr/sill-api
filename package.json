@@ -11,7 +11,7 @@
     "scripts": {
         "build": "tsc",
         "dev": "./.env.local.sh node dist/server/main.js",
-        "build-data": "node dist/bin/build-data.js",
+        "build-data": "node dist/bin/build-data.js etalab/sill-data",
         "lint:check": "eslint . --ext .ts,.tsx",
         "lint": "npm run lint:check -- --fix",
         "_format": "prettier '**/*.{ts,tsx,json,md}'",

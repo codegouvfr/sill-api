@@ -1,8 +1,9 @@
 import { buildCatalog, removeReferent } from "../model/buildCatalog";
-import { join as pathJoin } from "path";
+import { join as pathJoin, basename as pathBasename } from "path";
 import type { CompiledData } from "../model/types";
 import * as fs from "fs";
 import * as child_process from "child_process";
+import { assert } from "tsafe/assert";
 
 export const softwareJsonRelativeFilePath = "software.json";
 export const referentJsonRelativeFilePath = "referent.json";
@@ -19,8 +20,26 @@ if (require.main === module) {
         const compiledDataWithoutReferentJsonRelativeFilePath =
             "compiledData_withoutReferents.json";
 
+        const envName = "GITHUB_TOKEN";
+
+        const githubToken = process.env[envName];
+
+        assert(
+            !!githubToken,
+            `The environnement variable ${envName} is required to being able to clone the data repo`,
+        );
+
+        const repository = process.argv[2];
+
+        assert(
+            repository !== undefined,
+            `One cli parameter is expected and should be the data repository ( example: node ${pathBasename(
+                __filename,
+            )} etalab/sill-data`,
+        );
+
         child_process.execSync(
-            `git clone --depth 1 https://${process.env["GITHUB_TOKEN"]}@github.com/${process.argv[2]} ${dataDirPath}`,
+            `git clone --depth 1 https://${githubToken}@github.com/${repository} ${dataDirPath}`,
         );
 
         const { compiledData } = await (async () => {
