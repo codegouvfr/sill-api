@@ -1,3 +1,11 @@
+### **0.3.7** (2022-03-22)  
+  
+- :bookmark:  Update version  
+- :loud_sound:  Log ondataupdate  
+- :bookmark:  Bump version  
+- :bug:  Fix whebhook endpoint  
+- :heavy_minus_sign:  update yarn.lock    
+  
 ### **0.3.5** (2022-03-22)  
   
 - :bookmark:  Bump version  
