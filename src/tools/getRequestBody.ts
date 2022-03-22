@@ -1,7 +1,7 @@
 import { Deferred } from "evt/tools/Deferred";
 import type { Request } from "express";
 
-export function parseBody(req: Request) {
+export function getRequestBody(req: Request) {
     const dBody = new Deferred<Buffer>();
 
     const chunks: Buffer[] = [];

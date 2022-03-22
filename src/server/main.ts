@@ -14,7 +14,7 @@ import { removeReferent } from "../model/buildCatalog";
 import { TRPCError } from "@trpc/server";
 import cors from "cors";
 import * as crypto from "crypto";
-import { parseBody } from "../tools/parseBody";
+import { getRequestBody } from "../tools/getRequestBody";
 import memoize from "memoizee";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
@@ -127,25 +127,28 @@ export type TrpcRouter = ReturnType<typeof createRouter>;
         )
         .use("/public/healthcheck", (...[, res]) => res.sendStatus(200))
         .post("/api/ondataupdated", async (req, res) => {
-            check_signature: {
+            check_signature_validate_event: {
                 if (configuration.githubWebhookSecret === "NO VERIFY") {
                     console.log("Skipping signature validation");
 
-                    break check_signature;
+                    break check_signature_validate_event;
                 }
 
-                const receivedHash = req.header("HTTP_X_HUB_SIGNATURE_256");
+                const receivedHash = req.header("X-Hub-Signature-256");
 
                 if (receivedHash === undefined) {
+                    console.log("No authentication header");
                     res.sendStatus(401);
                     return;
                 }
+
+                const body = await getRequestBody(req);
 
                 const hash =
                     "sha256=" +
                     crypto
                         .createHmac("sha256", configuration.githubWebhookSecret)
-                        .update(await parseBody(req))
+                        .update(body)
                         .digest("hex");
 
                 if (
@@ -159,6 +162,29 @@ export type TrpcRouter = ReturnType<typeof createRouter>;
                 }
 
                 console.log("Webhook signature OK");
+
+                const parsedBody: {
+                    ref: string;
+                    repository: {
+                        url: string;
+                    };
+                } = JSON.parse(body.toString("utf8"));
+
+                assert(
+                    configuration.dataRepoUrl.replace(/\/$/, "") ===
+                        parsedBody.repository.url,
+                    "Webhook doesn't come from the right repo",
+                );
+
+                if (
+                    parsedBody.ref !== `refs/heads/${configuration.buildBranch}`
+                ) {
+                    console.log(
+                        `Not a push on the ${configuration.buildBranch} branch, doing nothing`,
+                    );
+                    res.sendStatus(200);
+                    return;
+                }
             }
 
             console.log("Refreshing data");
