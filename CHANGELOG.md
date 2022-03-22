@@ -1,3 +1,9 @@
+### **0.3.8** (2022-03-22)  
+  
+- :bookmark:  Bump version  
+- :fire:  Remove unecessary log  
+- :bug:  Fix bug in CI    
+  
 ### **0.3.7** (2022-03-22)  
   
 - :bookmark:  Update version  
