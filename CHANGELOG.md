@@ -1,3 +1,8 @@
+### **0.3.5** (2022-03-22)  
+  
+- :bookmark:  Bump version  
+- :sparkles:  Implement auto refesh when data changed    
+  
 ### **0.3.4** (2022-03-22)  
   
 - :bookmark:  Bump version  
