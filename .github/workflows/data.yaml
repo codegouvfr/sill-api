@@ -6,7 +6,7 @@ jobs:
   build-data:
     runs-on: ubuntu-latest
     env: 
-      DATA_REPOSITORY: github.event.client_payload.repository
+      DATA_REPOSITORY: ${{github.event.client_payload.repository}}
     steps:
     - uses: actions/checkout@v3.0.0
     - uses: actions/setup-node@v2.1.3
