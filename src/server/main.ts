@@ -127,8 +127,6 @@ export type TrpcRouter = ReturnType<typeof createRouter>;
         )
         .use("/public/healthcheck", (...[, res]) => res.sendStatus(200))
         .post("/api/ondataupdated", async (req, res) => {
-            console.log("Received request to refresh data");
-
             check_signature_validate_event: {
                 if (configuration.githubWebhookSecret === "NO VERIFY") {
                     console.log("Skipping signature validation");
