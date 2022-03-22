@@ -1,3 +1,14 @@
+### **0.3.4** (2022-03-22)  
+  
+- :bookmark:  Bump version  
+- :construction:  Add endpoint to ping when data updated  
+- :construction_worker:  Update CI  
+- :construction_worker:  Update CI  
+- :construction_worker:  Update CI  
+- :construction_worker:  Setup auto update  
+- :rewind:  Restoring .env.local.sh as it was  
+- :recycle: (sill-data no longer a submodule)    
+  
 ### **0.3.3** (2022-03-21)  
   
 - :bookmark:  Bump version  
