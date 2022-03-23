@@ -5,6 +5,7 @@ import * as fs from "fs";
 import * as child_process from "child_process";
 import { assert } from "tsafe/assert";
 import { fetchCompiledData } from "../server/fetchCompiledData";
+import { ErrorNoBranch } from "../tools/git";
 
 export const softwareJsonRelativeFilePath = "software.json";
 export const referentJsonRelativeFilePath = "referent.json";
@@ -72,12 +73,19 @@ if (require.main === module) {
                     softwareReferentJsonRelativeFilePath,
                 ),
                 "currentCatalog": incremental
-                    ? (
-                          await fetchCompiledData({
-                              "dataRepoUrl": `https://github.com/${repository}`,
-                              "githubPersonalAccessToken": githubToken,
-                          })
-                      ).catalog
+                    ? await fetchCompiledData({
+                          "dataRepoUrl": `https://github.com/${repository}`,
+                          "githubPersonalAccessToken": githubToken,
+                      }).then(
+                          ({ catalog }) => catalog,
+                          error =>
+                              error instanceof ErrorNoBranch
+                                  ? (console.log(
+                                        "There is no build branch yet",
+                                    ),
+                                    undefined)
+                                  : error,
+                      )
                     : undefined,
                 "log": console.log,
             });

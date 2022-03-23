@@ -56,7 +56,7 @@ export function fetchCompiledData(params: {
 
             return { "doCommit": false };
         },
-    });
+    }).catch(error => dOut.reject(error));
 
     return dOut.pr;
 }

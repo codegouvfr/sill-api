@@ -41,7 +41,11 @@ export const git = runExclusive.build(
         process.chdir(tmpDir);
 
         if (shaish !== undefined) {
-            await exec(`git checkout ${shaish}`);
+            try {
+                await exec(`git checkout ${shaish}`);
+            } catch (e) {
+                throw new ErrorNoBranch((e as Error).message);
+            }
         }
 
         const changesResult = await (async () => {
@@ -88,3 +92,10 @@ export const git = runExclusive.build(
         }
     },
 );
+
+export class ErrorNoBranch extends Error {
+    constructor(message: string) {
+        super(message);
+        Object.setPrototypeOf(this, new.target.prototype);
+    }
+}
