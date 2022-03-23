@@ -1,3 +1,8 @@
+### **0.3.12** (2022-03-23)  
+  
+- :art:  update  
+- :green_heart:  Only upload to code gouv for production server    
+  
 ### **0.3.11** (2022-03-23)  
   
 - :bug:  Work when there is no build branch  
