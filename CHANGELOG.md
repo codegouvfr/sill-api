@@ -1,3 +1,8 @@
+### **0.3.11** (2022-03-23)  
+  
+- :bug:  Work when there is no build branch  
+- :construction_worker:  Poke gitops after buid docker    
+  
 ### **0.3.10** (2022-03-23)  
   
 - :construction_worker:  Improving CI automation workflow  
