@@ -1,3 +1,9 @@
+### **0.3.10** (2022-03-23)  
+  
+- :construction_worker:  Improving CI automation workflow  
+- :fire:  Remove debug job  
+- :wrench:  Update gitignore    
+  
 ### **0.3.9** (2022-03-23)  
   
 - :green_heart:  Fix build  
