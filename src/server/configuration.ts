@@ -49,7 +49,6 @@ export type Configuration = {
         locale: string;
     };
     dataRepoUrl: string;
-    buildBranch: string;
     githubPersonalAccessToken: string | { envName: string };
     githubWebhookSecret: string;
     //Port we listen to, default 8080
@@ -100,7 +99,6 @@ export const getConfiguration = memoize(
                 githubPersonalAccessToken,
                 port,
                 dataRepoUrl,
-                buildBranch,
                 githubWebhookSecret,
             } = configuration;
 
@@ -110,8 +108,6 @@ export const getConfiguration = memoize(
                 symToStr({ githubPersonalAccessToken }),
                 symToStr({ port }),
                 symToStr({ dataRepoUrl }),
-                symToStr({ buildBranch }),
-                symToStr({ buildBranch }),
                 symToStr({ githubWebhookSecret }),
             ] as const;
 
@@ -454,12 +450,10 @@ export const getConfiguration = memoize(
         }
 
         {
-            const { dataRepoUrl, buildBranch, githubWebhookSecret } =
-                configuration;
+            const { dataRepoUrl, githubWebhookSecret } = configuration;
 
             for (const [propertyName, propertyValue] of [
                 [symToStr({ dataRepoUrl }), dataRepoUrl],
-                [symToStr({ buildBranch }), buildBranch],
                 [symToStr({ githubWebhookSecret }), githubWebhookSecret],
             ] as const) {
                 assert(

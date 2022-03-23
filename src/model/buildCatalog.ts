@@ -15,8 +15,15 @@ export async function buildCatalog(params: {
     referentRows: ReferentRow[];
     softwareReferentRows: SoftwareReferentRow[];
     log: typeof console.log;
+    currentCatalog: CompiledData.Software<"with referents">[] | undefined;
 }): Promise<{ catalog: CompiledData.Software<"with referents">[] }> {
-    const { softwareRows, referentRows, softwareReferentRows, log } = params;
+    const {
+        softwareRows,
+        referentRows,
+        softwareReferentRows,
+        currentCatalog,
+        log,
+    } = params;
 
     const { softwares: cdlSoftwares } = await fetchComptoirDuLibre();
 
@@ -36,9 +43,13 @@ export async function buildCatalog(params: {
                 })`,
             );
 
-            wikiDataDataById[wikidataId] = await fetchWikiDataData({
-                wikidataId,
-            });
+            wikiDataDataById[wikidataId] =
+                currentCatalog?.find(
+                    software => software.wikidataData?.id === wikidataId,
+                )?.wikidataData ??
+                (await fetchWikiDataData({
+                    wikidataId,
+                }));
         }
     }
 

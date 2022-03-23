@@ -5,11 +5,11 @@ import type { CreateExpressContextOptions } from "@trpc/server/adapters/express"
 import express from "express";
 //import { z } from "zod";
 import * as trpcExpress from "@trpc/server/adapters/express";
-import { fetchCompiledData } from "./fetchCompiledData";
+import { fetchCompiledData, buildBranch } from "./fetchCompiledData";
 import { fetchDb } from "./fetchDb";
 import { createDecodeJwtKeycloakFactory } from "../tools/decodeJwt/adapter/keycloak";
 import { createDecodeJwtNoVerify } from "../tools/decodeJwt/adapter/noVerify";
-import { CompiledData } from "../model/types";
+import { CompiledData /*MimGroup*/ } from "../model/types";
 import { removeReferent } from "../model/buildCatalog";
 import { TRPCError } from "@trpc/server";
 import cors from "cors";
@@ -53,7 +53,6 @@ const getCachedData = memoize(
             "githubPersonalAccessToken":
                 configuration.githubPersonalAccessToken,
             "dataRepoUrl": configuration.dataRepoUrl,
-            "buildBranch": configuration.buildBranch,
         });
 
         const compiledData_withoutReferents = {
@@ -110,6 +109,39 @@ const createRouter = () =>
                     .map(({ softwareId }) => softwareId);
             },
         });
+/*
+        .mutation("addSoftware", {
+            "input": z
+                .object({
+                    "name": z.string(),
+                    "function": z.string(),
+                    "isFromFrenchPublicService": z.boolean(),
+                    "wikidataId": z.string().optional(),
+                    "comptoirDuLibreId": z.string().optional(),
+                    "license": z.string(),
+                    "mimGroup": (() => {
+
+                        const out = z.union([
+                            z.literal("MIMO"),
+                            z.literal("MIMDEV"),
+                            z.literal("MIMDEVOPS"),
+                            z.literal("MIMPROD"),
+                        ]);
+
+                        assert<Equals<ReturnType<typeof out.parse>, MimGroup>>();
+
+                        return out;
+
+                    })(),
+                    "versionMin": z.string(),
+                }),
+            "resolve": () => {
+
+                //TODO
+            }
+
+        });
+        */
 
 export type TrpcRouter = ReturnType<typeof createRouter>;
 
@@ -176,11 +208,9 @@ export type TrpcRouter = ReturnType<typeof createRouter>;
                     "Webhook doesn't come from the right repo",
                 );
 
-                if (
-                    parsedBody.ref !== `refs/heads/${configuration.buildBranch}`
-                ) {
+                if (parsedBody.ref !== `refs/heads/${buildBranch}`) {
                     console.log(
-                        `Not a push on the ${configuration.buildBranch} branch, doing nothing`,
+                        `Not a push on the ${buildBranch} branch, doing nothing`,
                     );
                     res.sendStatus(200);
                     return;

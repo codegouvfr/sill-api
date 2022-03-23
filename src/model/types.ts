@@ -144,7 +144,7 @@ export declare namespace ComptoirDuLibre {
     }
 }
 
-export type WikidataData = Partial<{
+export type WikidataData = { id: string } & Partial<{
     descriptionFr: string;
     descriptionEn: string;
     logoUrl: string;

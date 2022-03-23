@@ -4,6 +4,7 @@ import type { CompiledData } from "../model/types";
 import * as fs from "fs";
 import * as child_process from "child_process";
 import { assert } from "tsafe/assert";
+import { fetchCompiledData } from "../server/fetchCompiledData";
 
 export const softwareJsonRelativeFilePath = "software.json";
 export const referentJsonRelativeFilePath = "referent.json";
@@ -33,9 +34,16 @@ if (require.main === module) {
 
         assert(
             repository !== undefined,
-            `One cli parameter is expected and should be the data repository ( example: node ${pathBasename(
+            `First cli parameter is expected and should be the data repository ( example: node ${pathBasename(
                 __filename,
             )} etalab/sill-data`,
+        );
+
+        const incremental = process.argv[3];
+
+        assert(
+            incremental === undefined || incremental === "incremental",
+            `Second cli parameter is optional and can only be "incremental"`,
         );
 
         child_process.execSync(
@@ -56,6 +64,14 @@ if (require.main === module) {
                 "softwareReferentRows": read(
                     softwareReferentJsonRelativeFilePath,
                 ),
+                "currentCatalog": !!incremental
+                    ? (
+                          await fetchCompiledData({
+                              "dataRepoUrl": `https://github.com/${repository}`,
+                              "githubPersonalAccessToken": githubToken,
+                          })
+                      ).catalog
+                    : undefined,
                 "log": console.log,
             });
 

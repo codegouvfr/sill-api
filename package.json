@@ -11,7 +11,7 @@
     "scripts": {
         "build": "tsc",
         "dev": "./.env.local.sh node dist/server/main.js",
-        "build-data": "node dist/bin/build-data.js etalab/sill-data",
+        "build-data": "node dist/bin/build-data.js etalab/sill-data incremental",
         "lint:check": "eslint . --ext .ts,.tsx",
         "lint": "npm run lint:check -- --fix",
         "_format": "prettier '**/*.{ts,tsx,json,md}'",
@@ -72,7 +72,7 @@
         "memoizee": "^0.4.15",
         "node-fetch": "^2.6.7",
         "prettier": "^2.3.2",
-        "typescript": "4.5.5",
+        "typescript": "^4.6.2",
         "url-join": "^4.0.1",
         "zod": "^3.11.6"
     },

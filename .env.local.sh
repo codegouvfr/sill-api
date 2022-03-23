@@ -16,7 +16,6 @@ export CONFIGURATION=$(cat << EOF
 		"locale": "locale"
 	},
     "dataRepoUrl": "https://github.com/etalab/sill-data",
-    "buildBranch": "build",
 	"githubPersonalAccessToken": { 
 		/* This env need to be defined in your .bashrc */
 		"envName": "GITHUB_PERSONAL_ACCESS_TOKEN" 

@@ -43,6 +43,7 @@ export async function fetchWikiDataData(params: {
     }
 
     return {
+        "id": wikidataId,
         ...(() => {
             const { descriptions } = entity;
 

@@ -1,18 +1,20 @@
 import { git } from "../tools/git";
 import { Deferred } from "evt/tools/Deferred";
 import * as fs from "fs";
-import { compiledDataJsonRelativeFilePath } from "../bin/build-data";
-import { CompiledData } from "../model/types";
+import type { compiledDataJsonRelativeFilePath } from "../bin/build-data";
+import type { CompiledData } from "../model/types";
 import { URL } from "url";
 import { assert } from "tsafe/assert";
 import { symToStr } from "tsafe/symToStr";
+import { id } from "tsafe/id";
+
+export const buildBranch = "build";
 
 export function fetchCompiledData(params: {
     dataRepoUrl: string;
-    buildBranch: string;
     githubPersonalAccessToken: string;
 }): Promise<CompiledData<"with referents">> {
-    const { dataRepoUrl, buildBranch, githubPersonalAccessToken } = params;
+    const { dataRepoUrl, githubPersonalAccessToken } = params;
 
     const dOut = new Deferred<CompiledData<"with referents">>();
 
@@ -43,7 +45,11 @@ export function fetchCompiledData(params: {
             dOut.resolve(
                 JSON.parse(
                     fs
-                        .readFileSync(compiledDataJsonRelativeFilePath)
+                        .readFileSync(
+                            id<typeof compiledDataJsonRelativeFilePath>(
+                                "compiledData.json",
+                            ),
+                        )
                         .toString("utf8"),
                 ),
             );
