@@ -1,3 +1,14 @@
+### **0.3.9** (2022-03-23)  
+  
+- :green_heart:  Fix build  
+- :zap:  Do not re-fetch all wikidata data each time  
+- :construction_worker:  fix ci  
+- :bug:  fixing env  
+- :bug:  Fix bug in ci  
+- :bug:  Fix bug in ci  
+- :construction_worker:  rename secret  
+- :construction_worker:  Rename Token    
+  
 ### **0.3.8** (2022-03-22)  
   
 - :bookmark:  Bump version  
