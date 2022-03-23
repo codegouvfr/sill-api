@@ -18,12 +18,14 @@ export CONFIGURATION=$(cat << EOF
     "dataRepoUrl": "https://github.com/etalab/sill-data",
 	"githubPersonalAccessToken": { 
 		/* This env need to be defined in your .bashrc */
-		"envName": "GITHUB_PERSONAL_ACCESS_TOKEN" 
+		"envName": "GITHUB_TOKEN" 
 	},
     "githubWebhookSecret": "NO VERIFY",
 	"port": 8080
 }
 EOF
 ) 
+
+export ENVIRONNEMENT="development"
 
 $@

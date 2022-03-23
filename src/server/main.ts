@@ -152,7 +152,13 @@ export type TrpcRouter = ReturnType<typeof createRouter>;
     getCachedData();
 
     (async function refreshCollectedData() {
+        if (process.env["ENVIRONNEMENT"] === "development") {
+            return;
+        }
+
         console.log("Refresh collected data");
+
+        console.log(process.env);
 
         const octokit = new Octokit({
             "auth": configuration.githubPersonalAccessToken,
