@@ -18,6 +18,8 @@ import { getRequestBody } from "../tools/getRequestBody";
 import memoize from "memoizee";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
+import { Octokit } from "@octokit/rest";
+import { parseGitHubRepoUrl } from "../tools/parseGithubRepoUrl";
 
 const configuration = getConfiguration();
 
@@ -148,6 +150,28 @@ export type TrpcRouter = ReturnType<typeof createRouter>;
 (function main() {
     //NOTE: For pre fetching
     getCachedData();
+
+    (async function refreshCollectedData() {
+        console.log("Refresh collected data");
+
+        const octokit = new Octokit({
+            "auth": configuration.githubPersonalAccessToken,
+        });
+
+        await octokit.rest.repos.createDispatchEvent({
+            "owner": "etalab",
+            "repo": "sill-api",
+            "event_type": "compile-data",
+            "client_payload": {
+                "repository": parseGitHubRepoUrl(configuration.dataRepoUrl)
+                    .repository,
+                "incremental": false,
+            },
+        });
+
+        //NOTE: Every three hours
+        setTimeout(refreshCollectedData, 3600 * 3 * 1000);
+    })();
 
     express()
         .use(cors())

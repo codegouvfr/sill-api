@@ -1,6 +1,6 @@
 on:
   repository_dispatch:
-    types: data_updated
+    types: compile-data
 
 jobs:
   build-data:
@@ -12,9 +12,10 @@ jobs:
     - uses: actions/setup-node@v2.1.3
     - uses: bahmutov/npm-install@v1
     - run: yarn build
-    - run: node dist/bin/build-data.js $DATA_REPOSITORY incremental
+    - run: node dist/bin/build-data.js $DATA_REPOSITORY incremental=$INCREMENTAL
       env:
         GITHUB_TOKEN: ${{ secrets.PAT }}
+        INCREMENTAL: ${{ github.event.client_payload.incremental }}
     - run: git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${DATA_REPOSITORY}.git
       env:
         GITHUB_TOKEN: ${{ secrets.PAT }}

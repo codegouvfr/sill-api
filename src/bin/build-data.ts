@@ -39,12 +39,19 @@ if (require.main === module) {
             )} etalab/sill-data`,
         );
 
-        const incremental = process.argv[3];
-
-        assert(
-            incremental === undefined || incremental === "incremental",
-            `Second cli parameter is optional and can only be "incremental"`,
-        );
+        const incremental = (() => {
+            switch (process.argv[3]?.match(/^incremental=(.*)$/)?.[1]) {
+                case "true":
+                    return true;
+                case "false":
+                    return false;
+                default:
+                    assert(
+                        false,
+                        `Second cli parameter should be incremental=true or incremental=false`,
+                    );
+            }
+        })();
 
         child_process.execSync(
             `git clone --depth 1 https://${githubToken}@github.com/${repository} ${dataDirPath}`,
@@ -64,7 +71,7 @@ if (require.main === module) {
                 "softwareReferentRows": read(
                     softwareReferentJsonRelativeFilePath,
                 ),
-                "currentCatalog": !!incremental
+                "currentCatalog": incremental
                     ? (
                           await fetchCompiledData({
                               "dataRepoUrl": `https://github.com/${repository}`,
