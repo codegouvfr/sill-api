@@ -1,3 +1,8 @@
+### **0.3.13** (2022-03-24)  
+  
+- :boom:  Update user profile  
+- :green_heart:  Fix workflow    
+  
 ### **0.3.12** (2022-03-23)  
   
 - :art:  update  
