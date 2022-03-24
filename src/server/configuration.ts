@@ -42,10 +42,7 @@ export type Configuration = {
     //The name of the properties in the JWT parsed token.
     jwtClaims: {
         email: string;
-        familyName: string;
-        firstName: string;
-        username: string;
-        groups: string;
+        agencyName: string;
         locale: string;
     };
     dataRepoUrl: string;
@@ -282,17 +279,13 @@ export const getConfiguration = memoize(
                 m_1("Is supposed to be an object"),
             );
 
-            const { email, familyName, firstName, groups, locale, username } =
-                jwtClaims;
+            const { email, locale, agencyName } = jwtClaims;
 
             {
                 const propertiesNames = [
                     symToStr({ email }),
-                    symToStr({ familyName }),
-                    symToStr({ firstName }),
-                    symToStr({ groups }),
+                    symToStr({ agencyName }),
                     symToStr({ locale }),
-                    symToStr({ username }),
                 ] as const;
 
                 assert<
@@ -319,11 +312,8 @@ export const getConfiguration = memoize(
 
             for (const [propertyName, propertyValue] of [
                 [symToStr({ email }), email],
-                [symToStr({ familyName }), familyName],
-                [symToStr({ firstName }), firstName],
-                [symToStr({ groups }), groups],
+                [symToStr({ agencyName }), agencyName],
                 [symToStr({ locale }), locale],
-                [symToStr({ username }), username],
             ] as const) {
                 assert(
                     propertyValue !== undefined,

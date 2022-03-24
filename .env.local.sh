@@ -9,10 +9,7 @@ export CONFIGURATION=$(cat << EOF
 	},
 	"jwtClaims": {
 		"email": "email",
-		"familyName": "family_name",
-		"firstName": "given_name",
-		"username": "preferred_username",
-		"groups": "groups",
+		"agencyName": "agency_name",
 		"locale": "locale"
 	},
     "dataRepoUrl": "https://github.com/etalab/sill-data",
