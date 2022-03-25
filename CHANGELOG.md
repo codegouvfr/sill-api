@@ -1,3 +1,7 @@
+### **0.3.14** (2022-03-25)  
+  
+- :label:  Better management of jwt    
+  
 ### **0.3.13** (2022-03-24)  
   
 - :boom:  Update user profile  
