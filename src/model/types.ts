@@ -1,3 +1,11 @@
+import type { LocalizedString as LocalizedString_generic } from "../tools/LocalizedString";
+
+export const languages = ["fr", "en"] as const;
+
+export type Language = typeof languages[number];
+
+export type LocalizedString = LocalizedString_generic<Language>;
+
 // https://git.sr.ht/~etalab/sill
 export type SoftwareRow = {
     id: number;

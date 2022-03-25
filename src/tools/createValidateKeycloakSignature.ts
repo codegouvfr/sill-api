@@ -1,16 +1,14 @@
-import type { CreateDecodeJwt } from "../port/CreateDecodeJwt";
 import urlJoin from "url-join";
 import fetch from "node-fetch";
 import memoize from "memoizee";
 import createKeycloakBacked from "keycloak-backend";
 import { assert } from "tsafe/assert";
-import { jwtContentToDecodedJwt } from "../tools/jwtContentToDecodedJwt";
 
-export function createDecodeJwtKeycloakFactory(params: {
+export function createValidateKeycloakSignature(params: {
     url: string;
     realm: string;
     clientId: string;
-}): { createDecodeJwt: CreateDecodeJwt } {
+}) {
     const { url, realm, clientId } = params;
 
     const getKeycloakBackendVerifyOffline = memoize(
@@ -23,17 +21,16 @@ export function createDecodeJwtKeycloakFactory(params: {
                 "client_id": clientId,
             });
 
-            function keycloakBackendVerifyOffline(params: {
+            async function keycloakBackendVerifyOffline(params: {
                 keycloakOidcAccessToken: string;
-            }): Promise<{
-                isExpired: () => boolean;
-                content: Record<string, unknown>;
-            }> {
+            }): Promise<void> {
                 const { keycloakOidcAccessToken } = params;
-                return keycloakBackend.jwt.verifyOffline(
+                const o = await keycloakBackend.jwt.verifyOffline(
                     keycloakOidcAccessToken,
                     cert,
                 );
+
+                assert(!o.isExpired(), "Token is expired");
             }
 
             return { keycloakBackendVerifyOffline };
@@ -41,29 +38,18 @@ export function createDecodeJwtKeycloakFactory(params: {
         { "promise": true },
     );
 
-    const createDecodeJwt: CreateDecodeJwt = ({ jwtClaims }) => {
-        const decodeJwt: ReturnType<CreateDecodeJwt>["decodeJwt"] = async ({
-            jwtToken,
-        }) => {
-            const { keycloakBackendVerifyOffline } =
-                await getKeycloakBackendVerifyOffline();
+    async function validateKeycloakSignature(params: { jwtToken: string }) {
+        const { jwtToken } = params;
 
-            const token = await keycloakBackendVerifyOffline({
-                "keycloakOidcAccessToken": jwtToken,
-            });
+        const { keycloakBackendVerifyOffline } =
+            await getKeycloakBackendVerifyOffline();
 
-            assert(!token.isExpired(), "Token is expired");
+        await keycloakBackendVerifyOffline({
+            "keycloakOidcAccessToken": jwtToken,
+        });
+    }
 
-            return jwtContentToDecodedJwt({
-                jwtClaims,
-                "jwtPayload": token.content,
-            });
-        };
-
-        return { decodeJwt };
-    };
-
-    return { createDecodeJwt };
+    return { validateKeycloakSignature };
 }
 
 async function fetchKeycloakRealmPublicCert(params: {

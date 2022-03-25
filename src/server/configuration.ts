@@ -6,30 +6,8 @@ import { arrDiff } from "evt/tools/reducers/diff";
 import * as JSONC from "comment-json";
 import { objectKeys } from "tsafe/objectKeys";
 import { id } from "tsafe/id";
-
-const kcLanguageTags = [
-    "en",
-    "fr",
-    "ca",
-    "cs",
-    "da",
-    "de",
-    "es",
-    "hu",
-    "it",
-    "ja",
-    "lt",
-    "nl",
-    "no",
-    "pl",
-    "pt-BR",
-    "ru",
-    "sk",
-    "sv",
-    "tr",
-    "zh-CN",
-] as const;
-type KcLanguageTag = typeof kcLanguageTags[number];
+import type { LocalizedString } from "../model/types";
+import { languages as supportedLanguages } from "../model/types";
 
 export type Configuration = {
     //If not defined we will not check the signature and just trust the claims in the JWT.
@@ -37,7 +15,7 @@ export type Configuration = {
         url: string; //Example: https://etalab-auth.lab.sspcloud.fr/auth (with the /auth at the end)
         realm: string;
         clientId: string;
-        termsOfServices?: string | Partial<Record<KcLanguageTag, string>>;
+        termsOfServices?: LocalizedString;
     };
     //The name of the properties in the JWT parsed token.
     jwtClaims: {
@@ -242,11 +220,13 @@ export const getConfiguration = memoize(
 
                     languages.forEach(lng =>
                         assert(
-                            id<readonly string[]>(kcLanguageTags).includes(lng),
+                            id<readonly string[]>(supportedLanguages).includes(
+                                lng,
+                            ),
                             m_1(
                                 `${symToStr({
                                     termsOfServices,
-                                })}: ${lng} is not a supported languages, supported languages are: ${kcLanguageTags.join(
+                                })}: ${lng} is not a supported languages, supported languages are: ${supportedLanguages.join(
                                     ", ",
                                 )}`,
                             ),

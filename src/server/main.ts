@@ -3,12 +3,12 @@ import type { ReturnType } from "tsafe";
 import { getConfiguration } from "./configuration";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import express from "express";
-//import { z } from "zod";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import { fetchCompiledData, buildBranch } from "./fetchCompiledData";
 import { fetchDb } from "./fetchDb";
-import { createDecodeJwtKeycloakFactory } from "../tools/decodeJwt/adapter/keycloak";
-import { createDecodeJwtNoVerify } from "../tools/decodeJwt/adapter/noVerify";
+import { createValidateKeycloakSignature } from "../tools/createValidateKeycloakSignature";
+import { parseJwtPayload } from "../tools/parseJwtPayload";
+import * as jwtSimple from "jwt-simple";
 import { CompiledData /*MimGroup*/ } from "../model/types";
 import { removeReferent } from "../model/buildCatalog";
 import { TRPCError } from "@trpc/server";
@@ -20,17 +20,14 @@ import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { Octokit } from "@octokit/rest";
 import { parseGitHubRepoUrl } from "../tools/parseGithubRepoUrl";
+import { zParsedJwtTokenPayload } from "./zParsedJwtTokenPayload";
 
 const configuration = getConfiguration();
 
-const { createDecodeJwt } =
-    configuration.keycloakParams === undefined
-        ? { "createDecodeJwt": createDecodeJwtNoVerify }
-        : createDecodeJwtKeycloakFactory(configuration.keycloakParams);
-
-const { decodeJwt } = createDecodeJwt({
-    "jwtClaims": configuration.jwtClaims,
-});
+const { validateKeycloakSignature } =
+    configuration.keycloakParams !== undefined
+        ? createValidateKeycloakSignature(configuration.keycloakParams)
+        : { "validateKeycloakSignature": undefined };
 
 async function createContext({ req }: CreateExpressContextOptions) {
     // Create your context based on the request object
@@ -42,8 +39,14 @@ async function createContext({ req }: CreateExpressContextOptions) {
         return null;
     }
 
-    const parsedJwt = await decodeJwt({
-        "jwtToken": authorization.split(" ")[1],
+    const jwtToken = authorization.split(" ")[1];
+
+    await validateKeycloakSignature?.({ jwtToken });
+
+    const parsedJwt = parseJwtPayload({
+        "jwtClaims": configuration.jwtClaims,
+        zParsedJwtTokenPayload,
+        "jwtPayload": jwtSimple.decode(jwtToken, "", true),
     });
 
     return { parsedJwt };
