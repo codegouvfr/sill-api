@@ -1,3 +1,8 @@
+### **0.3.16** (2022-03-29)  
+  
+- :sparkles:  Create endpoint for serving referent information  
+- :sparkles:  Send referent emails when user is logged in    
+  
 ### **0.3.15** (2022-03-29)  
   
 - :bookmark:  Bump version  
