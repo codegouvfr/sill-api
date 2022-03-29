@@ -79,6 +79,7 @@ const getCachedData = memoize(
         });
 
         return {
+            compiledData,
             compiledData_withoutReferents,
             softwareReferentRows,
         };
@@ -97,8 +98,14 @@ const createRouter = () =>
             })(),
         })
         .query("getCompiledData", {
-            "resolve": async () =>
-                (await getCachedData()).compiledData_withoutReferents,
+            "resolve": async ({ ctx }) => {
+                const { compiledData, compiledData_withoutReferents } =
+                    await getCachedData();
+
+                return ctx === null
+                    ? compiledData_withoutReferents
+                    : compiledData;
+            },
         })
         .query("getIdOfSoftwareUserIsReferentOf", {
             "resolve": async ({ ctx }) => {
