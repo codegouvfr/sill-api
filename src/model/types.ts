@@ -12,8 +12,12 @@ export type SoftwareRow = {
     name: string;
     function: string;
     referencedSinceTime: number;
-    /** @deprecated */
-    recommendationStatus: RecommendationStatus;
+    dereferencing?: {
+        reason?: string;
+        time: number;
+        lastRecommendedVersion?: string;
+    };
+    isStillInObservation: boolean;
     parentSoftware?: SoftwareRef;
     isFromFrenchPublicService: boolean;
     isPresentInSupportContract: boolean;
@@ -32,7 +36,6 @@ export type SoftwareRow = {
     catalogNumeriqueGouvFrId?: string;
     mimGroup: MimGroup;
     versionMin: string;
-    versionMax?: string;
     workshopUrls: string[];
     testUrls: {
         description: string;
@@ -97,14 +100,6 @@ export namespace SoftwareRef {
         softwareName: string;
     };
 }
-
-export const recommendationStatuses = [
-    "recommended",
-    "in observation",
-    "no longer recommended",
-] as const;
-
-export type RecommendationStatus = typeof recommendationStatuses[number];
 
 export const mimGroups = ["MIMO", "MIMDEV", "MIMPROD", "MIMDEVOPS"] as const;
 
