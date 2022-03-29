@@ -1,3 +1,8 @@
+### **0.3.15** (2022-03-29)  
+  
+- :bookmark:  Bump version  
+- :label: (Update SoftwareRow)    
+  
 ### **0.3.14** (2022-03-25)  
   
 - :label:  Better management of jwt    
