@@ -1,3 +1,8 @@
+### **0.3.17** (2022-03-31)  
+  
+- :bookmark:  Bump version  
+- :recycle:  Remove helper type    
+  
 ### **0.3.16** (2022-03-29)  
   
 - :sparkles:  Create endpoint for serving referent information  
