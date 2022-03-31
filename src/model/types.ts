@@ -191,19 +191,3 @@ export namespace CompiledData {
         };
     }
 }
-
-export type SoftwareReferents =
-    | SoftwareReferents.UserIsNotReferent
-    | SoftwareReferents.UserIsReferent;
-export namespace SoftwareReferents {
-    export type UserIsReferent = {
-        isUserReferent: true;
-        isUserExpert: boolean;
-        otherReferents: CompiledData.Software.WithReferent["referents"];
-    };
-
-    export type UserIsNotReferent = {
-        isUserReferent: false;
-        referents: CompiledData.Software.WithReferent["referents"];
-    };
-}

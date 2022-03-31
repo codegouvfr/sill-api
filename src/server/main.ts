@@ -9,7 +9,7 @@ import { fetchDb } from "./fetchDb";
 import { createValidateKeycloakSignature } from "../tools/createValidateKeycloakSignature";
 import { parseJwtPayload } from "../tools/parseJwtPayload";
 import * as jwtSimple from "jwt-simple";
-import { CompiledData, SoftwareReferents /*MimGroup*/ } from "../model/types";
+import { CompiledData /*MimGroup*/ } from "../model/types";
 import { removeReferent } from "../model/buildCatalog";
 import { TRPCError } from "@trpc/server";
 import cors from "cors";
@@ -21,7 +21,6 @@ import type { Equals } from "tsafe";
 import { Octokit } from "@octokit/rest";
 import { parseGitHubRepoUrl } from "../tools/parseGithubRepoUrl";
 import { zParsedJwtTokenPayload } from "./zParsedJwtTokenPayload";
-import { id } from "tsafe/id";
 
 const configuration = getConfiguration();
 
@@ -116,33 +115,7 @@ const createRouter = () =>
 
                 const { referentsBySoftwareId } = await getCachedData();
 
-                return Object.fromEntries(
-                    Object.entries(referentsBySoftwareId).map(
-                        ([softwareId, referents]) => [
-                            softwareId,
-                            ((): SoftwareReferents => {
-                                const userReferent = referents.find(
-                                    referent =>
-                                        referent.email === ctx.parsedJwt.email,
-                                );
-
-                                return userReferent !== undefined
-                                    ? id<SoftwareReferents.UserIsReferent>({
-                                          "isUserReferent": true,
-                                          "isUserExpert": userReferent.isExpert,
-                                          "otherReferents": referents.filter(
-                                              referent =>
-                                                  referent !== userReferent,
-                                          ),
-                                      })
-                                    : id<SoftwareReferents.UserIsNotReferent>({
-                                          "isUserReferent": false,
-                                          referents,
-                                      });
-                            })(),
-                        ],
-                    ),
-                );
+                return referentsBySoftwareId;
             },
         });
 /*

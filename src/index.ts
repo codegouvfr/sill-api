@@ -5,7 +5,6 @@ export type {
     WikidataData,
     SoftwareRef,
     Language,
-    SoftwareReferents,
 } from "./model/types";
 export { languages } from "./model/types";
 export type { TrpcRouter } from "./server/main";
