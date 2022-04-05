@@ -12,7 +12,7 @@ export CONFIGURATION=$(cat << EOF
 		"agencyName": "agency_name",
 		"locale": "locale"
 	},
-    "dataRepoUrl": "https://github.com/etalab/sill-data",
+    "dataRepoUrl": "https://github.com/etalab/sill-data-test",
 	"githubPersonalAccessToken": { 
 		/* This env need to be defined in your .bashrc */
 		"envName": "GITHUB_TOKEN" 

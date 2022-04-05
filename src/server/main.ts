@@ -4,23 +4,21 @@ import { getConfiguration } from "./configuration";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import express from "express";
 import * as trpcExpress from "@trpc/server/adapters/express";
-import { fetchCompiledData, buildBranch } from "./fetchCompiledData";
-import { fetchDb } from "./fetchDb";
 import { createValidateKeycloakSignature } from "../tools/createValidateKeycloakSignature";
 import { parseJwtPayload } from "../tools/parseJwtPayload";
 import * as jwtSimple from "jwt-simple";
-import { CompiledData /*MimGroup*/ } from "../model/types";
-import { removeReferent } from "../model/buildCatalog";
 import { TRPCError } from "@trpc/server";
 import cors from "cors";
-import * as crypto from "crypto";
-import { getRequestBody } from "../tools/getRequestBody";
-import memoize from "memoizee";
 import { assert } from "tsafe/assert";
-import type { Equals } from "tsafe";
-import { Octokit } from "@octokit/rest";
-import { parseGitHubRepoUrl } from "../tools/parseGithubRepoUrl";
 import { zParsedJwtTokenPayload } from "./zParsedJwtTokenPayload";
+import { z } from "zod";
+import { Evt } from "evt";
+import type { DataApi } from "./ports/DataApi";
+import {
+    createGitHubDataApi,
+    buildBranch,
+} from "./adapter/createGitHubDataApi";
+import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWebhookSignature";
 
 const configuration = getConfiguration();
 
@@ -52,47 +50,9 @@ async function createContext({ req }: CreateExpressContextOptions) {
     return { parsedJwt };
 }
 
-const getCachedData = memoize(
-    async () => {
-        const compiledData = await fetchCompiledData({
-            "githubPersonalAccessToken":
-                configuration.githubPersonalAccessToken,
-            "dataRepoUrl": configuration.dataRepoUrl,
-        });
-
-        const compiledData_withoutReferents = {
-            ...compiledData,
-            "catalog": compiledData.catalog.map(removeReferent),
-        };
-
-        const referentsBySoftwareId = Object.fromEntries(
-            compiledData.catalog.map(({ id, referents }) => [id, referents]),
-        );
-
-        assert<
-            Equals<
-                typeof compiledData_withoutReferents,
-                CompiledData<"without referents">
-            >
-        >();
-
-        const { softwareReferentRows } = await fetchDb({
-            "dataRepoUrl": configuration.dataRepoUrl,
-            "githubPersonalAccessToken":
-                configuration.githubPersonalAccessToken,
-        });
-
-        return {
-            compiledData_withoutReferents,
-            referentsBySoftwareId,
-            softwareReferentRows,
-        };
-    },
-    { "promise": true },
-);
-
-const createRouter = () =>
-    trpc
+const createRouter = (params: { dataApi: DataApi }) => {
+    const { dataApi } = params;
+    const router = trpc
         .router<ReturnType<typeof createContext>>()
         .query("getOidcParams", {
             "resolve": (() => {
@@ -102,89 +62,58 @@ const createRouter = () =>
             })(),
         })
         .query("getCompiledData", {
-            "resolve": async () => {
-                const { compiledData_withoutReferents } = await getCachedData();
-                return compiledData_withoutReferents;
-            },
+            "resolve": () =>
+                dataApi.derivedStates.evtCompiledDataWithoutReferents.state,
         })
         .query("getReferentsBySoftwareId", {
             "resolve": async ({ ctx }) => {
                 if (ctx === null) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
+                return dataApi.derivedStates.evtReferentsBySoftwareId.state;
+            },
+        })
+        .mutation("declareUserReferent", {
+            "input": z.object({
+                "softwareId": z.number(),
+                "isExpert": z.boolean(),
+            }),
+            "resolve": async ({ ctx, input }) => {
+                if (ctx === null) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
 
-                const { referentsBySoftwareId } = await getCachedData();
+                const { softwareId, isExpert } = input;
 
-                return referentsBySoftwareId;
+                const { agencyName, email } = ctx.parsedJwt;
+
+                await dataApi.mutators.createReferent({
+                    "referentRow": {
+                        agencyName,
+                        email,
+                        "firstName": "todo ask when register",
+                        "familyName": "todo ask when register",
+                    },
+                    softwareId,
+                    isExpert,
+                });
             },
         });
-/*
-        .mutation("addSoftware", {
-            "input": z
-                .object({
-                    "name": z.string(),
-                    "function": z.string(),
-                    "isFromFrenchPublicService": z.boolean(),
-                    "wikidataId": z.string().optional(),
-                    "comptoirDuLibreId": z.string().optional(),
-                    "license": z.string(),
-                    "mimGroup": (() => {
+    return { router };
+};
+export type TrpcRouter = ReturnType<typeof createRouter>["router"];
 
-                        const out = z.union([
-                            z.literal("MIMO"),
-                            z.literal("MIMDEV"),
-                            z.literal("MIMDEVOPS"),
-                            z.literal("MIMPROD"),
-                        ]);
+const isDevelopment = process.env["ENVIRONNEMENT"] === "development";
 
-                        assert<Equals<ReturnType<typeof out.parse>, MimGroup>>();
+(async function main() {
+    const evtDataUpdated = Evt.create();
 
-                        return out;
-
-                    })(),
-                    "versionMin": z.string(),
-                }),
-            "resolve": () => {
-
-                //TODO
-            }
-
-        });
-        */
-
-export type TrpcRouter = ReturnType<typeof createRouter>;
-
-(function main() {
-    //NOTE: For pre fetching
-    getCachedData();
-
-    (async function refreshCollectedData() {
-        if (process.env["ENVIRONNEMENT"] === "development") {
-            return;
-        }
-
-        console.log("Refresh collected data");
-
-        console.log(process.env);
-
-        const octokit = new Octokit({
-            "auth": configuration.githubPersonalAccessToken,
-        });
-
-        await octokit.rest.repos.createDispatchEvent({
-            "owner": "etalab",
-            "repo": "sill-api",
-            "event_type": "compile-data",
-            "client_payload": {
-                "repository": parseGitHubRepoUrl(configuration.dataRepoUrl)
-                    .repository,
-                "incremental": false,
-            },
-        });
-
-        //NOTE: Every three hours
-        setTimeout(refreshCollectedData, 3600 * 3 * 1000);
-    })();
+    if (isDevelopment) {
+        setInterval(() => {
+            console.log("Fake data update");
+            evtDataUpdated.post();
+        }, 10000);
+    }
 
     express()
         .use(cors())
@@ -195,78 +124,63 @@ export type TrpcRouter = ReturnType<typeof createRouter>;
             ),
         )
         .use("/public/healthcheck", (...[, res]) => res.sendStatus(200))
-        .post("/api/ondataupdated", async (req, res) => {
-            check_signature_validate_event: {
-                if (configuration.githubWebhookSecret === "NO VERIFY") {
-                    console.log("Skipping signature validation");
+        .post(
+            "/api/ondataupdated",
+            (() => {
+                const { validateGitHubWebhookSignature } =
+                    createValidateGitHubWebhookSignature({
+                        "githubWebhookSecret":
+                            configuration.githubWebhookSecret,
+                    });
 
-                    break check_signature_validate_event;
-                }
-
-                const receivedHash = req.header("X-Hub-Signature-256");
-
-                if (receivedHash === undefined) {
-                    console.log("No authentication header");
-                    res.sendStatus(401);
-                    return;
-                }
-
-                const body = await getRequestBody(req);
-
-                const hash =
-                    "sha256=" +
-                    crypto
-                        .createHmac("sha256", configuration.githubWebhookSecret)
-                        .update(body)
-                        .digest("hex");
-
-                if (
-                    !crypto.timingSafeEqual(
-                        Buffer.from(receivedHash, "utf8"),
-                        Buffer.from(hash, "utf8"),
-                    )
-                ) {
-                    res.sendStatus(403);
-                    return;
-                }
-
-                console.log("Webhook signature OK");
-
-                const parsedBody: {
-                    ref: string;
-                    repository: {
-                        url: string;
-                    };
-                } = JSON.parse(body.toString("utf8"));
-
-                assert(
-                    configuration.dataRepoUrl.replace(/\/$/, "") ===
-                        parsedBody.repository.url,
-                    "Webhook doesn't come from the right repo",
-                );
-
-                if (parsedBody.ref !== `refs/heads/${buildBranch}`) {
-                    console.log(
-                        `Not a push on the ${buildBranch} branch, doing nothing`,
+                return async (req, res) => {
+                    console.log("Webhook signature OK");
+                    const reqBody = await validateGitHubWebhookSignature(
+                        req,
+                        res,
                     );
+
+                    assert(
+                        configuration.dataRepoUrl.replace(/\/$/, "") ===
+                            reqBody.repository.url,
+                        "Webhook doesn't come from the right repo",
+                    );
+
+                    if (reqBody.ref !== `refs/heads/${buildBranch}`) {
+                        console.log(
+                            `Not a push on the ${buildBranch} branch, doing nothing`,
+                        );
+                        res.sendStatus(200);
+                        return;
+                    }
+
+                    console.log("Refreshing data");
+
+                    evtDataUpdated.post();
+
                     res.sendStatus(200);
-                    return;
-                }
-            }
-
-            console.log("Refreshing data");
-
-            getCachedData.clear();
-            getCachedData();
-
-            res.sendStatus(200);
-        })
+                };
+            })(),
+        )
         .use(
             "/api",
-            trpcExpress.createExpressMiddleware({
-                "router": createRouter(),
-                createContext,
-            }),
+            await (async () => {
+                const { router } = createRouter({
+                    "dataApi": await createGitHubDataApi({
+                        "dataRepoUrl": configuration.dataRepoUrl,
+                        "githubPersonalAccessToken":
+                            configuration.githubPersonalAccessToken,
+                        evtDataUpdated,
+                        "doPeriodicallyTriggerComputationOfCompiledData":
+                            !isDevelopment,
+                    }),
+                });
+
+                return trpcExpress.createExpressMiddleware({
+                    router,
+                    createContext,
+                });
+            })(),
         )
         .listen(configuration.port, () =>
             console.log(`Listening on port ${configuration.port}`),
