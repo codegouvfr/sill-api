@@ -191,7 +191,7 @@ async function triggerComputationOfCompiledData(params: {
     });
 }
 
-const { createFetchState, createWriteDb } = (() => {
+const { fetchCompiledData, createFetchState, createWriteDb } = (() => {
     function fetchCompiledData(params: {
         dataRepoUrl: string;
         githubPersonalAccessToken: string;
@@ -433,5 +433,7 @@ const { createFetchState, createWriteDb } = (() => {
         return { fetchState };
     }
 
-    return { createFetchState, createWriteDb };
+    return { fetchCompiledData, createFetchState, createWriteDb };
 })();
+
+export { fetchCompiledData };
