@@ -1,3 +1,7 @@
+### **0.4.1** (2022-04-06)  
+  
+- :zap:  Do not wait for the data to be re-compiled    
+  
 ## **0.4.0** (2022-04-05)  
   
 - :bug:  Fix build  
