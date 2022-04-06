@@ -1,3 +1,9 @@
+## **0.4.0** (2022-04-05)  
+  
+- :bug:  Fix build  
+- :bookmark:  Bump version  
+- :sparkles:  Enable user to declare himself as referent    
+  
 ### **0.3.17** (2022-03-31)  
   
 - :bookmark:  Bump version  
