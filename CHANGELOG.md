@@ -1,3 +1,8 @@
+## **0.5.0** (2022-04-06)  
+  
+- :bookmark:  
+- :sparkles:  User can remove himself from referents list    
+  
 ### **0.4.1** (2022-04-06)  
   
 - :zap:  Do not wait for the data to be re-compiled    
