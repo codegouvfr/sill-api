@@ -90,68 +90,51 @@ export async function createGitHubDataApi(params: {
         },
         "mutators": {
             "createReferent": async ({ referentRow, softwareId, isExpert }) => {
-                console.log("createReferent", {
-                    referentRow,
-                    softwareId,
-                    isExpert,
-                });
+                const newDb = structuredClone(evtState.state.db);
 
-                const newDbAndCommitMessage = (() => {
-                    const newDb = structuredClone(evtState.state.db);
+                let commitMessage = "";
 
-                    let commitMessage = "";
+                const { referentRows, softwareRows, softwareReferentRows } =
+                    newDb;
 
-                    const { referentRows, softwareRows, softwareReferentRows } =
-                        newDb;
-
-                    {
-                        const softwareRow = softwareRows.find(
-                            ({ id }) => id === softwareId,
-                        );
-
-                        assert(softwareRow !== undefined);
-
-                        commitMessage = `Add referent ${referentRow.email} to software ${softwareRow.name}`;
-                    }
-
-                    if (
-                        referentRows.find(
-                            ({ email }) => referentRow.email === email,
-                        ) === undefined
-                    ) {
-                        referentRows.push(referentRow);
-                    }
-
-                    const softwareReferentRow = softwareReferentRows.find(
-                        softwareReferentRow =>
-                            referentRow.email ===
-                                softwareReferentRow.referentEmail &&
-                            softwareReferentRow.softwareId === softwareId,
+                {
+                    const softwareRow = softwareRows.find(
+                        ({ id }) => id === softwareId,
                     );
 
-                    if (softwareReferentRow !== undefined) {
-                        if (softwareReferentRow.isExpert === isExpert) {
-                            return undefined;
-                        }
+                    assert(softwareRow !== undefined);
 
-                        softwareReferentRow.isExpert = isExpert;
-                    } else {
-                        softwareReferentRows.push({
-                            "referentEmail": referentRow.email,
-                            softwareId,
-                            isExpert,
-                        });
-                    }
-
-                    return { commitMessage, newDb };
-                })();
-
-                if (newDbAndCommitMessage === undefined) {
-                    //NOTE: Nothing to do
-                    return;
+                    commitMessage = `Add referent ${referentRow.email} to software ${softwareRow.name}`;
                 }
 
-                const { commitMessage, newDb } = newDbAndCommitMessage;
+                if (
+                    referentRows.find(
+                        ({ email }) => referentRow.email === email,
+                    ) === undefined
+                ) {
+                    referentRows.push(referentRow);
+                }
+
+                const softwareReferentRow = softwareReferentRows.find(
+                    softwareReferentRow =>
+                        referentRow.email ===
+                            softwareReferentRow.referentEmail &&
+                        softwareReferentRow.softwareId === softwareId,
+                );
+
+                if (softwareReferentRow !== undefined) {
+                    if (softwareReferentRow.isExpert === isExpert) {
+                        return undefined;
+                    }
+
+                    softwareReferentRow.isExpert = isExpert;
+                } else {
+                    softwareReferentRows.push({
+                        "referentEmail": referentRow.email,
+                        softwareId,
+                        isExpert,
+                    });
+                }
 
                 await writeDb({
                     "db": newDb,
@@ -188,6 +171,56 @@ export async function createGitHubDataApi(params: {
 
                 return dOut.pr;
                 */
+            },
+            "userNoLongerReferent": async ({ email, softwareId }) => {
+                const newDb = structuredClone(evtState.state.db);
+
+                let commitMessage = "";
+
+                const { referentRows, softwareReferentRows, softwareRows } =
+                    newDb;
+
+                {
+                    const softwareRow = softwareRows.find(
+                        ({ id }) => id === softwareId,
+                    );
+
+                    assert(softwareRow !== undefined);
+
+                    commitMessage = `Remove referent ${email} from software ${softwareRow.name}`;
+                }
+
+                const index = softwareReferentRows.findIndex(
+                    softwareReferentRow =>
+                        softwareReferentRow.softwareId === softwareId &&
+                        softwareReferentRow.referentEmail === email,
+                );
+
+                if (index === -1) {
+                    return undefined;
+                }
+
+                softwareReferentRows.splice(index, 1);
+
+                if (
+                    softwareReferentRows.find(
+                        softwareReferentRow =>
+                            softwareReferentRow.referentEmail === email,
+                    ) === undefined
+                ) {
+                    const index = referentRows.findIndex(
+                        referentRow => referentRow.email === email,
+                    );
+
+                    assert(index !== -1);
+
+                    referentRows.splice(index, 1);
+                }
+
+                await writeDb({
+                    "db": newDb,
+                    commitMessage,
+                });
             },
         },
     };

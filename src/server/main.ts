@@ -98,6 +98,25 @@ const createRouter = (params: { dataApi: DataApi }) => {
                     isExpert,
                 });
             },
+        })
+        .mutation("userNoLongerReferent", {
+            "input": z.object({
+                "softwareId": z.number(),
+            }),
+            "resolve": async ({ ctx, input }) => {
+                if (ctx === null) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+
+                const { softwareId } = input;
+
+                const { email } = ctx.parsedJwt;
+
+                await dataApi.mutators.userNoLongerReferent({
+                    softwareId,
+                    email,
+                });
+            },
         });
     return { router };
 };

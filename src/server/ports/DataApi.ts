@@ -25,6 +25,10 @@ export type DataApi = {
             softwareId: number;
             isExpert: boolean;
         }) => Promise<void>;
+        userNoLongerReferent: (params: {
+            email: string;
+            softwareId: number;
+        }) => Promise<void>;
     };
 };
 
