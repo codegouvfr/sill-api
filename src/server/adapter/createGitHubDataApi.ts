@@ -24,9 +24,9 @@ import { Evt } from "evt";
 import type { NonPostableEvt } from "evt";
 import { removeReferent } from "../../model/buildCatalog";
 import type { Param0, ReturnType } from "tsafe";
-import produce from "immer";
 import { Octokit } from "@octokit/rest";
 import { parseGitHubRepoUrl } from "../../tools/parseGithubRepoUrl";
+import structuredClone from "@ungap/structured-clone";
 
 export const buildBranch = "build";
 
@@ -90,11 +90,19 @@ export async function createGitHubDataApi(params: {
         },
         "mutators": {
             "createReferent": async ({ referentRow, softwareId, isExpert }) => {
-                let commitMessage = "__will be overridden";
+                console.log("createReferent", {
+                    referentRow,
+                    softwareId,
+                    isExpert,
+                });
 
-                const newDb = produce(evtState.state.db, db => {
+                const newDbAndCommitMessage = (() => {
+                    const newDb = structuredClone(evtState.state.db);
+
+                    let commitMessage = "";
+
                     const { referentRows, softwareRows, softwareReferentRows } =
-                        db;
+                        newDb;
 
                     {
                         const softwareRow = softwareRows.find(
@@ -134,37 +142,52 @@ export async function createGitHubDataApi(params: {
                             isExpert,
                         });
                     }
-                });
 
-                if (newDb === evtState.state.db) {
+                    return { commitMessage, newDb };
+                })();
+
+                if (newDbAndCommitMessage === undefined) {
+                    //NOTE: Nothing to do
                     return;
                 }
 
-                writeDb({
+                const { commitMessage, newDb } = newDbAndCommitMessage;
+
+                await writeDb({
                     "db": newDb,
                     commitMessage,
                 });
 
+                /*
+                //NOTE: We can uncomment this block of code and await writDb to wait for the 
+                //full transaction to complete but it takes about a minute.
+
                 const dOut = new Deferred<void>();
 
-                evtState.attach(state => {
-                    const { softwareReferentRows } = state.db;
+                {
 
-                    if (
-                        softwareReferentRows.find(
-                            softwareReferentRow =>
-                                softwareReferentRow.referentEmail ===
-                                    referentRow.email &&
-                                softwareReferentRow.softwareId === softwareId,
-                        ) === undefined
-                    ) {
-                        return;
-                    }
+                    const ctx = Evt.newCtx();
 
-                    dOut.resolve();
-                });
+                    evtState.attach(ctx, state => {
+
+                        const software = state.compiledData.catalog.find(software => software.id === softwareId);
+
+                        assert(software !== undefined);
+
+                        if (software.referents.find(referent => referent.email === referentRow.email) === undefined) {
+                            return;
+                        }
+
+                        ctx.done();
+
+                        dOut.resolve();
+
+                    });
+
+                }
 
                 return dOut.pr;
+                */
             },
         },
     };
