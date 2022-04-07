@@ -1,3 +1,10 @@
+### **0.5.1** (2022-04-07)  
+  
+- :bookmark:  Bump version  
+- :card_file_box:  Add agentWorkstation field in software
+
+https://github.com/etalab/sill-web/issues/5    
+  
 ## **0.5.0** (2022-04-06)  
   
 - :bookmark:  
