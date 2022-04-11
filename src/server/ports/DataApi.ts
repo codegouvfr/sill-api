@@ -29,6 +29,18 @@ export type DataApi = {
             email: string;
             softwareId: number;
         }) => Promise<void>;
+        addSoftware: (params: {
+            name: string;
+            function: string;
+            isFromFrenchPublicService: boolean;
+            wikidataId?: string;
+            comptoirDuLibreId?: number;
+            license: string;
+            versionMin: string;
+            agentWorkstation: boolean;
+            referentRow: ReferentRow;
+            isExpert: boolean;
+        }) => Promise<{ softwareId: number }>;
     };
 };
 

@@ -117,6 +117,41 @@ const createRouter = (params: { dataApi: DataApi }) => {
                     email,
                 });
             },
+        })
+        .mutation("addSoftware", {
+            "input": z.object({
+                "name": z.string(),
+                "function": z.string(),
+                "isFromFrenchPublicService": z.boolean(),
+                "wikidataId": z.string().optional(),
+                "comptoirDuLibreId": z.number().optional(),
+                "license": z.string(),
+                "versionMin": z.string(),
+                "agentWorkstation": z.boolean(),
+                "isExpert": z.boolean(),
+            }),
+            "resolve": async ({ ctx, input }) => {
+                if (ctx === null) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+
+                const { isExpert, ...rest } = input;
+
+                const { email, agencyName } = ctx.parsedJwt;
+
+                const { softwareId } = await dataApi.mutators.addSoftware({
+                    ...rest,
+                    "referentRow": {
+                        agencyName,
+                        email,
+                        "firstName": "todo ask when register",
+                        "familyName": "todo ask when register",
+                    },
+                    isExpert,
+                });
+
+                return { softwareId };
+            },
         });
     return { router };
 };

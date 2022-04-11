@@ -222,6 +222,78 @@ export async function createGitHubDataApi(params: {
                     commitMessage,
                 });
             },
+            "addSoftware": async ({
+                name,
+                function: softwareFunction,
+                isFromFrenchPublicService,
+                wikidataId,
+                comptoirDuLibreId,
+                license,
+                versionMin,
+                agentWorkstation,
+                referentRow,
+                isExpert,
+            }) => {
+                const newDb = structuredClone(evtState.state.db);
+
+                const { referentRows, softwareRows, softwareReferentRows } =
+                    newDb;
+
+                assert(
+                    softwareRows.find(s => {
+                        const t = (name: string) =>
+                            name.toLowerCase().replace(/ /g, "-");
+                        return t(s.name) === t(name);
+                    }) === undefined,
+                    "There is already a software with this name",
+                );
+
+                const softwareId =
+                    newDb.softwareRows
+                        .map(({ id }) => id)
+                        .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
+
+                softwareRows.push({
+                    "id": softwareId,
+                    name,
+                    "function": softwareFunction,
+                    "referencedSinceTime": Date.now(),
+                    "isStillInObservation": true,
+                    isFromFrenchPublicService,
+                    "isPresentInSupportContract": false,
+                    "alikeSoftwares": [],
+                    wikidataId,
+                    comptoirDuLibreId,
+                    license,
+                    "mimGroup": "MIMO",
+                    versionMin,
+                    "workshopUrls": [],
+                    "testUrls": [],
+                    "useCaseUrls": [],
+                    agentWorkstation,
+                });
+
+                if (
+                    referentRows.find(
+                        ({ email }) => referentRow.email === email,
+                    ) === undefined
+                ) {
+                    referentRows.push(referentRow);
+                }
+
+                softwareReferentRows.push({
+                    softwareId,
+                    "referentEmail": referentRow.email,
+                    isExpert,
+                });
+
+                await writeDb({
+                    "db": newDb,
+                    "commitMessage": `Add ${name} and ${referentRow.email} as referent`,
+                });
+
+                return { softwareId };
+            },
         },
     };
 }
