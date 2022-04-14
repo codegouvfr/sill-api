@@ -30,17 +30,15 @@ export type DataApi = {
             softwareId: number;
         }) => Promise<void>;
         addSoftware: (params: {
-            name: string;
-            function: string;
-            isFromFrenchPublicService: boolean;
-            wikidataId?: string;
-            comptoirDuLibreId?: number;
-            license: string;
-            versionMin: string;
-            agentWorkstation: boolean;
+            partialSoftwareRow: Pick<SoftwareRow, PartialSoftwareRowKey>;
             referentRow: ReferentRow;
             isExpert: boolean;
-        }) => Promise<{ softwareId: number }>;
+        }) => Promise<{ software: CompiledData.Software<"with referents"> }>;
+        updateSoftware: (params: {
+            softwareId: number;
+            partialSoftwareRow: Pick<SoftwareRow, PartialSoftwareRowKey>;
+            email: string;
+        }) => Promise<{ software: CompiledData.Software<"with referents"> }>;
     };
 };
 
@@ -55,3 +53,13 @@ export namespace DataApi {
         };
     };
 }
+
+type PartialSoftwareRowKey =
+    | "name"
+    | "function"
+    | "isFromFrenchPublicService"
+    | "wikidataId"
+    | "comptoirDuLibreId"
+    | "license"
+    | "versionMin"
+    | "agentWorkstation";

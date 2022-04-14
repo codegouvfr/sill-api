@@ -14,7 +14,7 @@ export async function buildCatalog(params: {
     softwareRows: SoftwareRow[];
     referentRows: ReferentRow[];
     softwareReferentRows: SoftwareReferentRow[];
-    log: typeof console.log;
+    log?: typeof console.log;
     currentCatalog: CompiledData.Software<"with referents">[] | undefined;
 }): Promise<{ catalog: CompiledData.Software<"with referents">[] }> {
     const {
@@ -22,7 +22,9 @@ export async function buildCatalog(params: {
         referentRows,
         softwareReferentRows,
         currentCatalog,
-        log,
+        log = () => {
+            /*nothing*/
+        },
     } = params;
 
     const { softwares: cdlSoftwares } = await fetchComptoirDuLibre();
@@ -101,16 +103,4 @@ export async function buildCatalog(params: {
         );
 
     return { catalog };
-}
-
-export function removeReferent(
-    software: CompiledData.Software<"with referents">,
-): CompiledData.Software<"without referents"> {
-    const { referents, ...rest } = software;
-    return {
-        ...rest,
-        "hasExpertReferent":
-            referents.find(({ isExpert }) => isExpert) !== undefined,
-        "referentCount": referents.length,
-    };
 }

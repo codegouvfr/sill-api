@@ -6,6 +6,7 @@ export type {
     SoftwareRef,
     Language,
 } from "./model/types";
+export { removeReferent } from "./model/types";
 export { languages } from "./model/types";
 export type { TrpcRouter } from "./server/main";
 export { zParsedJwtTokenPayload } from "./server/zParsedJwtTokenPayload";

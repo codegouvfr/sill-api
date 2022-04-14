@@ -3191,15 +3191,15 @@ ts-node@^10.6.0:
     v8-compile-cache-lib "^3.0.0"
     yn "3.1.1"
 
+tsafe@^0.10.0:
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/tsafe/-/tsafe-0.10.0.tgz#c4fba365a49467ea6167e8c9482ddb94ee51b795"
+  integrity sha512-CFfa1uJKfU0DDRbuB8bf2mfXjkOqiTsrltexzMMLxq5gjd1LttFECNGsO8dYUALJDbShb6+f3CwAppW/wf9BrA==
+
 tsafe@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/tsafe/-/tsafe-0.4.1.tgz#00af1be2db82abb4be531209b90232d7954e1a03"
   integrity sha512-+OZ0gdgmwcru+MOSheCx+ymAvQz+1/ui+KFJRuaq0t2m8RNrlf7eSzEieptoPQXPY67Mdkqgkdjknn8azoD5sw==
-
-tsafe@^0.9.0:
-  version "0.9.1"
-  resolved "https://registry.yarnpkg.com/tsafe/-/tsafe-0.9.1.tgz#8d7f12e08638b1f5543b995cc35e6b8852dcf73f"
-  integrity sha512-zRnios5Z2dRGx1i1BnG4sDzjzwJHvZ5gcdoRgQMmik6lw50yuh4aWojVTtTGeqEN1YRK3SCyw+ju7wol0yEO7w==
 
 tslib@^1.8.1, tslib@^1.9.0:
   version "1.14.1"

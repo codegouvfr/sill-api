@@ -192,3 +192,15 @@ export namespace CompiledData {
         };
     }
 }
+
+export function removeReferent(
+    software: CompiledData.Software<"with referents">,
+): CompiledData.Software<"without referents"> {
+    const { referents, ...rest } = software;
+    return {
+        ...rest,
+        "hasExpertReferent":
+            referents.find(({ isExpert }) => isExpert) !== undefined,
+        "referentCount": referents.length,
+    };
+}

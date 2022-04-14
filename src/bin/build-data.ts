@@ -1,6 +1,7 @@
-import { buildCatalog, removeReferent } from "../model/buildCatalog";
+import { buildCatalog } from "../model/buildCatalog";
 import { join as pathJoin, basename as pathBasename } from "path";
 import type { CompiledData } from "../model/types";
+import { removeReferent } from "../model/types";
 import * as fs from "fs";
 import * as child_process from "child_process";
 import { assert } from "tsafe/assert";

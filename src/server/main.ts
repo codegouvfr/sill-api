@@ -120,14 +120,16 @@ const createRouter = (params: { dataApi: DataApi }) => {
         })
         .mutation("addSoftware", {
             "input": z.object({
-                "name": z.string(),
-                "function": z.string(),
-                "isFromFrenchPublicService": z.boolean(),
-                "wikidataId": z.string().optional(),
-                "comptoirDuLibreId": z.number().optional(),
-                "license": z.string(),
-                "versionMin": z.string(),
-                "agentWorkstation": z.boolean(),
+                "partialSoftwareRow": z.object({
+                    "name": z.string(),
+                    "function": z.string(),
+                    "isFromFrenchPublicService": z.boolean(),
+                    "wikidataId": z.string().optional(),
+                    "comptoirDuLibreId": z.number().optional(),
+                    "license": z.string(),
+                    "versionMin": z.string(),
+                    "agentWorkstation": z.boolean(),
+                }),
                 "isExpert": z.boolean(),
             }),
             "resolve": async ({ ctx, input }) => {
@@ -135,12 +137,12 @@ const createRouter = (params: { dataApi: DataApi }) => {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const { isExpert, ...rest } = input;
+                const { isExpert, partialSoftwareRow } = input;
 
                 const { email, agencyName } = ctx.parsedJwt;
 
-                const { softwareId } = await dataApi.mutators.addSoftware({
-                    ...rest,
+                const { software } = await dataApi.mutators.addSoftware({
+                    partialSoftwareRow,
                     "referentRow": {
                         agencyName,
                         email,
@@ -150,9 +152,42 @@ const createRouter = (params: { dataApi: DataApi }) => {
                     isExpert,
                 });
 
-                return { softwareId };
+                return { software };
+            },
+        })
+        .mutation("updateSoftware", {
+            "input": z.object({
+                "softwareId": z.number(),
+                "partialSoftwareRow": z.object({
+                    "name": z.string(),
+                    "function": z.string(),
+                    "isFromFrenchPublicService": z.boolean(),
+                    "wikidataId": z.string().optional(),
+                    "comptoirDuLibreId": z.number().optional(),
+                    "license": z.string(),
+                    "versionMin": z.string(),
+                    "agentWorkstation": z.boolean(),
+                }),
+            }),
+            "resolve": async ({ ctx, input }) => {
+                if (ctx === null) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+
+                const { softwareId, partialSoftwareRow } = input;
+
+                const { email } = ctx.parsedJwt;
+
+                const { software } = await dataApi.mutators.updateSoftware({
+                    partialSoftwareRow,
+                    softwareId,
+                    email,
+                });
+
+                return { software };
             },
         });
+
     return { router };
 };
 export type TrpcRouter = ReturnType<typeof createRouter>["router"];
