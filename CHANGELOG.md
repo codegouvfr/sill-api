@@ -1,3 +1,8 @@
+## **0.6.0** (2022-04-11)  
+  
+- :bookmark:  Bump version  
+- :sparkles:  API endpoint for creating form    
+  
 ### **0.5.1** (2022-04-07)  
   
 - :bookmark:  Bump version  
