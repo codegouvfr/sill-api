@@ -197,13 +197,6 @@ const isDevelopment = process.env["ENVIRONNEMENT"] === "development";
 (async function main() {
     const evtDataUpdated = Evt.create();
 
-    if (isDevelopment) {
-        setInterval(() => {
-            console.log("Fake data update");
-            evtDataUpdated.post();
-        }, 10000);
-    }
-
     express()
         .use(cors())
         .use(

@@ -75,7 +75,7 @@ export async function createGitHubDataApi(params: {
                 dataRepoUrl,
                 githubPersonalAccessToken,
             });
-        }, 3600 * 3 * 1000);
+        }, 24 * 600 * 1000);
     }
 
     return {
