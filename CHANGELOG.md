@@ -1,3 +1,7 @@
+## **0.8.0** (2022-04-15)  
+  
+- :sparkles:  Endpoint for fetching wikidata id    
+  
 ### **0.7.2** (2022-04-15)  
   
 - :fire:  Prevent frequent data update in dev mode    
