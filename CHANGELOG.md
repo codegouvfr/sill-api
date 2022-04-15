@@ -1,3 +1,7 @@
+### **0.7.2** (2022-04-15)  
+  
+- :fire:  Prevent frequent data update in dev mode    
+  
 ### **0.7.1** (2022-04-15)  
   
 - :bug:  Fix bug    
