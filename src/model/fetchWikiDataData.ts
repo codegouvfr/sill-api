@@ -3,116 +3,121 @@ import type { Entity, DataValue } from "../tools/WikidataEntity";
 import type { WikidataData } from "./types";
 import cheerio from "cheerio";
 import { assert } from "tsafe/assert";
+import memoize from "memoizee";
 
 // https://git.sr.ht/~etalab/sill-consolidate-data/tree/master/item/src/core.clj#L225-252
-export async function fetchWikiDataData(params: {
-    wikidataId: string;
-}): Promise<WikidataData> {
-    const { wikidataId } = params;
+export const fetchWikiDataData = memoize(
+    async (wikidataId: string): Promise<WikidataData> => {
+        const { entity } = await (async function callee(): Promise<{
+            entity: Entity;
+        }> {
+            try {
+                const entity = await fetch(
+                    `https://www.wikidata.org/wiki/Special:EntityData/${wikidataId}.json`,
+                )
+                    .then(res => res.text())
+                    .then(
+                        text =>
+                            JSON.parse(text)["entities"][wikidataId] as Entity,
+                    );
 
-    const { entity } = await (async function callee(): Promise<{
-        entity: Entity;
-    }> {
-        try {
-            const entity = await fetch(
-                `https://www.wikidata.org/wiki/Special:EntityData/${wikidataId}.json`,
-            )
-                .then(res => res.text())
-                .then(
-                    text => JSON.parse(text)["entities"][wikidataId] as Entity,
-                );
+                return { entity };
+            } catch {
+                await new Promise(resolve => setTimeout(resolve, 3000));
 
-            return { entity };
-        } catch {
-            await new Promise(resolve => setTimeout(resolve, 3000));
-
-            return callee();
-        }
-    })();
-
-    function getClaimDataValue<Type extends "string" | "wikibase-entityid">(
-        property: `P${number}`,
-    ) {
-        const statementClaim = entity.claims[property];
-
-        if (statementClaim === undefined) {
-            return undefined;
-        }
-
-        return (statementClaim[0].mainsnak.datavalue as DataValue<Type>).value;
-    }
-
-    return {
-        "id": wikidataId,
-        ...(() => {
-            const { descriptions } = entity;
-
-            if (descriptions === undefined) {
-                return {};
+                return callee();
             }
+        })();
 
-            return {
-                "descriptionFr": descriptions["fr"]?.value,
-                "descriptionEn": descriptions["en"]?.value,
-            };
-        })(),
-        "logoUrl": await (async () => {
-            const value = getClaimDataValue<"string">("P154");
+        function getClaimDataValue<Type extends "string" | "wikibase-entityid">(
+            property: `P${number}`,
+        ) {
+            const statementClaim = entity.claims[property];
 
-            if (value === undefined) {
+            if (statementClaim === undefined) {
                 return undefined;
             }
 
-            const previewUrl = encodeURI(
-                `https://www.wikidata.org/wiki/${wikidataId}#/media/File:${value}`,
-            );
+            return (statementClaim[0].mainsnak.datavalue as DataValue<Type>)
+                .value;
+        }
 
-            const raw = await (async function callee(): Promise<string> {
-                const out = await fetch(previewUrl).then(res => {
-                    switch (res.status) {
-                        case 429:
-                            return undefined;
-                        case 200:
-                            return res.text();
-                    }
+        return {
+            "id": wikidataId,
+            ...(() => {
+                const { descriptions } = entity;
 
-                    throw new Error(
-                        `Request to ${previewUrl} failed for unknown reason`,
-                    );
-                });
-
-                if (out === undefined) {
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-
-                    return callee();
+                if (descriptions === undefined) {
+                    return {};
                 }
 
-                return out;
-            })();
+                return {
+                    "descriptionFr": descriptions["fr"]?.value,
+                    "descriptionEn": descriptions["en"]?.value,
+                };
+            })(),
+            "logoUrl": await (async () => {
+                const value = getClaimDataValue<"string">("P154");
 
-            const $ = cheerio.load(raw);
+                if (value === undefined) {
+                    return undefined;
+                }
 
-            const endOfHref =
-                "File:" +
-                encodeURIComponent(value)
-                    .replace(/%2C/g, ",") //Preserve ','
-                    .replace(/%20/g, "_"); //Replace ' ' by '_'
+                const previewUrl = encodeURI(
+                    `https://www.wikidata.org/wiki/${wikidataId}#/media/File:${value}`,
+                );
 
-            const url = $(`a[href$="${endOfHref}"] img`).attr("src");
+                const raw = await (async function callee(): Promise<string> {
+                    const out = await fetch(previewUrl).then(res => {
+                        switch (res.status) {
+                            case 429:
+                                return undefined;
+                            case 200:
+                                return res.text();
+                        }
 
-            assert(
-                url !== undefined,
-                `Wikidata scrapper needs to be updated ${previewUrl} ${value}, endOfHref: ${endOfHref}`,
-            );
+                        throw new Error(
+                            `Request to ${previewUrl} failed for unknown reason`,
+                        );
+                    });
 
-            return url;
-        })(),
-        "framaLibreId": getClaimDataValue<"string">("P4107"),
-        "websiteUrl": getClaimDataValue<"string">("P856"),
-        "sourceUrl": getClaimDataValue<"string">("P1324"),
-        "documentationUrl": getClaimDataValue<"string">("P2078"),
-    };
-}
+                    if (out === undefined) {
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+
+                        return callee();
+                    }
+
+                    return out;
+                })();
+
+                const $ = cheerio.load(raw);
+
+                const endOfHref =
+                    "File:" +
+                    encodeURIComponent(value)
+                        .replace(/%2C/g, ",") //Preserve ','
+                        .replace(/%20/g, "_"); //Replace ' ' by '_'
+
+                const url = $(`a[href$="${endOfHref}"] img`).attr("src");
+
+                assert(
+                    url !== undefined,
+                    `Wikidata scrapper needs to be updated ${previewUrl} ${value}, endOfHref: ${endOfHref}`,
+                );
+
+                return url;
+            })(),
+            "framaLibreId": getClaimDataValue<"string">("P4107"),
+            "websiteUrl": getClaimDataValue<"string">("P856"),
+            "sourceUrl": getClaimDataValue<"string">("P1324"),
+            "documentationUrl": getClaimDataValue<"string">("P2078"),
+        };
+    },
+    {
+        "promise": true,
+        "maxAge": 1000 * 3600 * 3,
+    },
+);
 
 /*
 fetchWikiDataData({

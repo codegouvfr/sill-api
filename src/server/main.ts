@@ -19,6 +19,7 @@ import {
     buildBranch,
 } from "./adapter/createGitHubDataApi";
 import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWebhookSignature";
+import { fetchWikiDataData } from "../model/fetchWikiDataData";
 
 const configuration = getConfiguration();
 
@@ -185,6 +186,19 @@ const createRouter = (params: { dataApi: DataApi }) => {
                 });
 
                 return { software };
+            },
+        })
+        .query("fetchWikiDataData", {
+            "input": z.object({
+                "wikidataId": z.string(),
+            }),
+            "resolve": async ({ ctx, input }) => {
+                if (ctx === null) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+                const { wikidataId } = input;
+
+                return fetchWikiDataData(wikidataId);
             },
         });
 
