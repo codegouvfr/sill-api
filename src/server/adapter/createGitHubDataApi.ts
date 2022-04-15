@@ -254,7 +254,7 @@ export async function createGitHubDataApi(params: {
 
                 await writeDb({
                     "db": newDb,
-                    "commitMessage": `Add ${name} and ${referentRow.email} as referent`,
+                    "commitMessage": `Add ${partialSoftwareRow.name} and ${referentRow.email} as referent`,
                 });
 
                 const software = evtState.state.compiledData.catalog.find(
