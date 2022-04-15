@@ -1,3 +1,7 @@
+### **0.7.1** (2022-04-15)  
+  
+- :bug:  Fix bug    
+  
 ## **0.7.0** (2022-04-15)  
   
 - :sparkles:  Create and update software    
