@@ -1,4 +1,5 @@
 import type { LocalizedString as LocalizedString_generic } from "../tools/LocalizedString";
+import type { PartialNoOptional } from "../tools/PartialNoOptional";
 
 export const languages = ["fr", "en"] as const;
 
@@ -148,14 +149,15 @@ export declare namespace ComptoirDuLibre {
     }
 }
 
-export type WikidataData = { id: string } & Partial<{
-    descriptionFr: string;
-    descriptionEn: string;
+export type WikidataData = { id: string } & PartialNoOptional<{
+    label: LocalizedString;
+    description: LocalizedString;
     logoUrl: string;
     framaLibreId: string;
     websiteUrl: string;
     sourceUrl: string;
     documentationUrl: string;
+    license: string;
 }>;
 
 export type CompiledData<

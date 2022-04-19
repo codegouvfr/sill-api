@@ -42,7 +42,6 @@ export type Entity = {
     modified: string;
     type: "item" | string;
     id: string;
-    //by ISO2, language is ISO2
     labels: LocalizedString.Single;
     descriptions: LocalizedString.Single;
     aliases: LocalizedString.Plural;

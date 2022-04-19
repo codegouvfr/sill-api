@@ -19,7 +19,8 @@ import {
     buildBranch,
 } from "./adapter/createGitHubDataApi";
 import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWebhookSignature";
-import { fetchWikiDataData } from "../model/fetchWikiDataData";
+import { fetchWikiDataData as fetchWikidataData } from "../model/fetchWikiDataData";
+import { getLatestSemVersionedTagFromSourceUrl } from "../tools/getLatestSemVersionedTagFromSourceUrl";
 
 const configuration = getConfiguration();
 
@@ -198,7 +199,18 @@ const createRouter = (params: { dataApi: DataApi }) => {
                 }
                 const { wikidataId } = input;
 
-                return fetchWikiDataData(wikidataId);
+                const wikidataData = await fetchWikidataData({ wikidataId });
+
+                const latestSemVersionedTag =
+                    wikidataData.sourceUrl === undefined
+                        ? undefined
+                        : await getLatestSemVersionedTagFromSourceUrl({
+                              "githubPersonalAccessToken":
+                                  configuration.githubPersonalAccessToken,
+                              "sourceUrl": wikidataData.sourceUrl,
+                          });
+
+                return { wikidataData, latestSemVersionedTag };
             },
         });
 

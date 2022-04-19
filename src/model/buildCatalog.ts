@@ -48,7 +48,7 @@ export async function buildCatalog(params: {
             wikiDataDataById[wikidataId] =
                 currentCatalog?.find(
                     software => software.wikidataData?.id === wikidataId,
-                )?.wikidataData ?? (await fetchWikiDataData(wikidataId));
+                )?.wikidataData ?? (await fetchWikiDataData({ wikidataId }));
         }
     }
 
