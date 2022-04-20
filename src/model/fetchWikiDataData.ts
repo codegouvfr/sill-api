@@ -91,7 +91,7 @@ export async function fetchWikiDataData(params: {
 
             const { entity } = await fetchEntity(licenseId);
 
-            return entity.aliases.en[0]?.value;
+            return entity.aliases.en?.[0]?.value;
         })(),
     };
 }
