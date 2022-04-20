@@ -1,3 +1,7 @@
+## **0.9.0** (2022-04-19)  
+  
+- :sparkles:  Fetch more data from wikidata and version from github    
+  
 ## **0.8.0** (2022-04-15)  
   
 - :sparkles:  Endpoint for fetching wikidata id    
