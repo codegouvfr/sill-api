@@ -309,7 +309,7 @@ export async function createGitHubDataApi(params: {
     };
 }
 
-async function triggerComputationOfCompiledData(params: {
+export async function triggerComputationOfCompiledData(params: {
     dataRepoUrl: string;
     githubPersonalAccessToken: string;
 }) {
