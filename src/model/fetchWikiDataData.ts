@@ -98,13 +98,19 @@ export async function fetchWikiDataData(params: {
 
 function wikidataSingleLocalizedStringToLocalizedString(
     wikidataSingleLocalizedString: WikiDataLocalizedString.Single,
-): LocalizedString {
-    return Object.fromEntries(
+): LocalizedString | undefined {
+    const localizedString = Object.fromEntries(
         languages.map(language => [
             language,
             wikidataSingleLocalizedString[language]?.value,
         ]),
     );
+
+    if (Object.keys(localizedString).length === 0) {
+        return undefined;
+    }
+
+    return localizedString;
 }
 
 const fetchEntity = memoize(
