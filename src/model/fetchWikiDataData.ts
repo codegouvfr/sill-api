@@ -9,6 +9,7 @@ import { languages } from "./types";
 import * as cheerio from "cheerio";
 import { assert } from "tsafe/assert";
 import memoize from "memoizee";
+import { noUndefined } from "tsafe/noUndefined";
 
 // https://git.sr.ht/~etalab/sill-consolidate-data/tree/master/item/src/core.clj#L225-252
 export async function fetchWikiDataData(params: {
@@ -99,11 +100,13 @@ export async function fetchWikiDataData(params: {
 function wikidataSingleLocalizedStringToLocalizedString(
     wikidataSingleLocalizedString: WikiDataLocalizedString.Single,
 ): LocalizedString | undefined {
-    const localizedString = Object.fromEntries(
-        languages.map(language => [
-            language,
-            wikidataSingleLocalizedString[language]?.value,
-        ]),
+    const localizedString = noUndefined(
+        Object.fromEntries(
+            languages.map(language => [
+                language,
+                wikidataSingleLocalizedString[language]?.value,
+            ]),
+        ),
     );
 
     if (Object.keys(localizedString).length === 0) {
