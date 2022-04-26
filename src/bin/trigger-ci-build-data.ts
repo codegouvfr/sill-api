@@ -10,11 +10,9 @@ assert(
     `${envVarName} env variable is required`,
 );
 
-for (const repo of ["", "-test"].map(suffix => `sill-data${suffix}`)) {
-    triggerComputationOfCompiledData({
-        "dataRepoUrl": `https://github.com/etalab/${repo}`,
-        githubPersonalAccessToken,
-    });
-}
+triggerComputationOfCompiledData({
+    "dataRepoUrl": `https://github.com/etalab/sill-data`,
+    githubPersonalAccessToken,
+});
 
 console.log(`https://github.com/etalab/sill-api/actions`);
