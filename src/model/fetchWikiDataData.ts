@@ -10,6 +10,7 @@ import * as cheerio from "cheerio";
 import { assert } from "tsafe/assert";
 import memoize from "memoizee";
 import { noUndefined } from "tsafe/noUndefined";
+import { allEquals } from "evt/tools/reducers/allEquals";
 
 // https://git.sr.ht/~etalab/sill-consolidate-data/tree/master/item/src/core.clj#L225-252
 export async function fetchWikiDataData(params: {
@@ -113,6 +114,10 @@ function wikidataSingleLocalizedStringToLocalizedString(
         return undefined;
     }
 
+    if (Object.values(localizedString).reduce(...allEquals())) {
+        return localizedString[Object.keys(localizedString)[0]];
+    }
+
     return localizedString;
 }
 
@@ -158,4 +163,4 @@ function createGetClaimDataValue(params: { entity: Entity }) {
     return { getClaimDataValue };
 }
 
-//fetchWikiDataData({ "wikidataId": "Q2033" }).then(console.log)
+//fetchWikiDataData({ "wikidataId": "Q171477" }).then(console.log)
