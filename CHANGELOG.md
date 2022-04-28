@@ -1,3 +1,17 @@
+## **0.10.0** (2022-04-28)  
+  
+- :card_file_box:  Developper list always present even if empty  
+- :sparkles:  Fetch developper list from wikidata  
+- :card_file_box:  Do not use localized string when all string equals  
+- :bug:  Fixing script that trigers build  
+- :sparkles:  Update convignence script  
+- :bug:  Undefined when no translation in the supported languages  
+- :sparkles:  New script to trigger full data build  
+- :bug:  Fix how wiki data are serialized  
+- :sparkles:  Write a script to reset sill-data-test on sill-data  
+- :sparkles:  Feature script to help hacking sill-data/software.json  
+- :bug:  Fix bug in fetch wikidata    
+  
 ## **0.9.0** (2022-04-19)  
   
 - :sparkles:  Fetch more data from wikidata and version from github    
