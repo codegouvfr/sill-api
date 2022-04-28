@@ -149,7 +149,13 @@ export declare namespace ComptoirDuLibre {
     }
 }
 
-export type WikidataData = { id: string } & PartialNoOptional<{
+export type WikidataData = {
+    id: string;
+    developers: {
+        name: string;
+        id: string;
+    }[];
+} & PartialNoOptional<{
     label: LocalizedString;
     description: LocalizedString;
     logoUrl: string;
@@ -158,10 +164,6 @@ export type WikidataData = { id: string } & PartialNoOptional<{
     sourceUrl: string;
     documentationUrl: string;
     license: string;
-    developers: {
-        name: string;
-        id: string;
-    }[];
 }>;
 
 export type CompiledData<
