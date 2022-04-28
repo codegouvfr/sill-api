@@ -13,6 +13,8 @@ import { noUndefined } from "tsafe/noUndefined";
 import { allEquals } from "evt/tools/reducers/allEquals";
 import { createResolveLocalizedString } from "../tools/LocalizedString";
 import { exclude } from "tsafe/exclude";
+import { removeDuplicatesFactory } from "evt/tools/reducers/removeDuplicates";
+import { same } from "evt/tools/inDepth/same";
 
 // https://git.sr.ht/~etalab/sill-consolidate-data/tree/master/item/src/core.clj#L225-252
 export async function fetchWikiDataData(params: {
@@ -98,10 +100,14 @@ export async function fetchWikiDataData(params: {
             return entity.aliases.en?.[0]?.value;
         })(),
         "developers": await Promise.all(
-            getClaimDataValue<"wikibase-entityid">("P178").map(
-                async ({ id }) => {
-                    const { entity } = await fetchEntity(id);
+            [
+                ...getClaimDataValue<"wikibase-entityid">("P170"),
+                ...getClaimDataValue<"wikibase-entityid">("P172"),
+                ...getClaimDataValue<"wikibase-entityid">("P178"),
+            ].map(async ({ id }) => {
+                const { entity } = await fetchEntity(id);
 
+                /*
                     const { getClaimDataValue } = createGetClaimDataValue({
                         entity,
                     });
@@ -114,29 +120,41 @@ export async function fetchWikiDataData(params: {
                     if (!isHuman) {
                         return undefined;
                     }
+                    */
 
-                    const label =
-                        wikidataSingleLocalizedStringToLocalizedString(
-                            entity.labels,
-                        );
+                const label = wikidataSingleLocalizedStringToLocalizedString(
+                    entity.labels,
+                );
 
-                    if (!label) {
-                        return undefined;
-                    }
+                if (!label) {
+                    return undefined;
+                }
 
-                    const { resolveLocalizedString } =
-                        createResolveLocalizedString({
-                            "currentLanguage": "en",
-                            "fallbackLanguage": "en",
-                        });
+                const { resolveLocalizedString } = createResolveLocalizedString(
+                    {
+                        "currentLanguage": "en",
+                        "fallbackLanguage": "en",
+                    },
+                );
 
-                    return {
-                        "name": resolveLocalizedString(label),
-                        "id": entity.id,
-                    };
-                },
+                return {
+                    "name": resolveLocalizedString(label),
+                    "id": entity.id,
+                };
+            }),
+        ).then(developers =>
+            developers.filter(exclude(undefined)).reduce(
+                ...(() => {
+                    const { removeDuplicates } = removeDuplicatesFactory({
+                        "areEquals": same,
+                    });
+
+                    return removeDuplicates<
+                        WikidataData["developers"][number]
+                    >();
+                })(),
             ),
-        ).then(developers => developers.filter(exclude(undefined))),
+        ),
     };
 }
 
@@ -209,4 +227,4 @@ function createGetClaimDataValue(params: { entity: Entity }) {
     return { getClaimDataValue };
 }
 
-//fetchWikiDataData({ "wikidataId": "Q171477" }).then(console.log)
+//fetchWikiDataData({ "wikidataId": "Q25874683" }).then(console.log)
