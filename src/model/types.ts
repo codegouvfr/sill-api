@@ -158,6 +158,10 @@ export type WikidataData = { id: string } & PartialNoOptional<{
     sourceUrl: string;
     documentationUrl: string;
     license: string;
+    developers: {
+        name: string;
+        id: string;
+    }[];
 }>;
 
 export type CompiledData<

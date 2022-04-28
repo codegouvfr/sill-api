@@ -11,6 +11,8 @@ import { assert } from "tsafe/assert";
 import memoize from "memoizee";
 import { noUndefined } from "tsafe/noUndefined";
 import { allEquals } from "evt/tools/reducers/allEquals";
+import { createResolveLocalizedString } from "../tools/LocalizedString";
+import { exclude } from "tsafe/exclude";
 
 // https://git.sr.ht/~etalab/sill-consolidate-data/tree/master/item/src/core.clj#L225-252
 export async function fetchWikiDataData(params: {
@@ -29,7 +31,7 @@ export async function fetchWikiDataData(params: {
             entity.descriptions,
         ),
         "logoUrl": await (async () => {
-            const value = getClaimDataValue<"string">("P154");
+            const value = getClaimDataValue<"string">("P154")[0];
 
             if (value === undefined) {
                 return undefined;
@@ -79,13 +81,13 @@ export async function fetchWikiDataData(params: {
 
             return url;
         })(),
-        "framaLibreId": getClaimDataValue<"string">("P4107"),
-        "websiteUrl": getClaimDataValue<"string">("P856"),
-        "sourceUrl": getClaimDataValue<"string">("P1324"),
-        "documentationUrl": getClaimDataValue<"string">("P2078"),
+        "framaLibreId": getClaimDataValue<"string">("P4107")[0],
+        "websiteUrl": getClaimDataValue<"string">("P856")[0],
+        "sourceUrl": getClaimDataValue<"string">("P1324")[0],
+        "documentationUrl": getClaimDataValue<"string">("P2078")[0],
         "license": await (async () => {
             const licenseId =
-                getClaimDataValue<"wikibase-entityid">("P275")?.id;
+                getClaimDataValue<"wikibase-entityid">("P275")[0]?.id;
 
             if (licenseId === undefined) {
                 return undefined;
@@ -95,6 +97,46 @@ export async function fetchWikiDataData(params: {
 
             return entity.aliases.en?.[0]?.value;
         })(),
+        "developers": await Promise.all(
+            getClaimDataValue<"wikibase-entityid">("P178").map(
+                async ({ id }) => {
+                    const { entity } = await fetchEntity(id);
+
+                    const { getClaimDataValue } = createGetClaimDataValue({
+                        entity,
+                    });
+
+                    const isHuman =
+                        getClaimDataValue<"wikibase-entityid">("P31").find(
+                            ({ id }) => id === "Q5",
+                        ) !== undefined;
+
+                    if (!isHuman) {
+                        return undefined;
+                    }
+
+                    const label =
+                        wikidataSingleLocalizedStringToLocalizedString(
+                            entity.labels,
+                        );
+
+                    if (!label) {
+                        return undefined;
+                    }
+
+                    const { resolveLocalizedString } =
+                        createResolveLocalizedString({
+                            "currentLanguage": "en",
+                            "fallbackLanguage": "en",
+                        });
+
+                    return {
+                        "name": resolveLocalizedString(label),
+                        "id": entity.id,
+                    };
+                },
+            ),
+        ).then(developers => developers.filter(exclude(undefined))),
     };
 }
 
@@ -111,7 +153,9 @@ function wikidataSingleLocalizedStringToLocalizedString(
     );
 
     if (Object.keys(localizedString).length === 0) {
-        return undefined;
+        return wikidataSingleLocalizedString[
+            Object.keys(wikidataSingleLocalizedString)[0]
+        ]?.value;
     }
 
     if (Object.values(localizedString).reduce(...allEquals())) {
@@ -154,10 +198,12 @@ function createGetClaimDataValue(params: { entity: Entity }) {
         const statementClaim = entity.claims[property];
 
         if (statementClaim === undefined) {
-            return undefined;
+            return [];
         }
 
-        return (statementClaim[0].mainsnak.datavalue as DataValue<Type>).value;
+        return statementClaim.map(
+            x => (x.mainsnak.datavalue as DataValue<Type>).value,
+        );
     }
 
     return { getClaimDataValue };
