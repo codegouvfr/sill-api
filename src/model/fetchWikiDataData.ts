@@ -219,12 +219,16 @@ function createGetClaimDataValue(params: { entity: Entity }) {
             return [];
         }
 
-        return statementClaim.map(
-            x => (x.mainsnak.datavalue as DataValue<Type>).value,
-        );
+        return statementClaim
+            .sort((a, b) => {
+                const getWeight = (rank: typeof a["rank"]) =>
+                    rank === "preferred" ? 1 : 0;
+                return getWeight(b.rank) - getWeight(a.rank);
+            })
+            .map(x => (x.mainsnak.datavalue as DataValue<Type>).value);
     }
 
     return { getClaimDataValue };
 }
 
-//fetchWikiDataData({ "wikidataId": "Q25874683" }).then(console.log)
+//fetchWikiDataData({ "wikidataId": "Q107693197" }).then(console.log)
