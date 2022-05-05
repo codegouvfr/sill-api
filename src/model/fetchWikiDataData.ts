@@ -84,8 +84,15 @@ export async function fetchWikiDataData(params: {
             return url;
         })(),
         "framaLibreId": getClaimDataValue<"string">("P4107")[0],
-        "websiteUrl": getClaimDataValue<"string">("P856")[0],
-        "sourceUrl": getClaimDataValue<"string">("P1324")[0],
+        ...(() => {
+            const websiteUrl = getClaimDataValue<"string">("P856")[0];
+            const sourceUrl = getClaimDataValue<"string">("P1324")[0];
+
+            return {
+                sourceUrl,
+                "websiteUrl": sourceUrl !== websiteUrl ? websiteUrl : undefined,
+            };
+        })(),
         "documentationUrl": getClaimDataValue<"string">("P2078")[0],
         "license": await (async () => {
             const licenseId =
