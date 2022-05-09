@@ -84,7 +84,7 @@ export namespace ServiceRow {
     };
 
     export type UnknownSoftware = Common & {
-        softwareId?: undefined;
+        softwareSillId?: undefined;
         softwareName: string;
         comptoirDuLibreId?: number;
     };
