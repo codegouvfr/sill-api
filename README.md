@@ -10,14 +10,11 @@
     </a>
 </p>
 
--   [Purpose](#purpose)
--   [Published data](#published-data)
 -   [Dev](#dev)
     -   [Checking out the code](#checking-out-the-code)
-    -   [Generating the json files](#generating-the-json-files)
--   [Contributing](#contributing)
-    -   [Editing `referent.csv`](#editing-referentcsv)
-    -   [Publishing a new version of the types definitions](#publishing-a-new-version-of-the-types-definitions)
+    -   [Model](#model)
+        -   [Publishing a new version of the types definitions](#publishing-a-new-version-of-the-types-definitions)
+    -   [Server](#server)
 -   [Licences](#licences)
 
 # Dev
@@ -35,7 +32,7 @@ git submodule update --init
 
 ## Model
 
-This repo publish a [`sill3.json`](https://code.gouv.fr/data/sill3.json) files that compiles data from [the data private submodule](/data)
+This repo publish a [`sill-data.json`](https://code.gouv.fr/data/sill-data.json) files that compiles data from [the data private submodule](/data)
 and [Le comptoir du libre](https://comptoir-du-libre.org/).
 
 It will be used from [code.gouv.fr](https://code.gouv.fr/) to expose the SILL.
