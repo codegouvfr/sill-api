@@ -4,6 +4,10 @@ import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
+/*
+import { exclude } from "tsafe/exclude";
+import { rawCsvFileToRawCsvRows } from "../tools/stringifyCsv";
+*/
 
 /*
 
@@ -11,8 +15,15 @@ This script is meant to help edit and make sure it is well formatted sill-data/s
 
 cd ~/github/sill-api && npx tsc -w
 cd ~/github/sill-data 
+wget https://git.sr.ht/~etalab/sill/blob/master/sill.csv
 node ../sill-api/dist/bin/edit.js
 
+*/
+
+/*
+const rawCsvRows = rawCsvFileToRawCsvRows({ "rawCsvFile": fs.readFileSync(
+    pathJoin(process.cwd(), "sill.csv")
+).toString("utf8") });
 */
 
 const softwareFilePath = pathJoin(process.cwd(), "software.json");
@@ -140,6 +151,7 @@ fs.writeFileSync(
                         versionMin,
                         workshopUrls,
                         testUrls,
+                        //"useCaseUrls": [rawCsvRows.find(row => row["ID"] === `${id}`)?.["fiche"] || undefined].filter(exclude(undefined)) ,
                         useCaseUrls,
                         agentWorkstation,
                     };
