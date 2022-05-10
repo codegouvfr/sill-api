@@ -61,7 +61,7 @@ http://localhost:80/api/getKeycloakParams
 
 # Licences
 
-DINUM and contributors of the repository, 2019-2022.
+DINUM and contributors of the repository, 2022.
 
 -   The data are licensed under the [licence Ouverte 2.0](LICENSES/LICENSE.Etalab-2.0.md).
 -   The source code is licensed under the [MIT license](LICENSES/LICENSE.MIT.md).
