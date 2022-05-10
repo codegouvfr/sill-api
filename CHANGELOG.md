@@ -1,3 +1,18 @@
+## **0.12.0** (2022-05-10)  
+  
+- :sparkles:  Provide more infos for form autofill  
+- :card_file_box:  Rename sill3.json into sill-data.json
+
+Closes #19  
+- :card_file_box:  Rename service.softwareId into service.softwareSillId
+
+Closes  
+- :sparkles:  If the website is the source the undefined  
+- :sparkles:  Sort by preference wikidata  
+- :sparkles:  Look for developpers in creators and funders props
+
+https://github.com/etalab/sill-web/issues/17    
+  
 ## **0.10.0** (2022-04-28)  
   
 - :card_file_box:  Developper list always present even if empty  
