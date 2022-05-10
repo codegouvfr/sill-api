@@ -57,18 +57,23 @@ export async function buildCatalog(params: {
             softwareRow,
             "referents": softwareReferentRows
                 .filter(({ softwareId }) => softwareId === softwareRow.id)
-                .map(({ referentEmail, isExpert }) => ({
+                .map(({ referentEmail, isExpert, useCaseDescription }) => ({
                     "referent": referentRows.find(
                         ({ email }) => email === referentEmail,
                     ),
                     isExpert,
+                    useCaseDescription,
                 }))
                 .map(
                     ({ referent, ...rest }) => (
                         assert(referent !== undefined), { referent, ...rest }
                     ),
                 )
-                .map(({ referent, isExpert }) => ({ ...referent, isExpert })),
+                .map(({ referent, isExpert, useCaseDescription }) => ({
+                    ...referent,
+                    isExpert,
+                    useCaseDescription,
+                })),
         }))
         .map(
             ({

@@ -87,13 +87,14 @@ const createRouter = (params: { dataApi: DataApi }) => {
             "input": z.object({
                 "softwareId": z.number(),
                 "isExpert": z.boolean(),
+                "useCaseDescription": z.string(),
             }),
             "resolve": async ({ ctx, input }) => {
                 if (ctx === null) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const { softwareId, isExpert } = input;
+                const { softwareId, isExpert, useCaseDescription } = input;
 
                 const { agencyName, email } = ctx.parsedJwt;
 
@@ -106,6 +107,7 @@ const createRouter = (params: { dataApi: DataApi }) => {
                     },
                     softwareId,
                     isExpert,
+                    useCaseDescription,
                 });
             },
         })
@@ -132,13 +134,15 @@ const createRouter = (params: { dataApi: DataApi }) => {
             "input": z.object({
                 "partialSoftwareRow": zPartialSoftwareRow,
                 "isExpert": z.boolean(),
+                "useCaseDescription": z.string(),
             }),
             "resolve": async ({ ctx, input }) => {
                 if (ctx === null) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const { isExpert, partialSoftwareRow } = input;
+                const { isExpert, partialSoftwareRow, useCaseDescription } =
+                    input;
 
                 const { email, agencyName } = ctx.parsedJwt;
 
@@ -151,6 +155,7 @@ const createRouter = (params: { dataApi: DataApi }) => {
                         "familyName": "todo ask when register",
                     },
                     isExpert,
+                    useCaseDescription,
                 });
 
                 return { software };

@@ -99,7 +99,12 @@ export async function createGitHubDataApi(params: {
             ),
         },
         "mutators": {
-            "createReferent": async ({ referentRow, softwareId, isExpert }) => {
+            "createReferent": async ({
+                referentRow,
+                softwareId,
+                isExpert,
+                useCaseDescription,
+            }) => {
                 const newDb = structuredClone(evtState.state.db);
 
                 let commitMessage = "";
@@ -143,6 +148,7 @@ export async function createGitHubDataApi(params: {
                         "referentEmail": referentRow.email,
                         softwareId,
                         isExpert,
+                        useCaseDescription,
                     });
                 }
 
@@ -205,6 +211,7 @@ export async function createGitHubDataApi(params: {
                 partialSoftwareRow,
                 referentRow,
                 isExpert,
+                useCaseDescription,
             }) => {
                 const newDb = structuredClone(evtState.state.db);
 
@@ -250,6 +257,7 @@ export async function createGitHubDataApi(params: {
                     softwareId,
                     "referentEmail": referentRow.email,
                     isExpert,
+                    useCaseDescription,
                 });
 
                 await writeDb({

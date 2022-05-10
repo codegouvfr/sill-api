@@ -57,6 +57,7 @@ export type SoftwareReferentRow = {
     softwareId: number;
     referentEmail: string;
     isExpert: boolean;
+    useCaseDescription: string;
 };
 
 export type ServiceRow = ServiceRow.KnownSoftware | ServiceRow.UnknownSoftware;
@@ -196,6 +197,7 @@ export namespace CompiledData {
         export type WithReferent = Common & {
             referents: (ReferentRow & {
                 isExpert: boolean;
+                useCaseDescription: string;
             })[];
         };
     }
