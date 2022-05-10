@@ -1,3 +1,8 @@
+### **0.13.1** (2022-05-10)  
+  
+- :heavy_plus_sign:  Making i18nifty a dependency  
+- :construction_worker:  Add eddit script    
+  
 ## **0.13.0** (2022-05-10)  
   
 - :sparkles:  add software usecase https://github.com/etalab/sill-web/issues/9 https://github.com/etalab/sill-web/issues/13    
