@@ -1,3 +1,9 @@
+### **0.13.2** (2022-05-10)  
+  
+- package.json: Bump version  
+- README.md: Fix copyright year  
+- :work:  Update eddit script    
+  
 ### **0.13.1** (2022-05-10)  
   
 - :heavy_plus_sign:  Making i18nifty a dependency  
