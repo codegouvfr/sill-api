@@ -1,3 +1,7 @@
+## **0.13.0** (2022-05-10)  
+  
+- :sparkles:  add software usecase https://github.com/etalab/sill-web/issues/9 https://github.com/etalab/sill-web/issues/13    
+  
 ## **0.12.0** (2022-05-10)  
   
 - :sparkles:  Provide more infos for form autofill  
