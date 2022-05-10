@@ -1,4 +1,4 @@
-import type { LocalizedString as LocalizedString_generic } from "../tools/LocalizedString";
+import type { LocalizedString as LocalizedString_generic } from "i18nifty/LocalizedString";
 import type { PartialNoOptional } from "../tools/PartialNoOptional";
 
 export const languages = ["fr", "en"] as const;

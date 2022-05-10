@@ -11,10 +11,16 @@ import { assert } from "tsafe/assert";
 import memoize from "memoizee";
 import { noUndefined } from "tsafe/noUndefined";
 import { allEquals } from "evt/tools/reducers/allEquals";
-import { createResolveLocalizedString } from "../tools/LocalizedString";
 import { exclude } from "tsafe/exclude";
 import { removeDuplicatesFactory } from "evt/tools/reducers/removeDuplicates";
 import { same } from "evt/tools/inDepth/same";
+import type { Language } from "../model/types";
+import { createResolveLocalizedString } from "i18nifty/LocalizedString";
+import { id } from "tsafe/id";
+const { resolveLocalizedString } = createResolveLocalizedString({
+    "currentLanguage": id<Language>("en"),
+    "fallbackLanguage": "en",
+});
 
 // https://git.sr.ht/~etalab/sill-consolidate-data/tree/master/item/src/core.clj#L225-252
 export async function fetchWikiDataData(params: {
@@ -136,13 +142,6 @@ export async function fetchWikiDataData(params: {
                 if (!label) {
                     return undefined;
                 }
-
-                const { resolveLocalizedString } = createResolveLocalizedString(
-                    {
-                        "currentLanguage": "en",
-                        "fallbackLanguage": "en",
-                    },
-                );
 
                 return {
                     "name": resolveLocalizedString(label),

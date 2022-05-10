@@ -21,6 +21,14 @@ import {
 import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWebhookSignature";
 import { fetchWikiDataData as fetchWikidataData } from "../model/fetchWikiDataData";
 import { getLatestSemVersionedTagFromSourceUrl } from "../tools/getLatestSemVersionedTagFromSourceUrl";
+import { fetchComptoirDuLibre } from "../model/fetchComptoirDuLibre";
+import type { Language } from "../model/types";
+import { createResolveLocalizedString } from "i18nifty/LocalizedString";
+import { id } from "tsafe/id";
+const { resolveLocalizedString } = createResolveLocalizedString({
+    "currentLanguage": id<Language>("en"),
+    "fallbackLanguage": "en",
+});
 
 const configuration = getConfiguration();
 
@@ -122,16 +130,7 @@ const createRouter = (params: { dataApi: DataApi }) => {
         })
         .mutation("addSoftware", {
             "input": z.object({
-                "partialSoftwareRow": z.object({
-                    "name": z.string(),
-                    "function": z.string(),
-                    "isFromFrenchPublicService": z.boolean(),
-                    "wikidataId": z.string().optional(),
-                    "comptoirDuLibreId": z.number().optional(),
-                    "license": z.string(),
-                    "versionMin": z.string(),
-                    "agentWorkstation": z.boolean(),
-                }),
+                "partialSoftwareRow": zPartialSoftwareRow,
                 "isExpert": z.boolean(),
             }),
             "resolve": async ({ ctx, input }) => {
@@ -160,16 +159,7 @@ const createRouter = (params: { dataApi: DataApi }) => {
         .mutation("updateSoftware", {
             "input": z.object({
                 "softwareId": z.number(),
-                "partialSoftwareRow": z.object({
-                    "name": z.string(),
-                    "function": z.string(),
-                    "isFromFrenchPublicService": z.boolean(),
-                    "wikidataId": z.string().optional(),
-                    "comptoirDuLibreId": z.number().optional(),
-                    "license": z.string(),
-                    "versionMin": z.string(),
-                    "agentWorkstation": z.boolean(),
-                }),
+                "partialSoftwareRow": zPartialSoftwareRow,
             }),
             "resolve": async ({ ctx, input }) => {
                 if (ctx === null) {
@@ -189,7 +179,7 @@ const createRouter = (params: { dataApi: DataApi }) => {
                 return { software };
             },
         })
-        .query("fetchWikiDataData", {
+        .query("autoFillFormInfo", {
             "input": z.object({
                 "wikidataId": z.string(),
             }),
@@ -201,6 +191,32 @@ const createRouter = (params: { dataApi: DataApi }) => {
 
                 const wikidataData = await fetchWikidataData({ wikidataId });
 
+                const comptoirDuLibreId = await (async () => {
+                    const comptoirDuLibre = await fetchComptoirDuLibre();
+
+                    const comptoirDuLibreSoftware =
+                        comptoirDuLibre.softwares.find(software => {
+                            const format = (name: string) =>
+                                name
+                                    .toLowerCase()
+                                    .replace(/ g/, "")
+                                    .substring(0, 8);
+
+                            if (wikidataData.label === undefined) {
+                                return false;
+                            }
+
+                            return (
+                                format(software.name) ===
+                                format(
+                                    resolveLocalizedString(wikidataData.label),
+                                )
+                            );
+                        });
+
+                    return comptoirDuLibreSoftware?.id;
+                })();
+
                 const latestSemVersionedTag =
                     wikidataData.sourceUrl === undefined
                         ? undefined
@@ -210,7 +226,11 @@ const createRouter = (params: { dataApi: DataApi }) => {
                               "sourceUrl": wikidataData.sourceUrl,
                           });
 
-                return { wikidataData, latestSemVersionedTag };
+                return {
+                    wikidataData,
+                    latestSemVersionedTag,
+                    comptoirDuLibreId,
+                };
             },
         });
 
@@ -294,3 +314,15 @@ const isDevelopment = process.env["ENVIRONNEMENT"] === "development";
             console.log(`Listening on port ${configuration.port}`),
         );
 })();
+
+const zPartialSoftwareRow = z.object({
+    "name": z.string(),
+    "function": z.string(),
+    "isFromFrenchPublicService": z.boolean(),
+    "wikidataId": z.string().optional(),
+    "comptoirDuLibreId": z.number().optional(),
+    "license": z.string(),
+    "versionMin": z.string(),
+    "agentWorkstation": z.boolean(),
+    "isPresentInSupportContract": z.boolean(),
+});

@@ -1,6 +1,6 @@
 {
     "name": "sill-api",
-    "version": "0.11.0",
+    "version": "0.12.0",
     "description": "Ongoing work with the SILL 2.0",
     "repository": {
         "type": "git",
@@ -72,6 +72,7 @@
         "evt": "^2.0.0-beta.39",
         "express": "^4.17.2",
         "husky": "^4.3.8",
+        "i18nifty": "^0.1.0",
         "keycloak-backend": "^2.0.1",
         "lint-staged": "^11.1.1",
         "memoizee": "^0.4.15",

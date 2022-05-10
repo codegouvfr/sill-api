@@ -1,11 +1,14 @@
 import fetch from "node-fetch";
 import type { ComptoirDuLibre } from "./types";
+import memoize from "memoizee";
 
 const url =
     "https://comptoir-du-libre.org/public/export/comptoir-du-libre_export_v1.json";
 
-export async function fetchComptoirDuLibre(): Promise<ComptoirDuLibre> {
-    return fetch(url)
-        .then(res => res.text())
-        .then(text => JSON.parse(text) as ComptoirDuLibre);
-}
+export const fetchComptoirDuLibre = memoize(
+    () =>
+        fetch(url)
+            .then(res => res.text())
+            .then(text => JSON.parse(text) as ComptoirDuLibre),
+    { "promise": true },
+);
