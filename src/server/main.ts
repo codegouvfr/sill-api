@@ -201,21 +201,21 @@ const createRouter = (params: { dataApi: DataApi }) => {
 
                     const comptoirDuLibreSoftware =
                         comptoirDuLibre.softwares.find(software => {
-                            const format = (name: string) =>
-                                name
-                                    .toLowerCase()
-                                    .replace(/ g/, "")
-                                    .substring(0, 8);
-
                             if (wikidataData.label === undefined) {
                                 return false;
                             }
 
-                            return (
-                                format(software.name) ===
+                            const format = (name: string) =>
+                                name
+                                    .normalize("NFD")
+                                    .replace(/[\u0300-\u036f]/g, "")
+                                    .toLowerCase()
+                                    .replace(/ g/, "");
+
+                            return format(software.name).includes(
                                 format(
                                     resolveLocalizedString(wikidataData.label),
-                                )
+                                ).substring(0, 8),
                             );
                         });
 
