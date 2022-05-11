@@ -969,11 +969,6 @@ csv-parse@^5.0.4:
   resolved "https://registry.yarnpkg.com/csv-parse/-/csv-parse-5.0.4.tgz#97e5e654413bcf95f2714ce09bcb2be6de0eb8e3"
   integrity sha512-5AIdl8l6n3iYQYxan5djB5eKDa+vBnhfWZtRpJTcrETWfVLYN0WSj3L9RwvgYt+psoO77juUr8TG8qpfGZifVQ==
 
-csv-stringify@^6.0.5:
-  version "6.0.5"
-  resolved "https://registry.yarnpkg.com/csv-stringify/-/csv-stringify-6.0.5.tgz#3474a4fe784249eb5c91d455f616e1f70961cdc0"
-  integrity sha512-7xpV3uweJCFF/Ssn56l3xsR/k2r3UqszwjEhej9qEn2cCPzyK1WyHCgoUVzBA792x8HbwonNX7CU9XM2K5s5yw==
-
 cz-conventional-changelog@3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/cz-conventional-changelog/-/cz-conventional-changelog-3.2.0.tgz#6aef1f892d64113343d7e455529089ac9f20e477"
@@ -1816,10 +1811,10 @@ husky@^4.3.8:
     slash "^3.0.0"
     which-pm-runs "^1.0.0"
 
-i18nifty@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/i18nifty/-/i18nifty-0.1.0.tgz#d3ed0a1ec3c98f69219a6b80768eb99114224964"
-  integrity sha512-49WrQv/dXuDJEWHVr9Pw1671yGRqS1yhP0zO+oV1xoIpQLLcSMD3A9y8BkSLPs5T3w0R4mzBNM4vy+Xmf5Bvfw==
+i18nifty@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/i18nifty/-/i18nifty-0.2.3.tgz#d2c3a7691b50013d09fd9076ad6360dedb054985"
+  integrity sha512-z2M7zFrgKpi4fNP2LJLUJcnSx/+hNBMWB+t3Dt3HQ+4j3aQ9aZtmayan/PixkfaI3Xpu9ROYLhOX49HneM6liw==
   dependencies:
     evt "2.0.0-beta.39"
     powerhooks "^0.16.3"

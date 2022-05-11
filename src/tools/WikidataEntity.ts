@@ -8,7 +8,9 @@ export namespace LocalizedString {
     export type Plural = Record<string, Wrap[]>;
 }
 
-export type DataValue<Type extends "wikibase-entityid" | "string"> = {
+export type DataValue<
+    Type extends "wikibase-entityid" | "string" | "text-language",
+> = {
     type: Type;
     value: Type extends "wikibase-entityid"
         ? {
@@ -18,10 +20,14 @@ export type DataValue<Type extends "wikibase-entityid" | "string"> = {
           }
         : Type extends "string"
         ? string
+        : Type extends "text-language"
+        ? { text: string; language: string }
         : never;
 };
 
-export type StatementClaim<Type extends "wikibase-entityid" | "string"> = {
+export type StatementClaim<
+    Type extends "wikibase-entityid" | "string" | "text-language",
+> = {
     type: "statement";
     id: string;
     rank: "preferred" | "normal";
@@ -46,6 +52,9 @@ export type Entity = {
     descriptions: LocalizedString.Single;
     aliases: LocalizedString.Plural;
     //By property e.g: P31
-    claims: Record<string, StatementClaim<"wikibase-entityid" | "string">[]>;
+    claims: Record<
+        string,
+        StatementClaim<"wikibase-entityid" | "string" | "text-language">[]
+    >;
     sitelinks: unknown;
 };

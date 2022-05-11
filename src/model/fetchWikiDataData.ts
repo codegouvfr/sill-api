@@ -114,6 +114,7 @@ export async function fetchWikiDataData(params: {
         })(),
         "developers": await Promise.all(
             [
+                ...getClaimDataValue<"wikibase-entityid">("P50"),
                 ...getClaimDataValue<"wikibase-entityid">("P170"),
                 ...getClaimDataValue<"wikibase-entityid">("P172"),
                 ...getClaimDataValue<"wikibase-entityid">("P178"),
@@ -135,16 +136,41 @@ export async function fetchWikiDataData(params: {
                     }
                     */
 
-                const label = wikidataSingleLocalizedStringToLocalizedString(
-                    entity.labels,
-                );
+                const name = (() => {
+                    const { shortName } = (() => {
+                        const { getClaimDataValue } = createGetClaimDataValue({
+                            entity,
+                        });
 
-                if (!label) {
+                        const shortName =
+                            getClaimDataValue<"text-language">("P1813")[0]
+                                ?.text;
+
+                        return { shortName };
+                    })();
+
+                    if (shortName !== undefined) {
+                        return shortName;
+                    }
+
+                    const label =
+                        wikidataSingleLocalizedStringToLocalizedString(
+                            entity.labels,
+                        );
+
+                    if (label === undefined) {
+                        return undefined;
+                    }
+
+                    return resolveLocalizedString(label);
+                })();
+
+                if (name === undefined) {
                     return undefined;
                 }
 
                 return {
-                    "name": resolveLocalizedString(label),
+                    name,
                     "id": entity.id,
                 };
             }),
@@ -216,9 +242,9 @@ const fetchEntity = memoize(
 function createGetClaimDataValue(params: { entity: Entity }) {
     const { entity } = params;
 
-    function getClaimDataValue<Type extends "string" | "wikibase-entityid">(
-        property: `P${number}`,
-    ) {
+    function getClaimDataValue<
+        Type extends "string" | "wikibase-entityid" | "text-language",
+    >(property: `P${number}`) {
         const statementClaim = entity.claims[property];
 
         if (statementClaim === undefined) {
@@ -237,4 +263,4 @@ function createGetClaimDataValue(params: { entity: Entity }) {
     return { getClaimDataValue };
 }
 
-//fetchWikiDataData({ "wikidataId": "Q107693197" }).then(console.log)
+//fetchWikiDataData({ "wikidataId": "Q110492908" }).then(console.log)
