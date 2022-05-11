@@ -1,3 +1,7 @@
+### **0.13.3** (2022-05-11)  
+  
+- :wheelchair:  Better comptoir du libre autofill    
+  
 ### **0.13.2** (2022-05-10)  
   
 - package.json: Bump version  
