@@ -81,7 +81,7 @@ export namespace ServiceRow {
     };
 
     export type KnownSoftware = Common & {
-        softwareId: number;
+        softwareSillId: number;
     };
 
     export type UnknownSoftware = Common & {
