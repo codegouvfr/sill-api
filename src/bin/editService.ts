@@ -15,14 +15,14 @@ This script is meant to help edit and make sure it is well formatted sill-data/s
 
 cd ~/github/sill-api && npx tsc -w
 cd ~/github/sill-data 
-wget https://git.sr.ht/~etalab/sill/blob/master/sill.csv
+wget https://git.sr.ht/~etalab/sill/blob/master/papillon.csv
 node ../sill-api/dist/bin/editService.js
 
 */
 
 /*
 const rawCsvRows = rawCsvFileToRawCsvRows({ "rawCsvFile": fs.readFileSync(
-    pathJoin(process.cwd(), "sill.csv")
+    pathJoin(process.cwd(), "papillon.csv")
 ).toString("utf8") });
 */
 
@@ -100,6 +100,7 @@ fs.writeFileSync(
                         serviceName,
                         serviceUrl,
                         description,
+                        //"description": rawCsvRows.find(row => row["id"] === `${id}`)!["description"],
                         publicationDate,
                         lastUpdateDate,
                         signupScope,
