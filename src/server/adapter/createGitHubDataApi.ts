@@ -236,7 +236,7 @@ export async function createGitHubDataApi(params: {
                     "id": softwareId,
                     ...partialSoftwareRow,
                     "referencedSinceTime": Date.now(),
-                    "isStillInObservation": true,
+                    "isStillInObservation": false,
                     "isPresentInSupportContract": false,
                     "alikeSoftwares": [],
                     "mimGroup": "MIMO",
