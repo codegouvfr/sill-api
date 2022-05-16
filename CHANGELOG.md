@@ -1,3 +1,20 @@
+### **0.13.4** (2022-05-16)  
+  
+- package.json: Bump version to 0.13.4  
+- src/../createGitHubDataApi.ts: set isStillInObservation to false
+
+By default, set "isStillInObservation" to false.
+
+The "In observation" category was ditched a while ago.  New entries
+have the "Recommended" status by default -- see e.g. this addition:
+
+https://git.sr.ht/~etalab/sill/commit/6cc6fe50bae44dffbe52b7c85f68af23b208df5b  
+- update editService script  
+- Add script for edditing service  
+- remove comitizen  
+- :card_file_box:  Get the author short name  
+- :bug: Update .env.local    
+  
 ### **0.13.3** (2022-05-11)  
   
 - :wheelchair:  Better comptoir du libre autofill    
