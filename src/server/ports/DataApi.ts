@@ -25,6 +25,7 @@ export type DataApi = {
             softwareId: number;
             isExpert: boolean;
             useCaseDescription: string;
+            isPersonalUse: boolean;
         }) => Promise<void>;
         userNoLongerReferent: (params: {
             email: string;
@@ -35,6 +36,7 @@ export type DataApi = {
             referentRow: ReferentRow;
             isExpert: boolean;
             useCaseDescription: string;
+            isPersonalUse: boolean;
         }) => Promise<{ software: CompiledData.Software<"with referents"> }>;
         updateSoftware: (params: {
             softwareId: number;

@@ -104,6 +104,7 @@ export async function createGitHubDataApi(params: {
                 softwareId,
                 isExpert,
                 useCaseDescription,
+                isPersonalUse,
             }) => {
                 const newDb = structuredClone(evtState.state.db);
 
@@ -149,6 +150,7 @@ export async function createGitHubDataApi(params: {
                         softwareId,
                         isExpert,
                         useCaseDescription,
+                        isPersonalUse,
                     });
                 }
 
@@ -212,6 +214,7 @@ export async function createGitHubDataApi(params: {
                 referentRow,
                 isExpert,
                 useCaseDescription,
+                isPersonalUse,
             }) => {
                 const newDb = structuredClone(evtState.state.db);
 
@@ -258,6 +261,7 @@ export async function createGitHubDataApi(params: {
                     "referentEmail": referentRow.email,
                     isExpert,
                     useCaseDescription,
+                    isPersonalUse,
                 });
 
                 await writeDb({

@@ -88,13 +88,19 @@ const createRouter = (params: { dataApi: DataApi }) => {
                 "softwareId": z.number(),
                 "isExpert": z.boolean(),
                 "useCaseDescription": z.string(),
+                "isPersonalUse": z.boolean(),
             }),
             "resolve": async ({ ctx, input }) => {
                 if (ctx === null) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const { softwareId, isExpert, useCaseDescription } = input;
+                const {
+                    softwareId,
+                    isExpert,
+                    useCaseDescription,
+                    isPersonalUse,
+                } = input;
 
                 const { agencyName, email } = ctx.parsedJwt;
 
@@ -108,6 +114,7 @@ const createRouter = (params: { dataApi: DataApi }) => {
                     softwareId,
                     isExpert,
                     useCaseDescription,
+                    isPersonalUse,
                 });
             },
         })
@@ -135,14 +142,19 @@ const createRouter = (params: { dataApi: DataApi }) => {
                 "partialSoftwareRow": zPartialSoftwareRow,
                 "isExpert": z.boolean(),
                 "useCaseDescription": z.string(),
+                "isPersonalUse": z.boolean(),
             }),
             "resolve": async ({ ctx, input }) => {
                 if (ctx === null) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const { isExpert, partialSoftwareRow, useCaseDescription } =
-                    input;
+                const {
+                    isExpert,
+                    partialSoftwareRow,
+                    useCaseDescription,
+                    isPersonalUse,
+                } = input;
 
                 const { email, agencyName } = ctx.parsedJwt;
 
@@ -156,6 +168,7 @@ const createRouter = (params: { dataApi: DataApi }) => {
                     },
                     isExpert,
                     useCaseDescription,
+                    isPersonalUse,
                 });
 
                 return { software };

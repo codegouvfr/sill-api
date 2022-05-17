@@ -58,6 +58,7 @@ export type SoftwareReferentRow = {
     referentEmail: string;
     isExpert: boolean;
     useCaseDescription: string;
+    isPersonalUse: boolean;
 };
 
 export type ServiceRow = ServiceRow.KnownSoftware | ServiceRow.UnknownSoftware;

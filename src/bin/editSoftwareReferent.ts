@@ -25,6 +25,7 @@ const zSoftwareReferentRow = z.object({
     "referentEmail": z.string(),
     "isExpert": z.boolean(),
     "useCaseDescription": z.string(),
+    "isPersonalUse": z.boolean(),
 });
 
 type Got = ReturnType<typeof zSoftwareReferentRow["parse"]>;
