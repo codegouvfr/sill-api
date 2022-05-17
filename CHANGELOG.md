@@ -1,3 +1,7 @@
+## **0.14.0** (2022-05-17)  
+  
+- https://github.com/etalab/sill-web/issues/33    
+  
 ### **0.13.4** (2022-05-16)  
   
 - package.json: Bump version to 0.13.4  
