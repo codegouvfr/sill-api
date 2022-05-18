@@ -59,6 +59,16 @@ To test that the container is up:
 
 http://localhost:80/api/getKeycloakParams
 
+### Trigger scrapping
+
+```bash
+git clone https://github.com/etalab/sill-api
+cd sill-api
+yarn 
+yarn build
+node dist/bin/trigger-ci-build-data.js
+```
+
 # Licences
 
 DINUM and contributors of the repository, 2022.
