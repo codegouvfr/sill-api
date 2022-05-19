@@ -1,3 +1,8 @@
+### **0.15.1** (2022-05-19)  
+  
+- Bump version (cangelog ignore)  
+- Change commit message when a software is updated    
+  
 ## **0.15.0** (2022-05-19)  
   
 - Incorporate isPersonalUse in compiled data  
