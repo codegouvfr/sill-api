@@ -1,3 +1,9 @@
+## **0.15.0** (2022-05-19)  
+  
+- Incorporate isPersonalUse in compiled data  
+- Update README.md  
+- Update README.md    
+  
 ## **0.14.0** (2022-05-17)  
   
 - https://github.com/etalab/sill-web/issues/33    
