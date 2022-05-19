@@ -1,3 +1,7 @@
+### **0.15.2** (2022-05-19)  
+  
+- Fix bug in keeping the local copy up to date, enable concurent editing    
+  
 ### **0.15.1** (2022-05-19)  
   
 - Bump version (cangelog ignore)  
