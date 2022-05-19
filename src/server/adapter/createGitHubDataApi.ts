@@ -29,6 +29,8 @@ import { parseGitHubRepoUrl } from "../../tools/parseGithubRepoUrl";
 import structuredClone from "@ungap/structured-clone";
 import { noUndefined } from "tsafe/noUndefined";
 import { buildCatalog } from "../../model/buildCatalog";
+import type { StatefulEvt } from "evt";
+import * as runExclusive from "run-exclusive";
 
 export const buildBranch = "build";
 
@@ -54,17 +56,10 @@ export async function createGitHubDataApi(params: {
 
     evtDataUpdated.attach(async () => (evtState.state = await fetchState()));
 
-    const { writeDb } = createWriteDb({
+    const { updateStateRemoteAndLocal } = createUpdateStateRemoteAndLocal({
         dataRepoUrl,
         githubPersonalAccessToken,
-        "getCatalog": () => evtState.state.compiledData.catalog,
-        "setCatalog": catalog => {
-            const newState = structuredClone(evtState.state);
-
-            newState.compiledData.catalog = catalog;
-
-            evtState.state = newState;
-        },
+        evtState,
     });
 
     if (doPeriodicallyTriggerComputationOfCompiledData) {
@@ -77,6 +72,8 @@ export async function createGitHubDataApi(params: {
             });
         }, 24 * 600 * 1000);
     }
+
+    const groupRef = runExclusive.createGroupRef();
 
     return {
         evtState,
@@ -99,224 +96,233 @@ export async function createGitHubDataApi(params: {
             ),
         },
         "mutators": {
-            "createReferent": async ({
-                referentRow,
-                softwareId,
-                isExpert,
-                useCaseDescription,
-                isPersonalUse,
-            }) => {
-                const newDb = structuredClone(evtState.state.db);
+            "createReferent": runExclusive.build(
+                groupRef,
+                async ({
+                    referentRow,
+                    softwareId,
+                    isExpert,
+                    useCaseDescription,
+                    isPersonalUse,
+                }) => {
+                    const newDb = structuredClone(evtState.state.db);
 
-                let commitMessage = "";
+                    let commitMessage = "";
 
-                const { referentRows, softwareRows, softwareReferentRows } =
-                    newDb;
+                    const { referentRows, softwareRows, softwareReferentRows } =
+                        newDb;
 
-                {
-                    const softwareRow = softwareRows.find(
-                        ({ id }) => id === softwareId,
+                    {
+                        const softwareRow = softwareRows.find(
+                            ({ id }) => id === softwareId,
+                        );
+
+                        assert(softwareRow !== undefined);
+
+                        commitMessage = `Add referent ${referentRow.email} to software ${softwareRow.name}`;
+                    }
+
+                    if (
+                        referentRows.find(
+                            ({ email }) => referentRow.email === email,
+                        ) === undefined
+                    ) {
+                        referentRows.push(referentRow);
+                    }
+
+                    const softwareReferentRow = softwareReferentRows.find(
+                        softwareReferentRow =>
+                            referentRow.email ===
+                                softwareReferentRow.referentEmail &&
+                            softwareReferentRow.softwareId === softwareId,
                     );
 
-                    assert(softwareRow !== undefined);
+                    if (softwareReferentRow !== undefined) {
+                        if (softwareReferentRow.isExpert === isExpert) {
+                            return undefined;
+                        }
 
-                    commitMessage = `Add referent ${referentRow.email} to software ${softwareRow.name}`;
-                }
+                        softwareReferentRow.isExpert = isExpert;
+                    } else {
+                        softwareReferentRows.push({
+                            "referentEmail": referentRow.email,
+                            softwareId,
+                            isExpert,
+                            useCaseDescription,
+                            isPersonalUse,
+                        });
+                    }
 
-                if (
-                    referentRows.find(
-                        ({ email }) => referentRow.email === email,
-                    ) === undefined
-                ) {
-                    referentRows.push(referentRow);
-                }
+                    await updateStateRemoteAndLocal({
+                        newDb,
+                        commitMessage,
+                    });
+                },
+            ),
+            "userNoLongerReferent": runExclusive.build(
+                groupRef,
+                async ({ email, softwareId }) => {
+                    const newDb = structuredClone(evtState.state.db);
 
-                const softwareReferentRow = softwareReferentRows.find(
-                    softwareReferentRow =>
-                        referentRow.email ===
-                            softwareReferentRow.referentEmail &&
-                        softwareReferentRow.softwareId === softwareId,
-                );
+                    let commitMessage = "";
 
-                if (softwareReferentRow !== undefined) {
-                    if (softwareReferentRow.isExpert === isExpert) {
+                    const { referentRows, softwareReferentRows, softwareRows } =
+                        newDb;
+
+                    {
+                        const softwareRow = softwareRows.find(
+                            ({ id }) => id === softwareId,
+                        );
+
+                        assert(softwareRow !== undefined);
+
+                        commitMessage = `Remove referent ${email} from software ${softwareRow.name}`;
+                    }
+
+                    const index = softwareReferentRows.findIndex(
+                        softwareReferentRow =>
+                            softwareReferentRow.softwareId === softwareId &&
+                            softwareReferentRow.referentEmail === email,
+                    );
+
+                    if (index === -1) {
                         return undefined;
                     }
 
-                    softwareReferentRow.isExpert = isExpert;
-                } else {
+                    softwareReferentRows.splice(index, 1);
+
+                    if (
+                        softwareReferentRows.find(
+                            softwareReferentRow =>
+                                softwareReferentRow.referentEmail === email,
+                        ) === undefined
+                    ) {
+                        const index = referentRows.findIndex(
+                            referentRow => referentRow.email === email,
+                        );
+
+                        assert(index !== -1);
+
+                        referentRows.splice(index, 1);
+                    }
+
+                    await updateStateRemoteAndLocal({
+                        newDb,
+                        commitMessage,
+                    });
+                },
+            ),
+            "addSoftware": runExclusive.build(
+                groupRef,
+                async ({
+                    partialSoftwareRow,
+                    referentRow,
+                    isExpert,
+                    useCaseDescription,
+                    isPersonalUse,
+                }) => {
+                    const newDb = structuredClone(evtState.state.db);
+
+                    const { referentRows, softwareRows, softwareReferentRows } =
+                        newDb;
+
+                    assert(
+                        softwareRows.find(s => {
+                            const t = (name: string) =>
+                                name.toLowerCase().replace(/ /g, "-");
+                            return t(s.name) === t(partialSoftwareRow.name);
+                        }) === undefined,
+                        "There is already a software with this name",
+                    );
+
+                    const softwareId =
+                        newDb.softwareRows
+                            .map(({ id }) => id)
+                            .reduce((prev, curr) => Math.max(prev, curr), 0) +
+                        1;
+
+                    softwareRows.push({
+                        "id": softwareId,
+                        ...partialSoftwareRow,
+                        "referencedSinceTime": Date.now(),
+                        "isStillInObservation": false,
+                        "isPresentInSupportContract": false,
+                        "alikeSoftwares": [],
+                        "mimGroup": "MIMO",
+                        "workshopUrls": [],
+                        "testUrls": [],
+                        "useCaseUrls": [],
+                    });
+
+                    if (
+                        referentRows.find(
+                            ({ email }) => referentRow.email === email,
+                        ) === undefined
+                    ) {
+                        referentRows.push(referentRow);
+                    }
+
                     softwareReferentRows.push({
-                        "referentEmail": referentRow.email,
                         softwareId,
+                        "referentEmail": referentRow.email,
                         isExpert,
                         useCaseDescription,
                         isPersonalUse,
                     });
-                }
 
-                await writeDb({
-                    "db": newDb,
-                    commitMessage,
-                });
-            },
-            "userNoLongerReferent": async ({ email, softwareId }) => {
-                const newDb = structuredClone(evtState.state.db);
+                    await updateStateRemoteAndLocal({
+                        newDb,
+                        "commitMessage": `Add ${partialSoftwareRow.name} and ${referentRow.email} as referent`,
+                    });
 
-                let commitMessage = "";
-
-                const { referentRows, softwareReferentRows, softwareRows } =
-                    newDb;
-
-                {
-                    const softwareRow = softwareRows.find(
-                        ({ id }) => id === softwareId,
+                    const software = evtState.state.compiledData.catalog.find(
+                        software => software.id === softwareId,
                     );
 
-                    assert(softwareRow !== undefined);
+                    assert(software !== undefined);
 
-                    commitMessage = `Remove referent ${email} from software ${softwareRow.name}`;
-                }
+                    return { software };
+                },
+            ),
+            "updateSoftware": runExclusive.build(
+                groupRef,
+                async ({ softwareId, email, partialSoftwareRow }) => {
+                    const newDb = structuredClone(evtState.state.db);
 
-                const index = softwareReferentRows.findIndex(
-                    softwareReferentRow =>
-                        softwareReferentRow.softwareId === softwareId &&
-                        softwareReferentRow.referentEmail === email,
-                );
+                    const { softwareRows, softwareReferentRows } = newDb;
 
-                if (index === -1) {
-                    return undefined;
-                }
-
-                softwareReferentRows.splice(index, 1);
-
-                if (
-                    softwareReferentRows.find(
-                        softwareReferentRow =>
-                            softwareReferentRow.referentEmail === email,
-                    ) === undefined
-                ) {
-                    const index = referentRows.findIndex(
-                        referentRow => referentRow.email === email,
+                    assert(
+                        softwareReferentRows.find(
+                            ({ referentEmail }) => referentEmail === email,
+                        ) !== undefined,
+                        "The user is not a referent of this software",
                     );
 
-                    assert(index !== -1);
+                    const index = softwareRows.findIndex(
+                        softwareRow => softwareRow.id === softwareId,
+                    );
 
-                    referentRows.splice(index, 1);
-                }
+                    assert(index !== -1, "The software does not exist");
 
-                await writeDb({
-                    "db": newDb,
-                    commitMessage,
-                });
-            },
-            "addSoftware": async ({
-                partialSoftwareRow,
-                referentRow,
-                isExpert,
-                useCaseDescription,
-                isPersonalUse,
-            }) => {
-                const newDb = structuredClone(evtState.state.db);
+                    softwareRows[index] = {
+                        ...softwareRows[index],
+                        ...noUndefined(partialSoftwareRow),
+                    };
 
-                const { referentRows, softwareRows, softwareReferentRows } =
-                    newDb;
+                    await updateStateRemoteAndLocal({
+                        newDb,
+                        "commitMessage": `Update ${softwareRows[index].name}`,
+                    });
 
-                assert(
-                    softwareRows.find(s => {
-                        const t = (name: string) =>
-                            name.toLowerCase().replace(/ /g, "-");
-                        return t(s.name) === t(partialSoftwareRow.name);
-                    }) === undefined,
-                    "There is already a software with this name",
-                );
+                    const software = evtState.state.compiledData.catalog.find(
+                        software => software.id === softwareId,
+                    );
 
-                const softwareId =
-                    newDb.softwareRows
-                        .map(({ id }) => id)
-                        .reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
+                    assert(software !== undefined);
 
-                softwareRows.push({
-                    "id": softwareId,
-                    ...partialSoftwareRow,
-                    "referencedSinceTime": Date.now(),
-                    "isStillInObservation": false,
-                    "isPresentInSupportContract": false,
-                    "alikeSoftwares": [],
-                    "mimGroup": "MIMO",
-                    "workshopUrls": [],
-                    "testUrls": [],
-                    "useCaseUrls": [],
-                });
-
-                if (
-                    referentRows.find(
-                        ({ email }) => referentRow.email === email,
-                    ) === undefined
-                ) {
-                    referentRows.push(referentRow);
-                }
-
-                softwareReferentRows.push({
-                    softwareId,
-                    "referentEmail": referentRow.email,
-                    isExpert,
-                    useCaseDescription,
-                    isPersonalUse,
-                });
-
-                await writeDb({
-                    "db": newDb,
-                    "commitMessage": `Add ${partialSoftwareRow.name} and ${referentRow.email} as referent`,
-                });
-
-                const software = evtState.state.compiledData.catalog.find(
-                    software => software.id === softwareId,
-                );
-
-                assert(software !== undefined);
-
-                return { software };
-            },
-            "updateSoftware": async ({
-                softwareId,
-                email,
-                partialSoftwareRow,
-            }) => {
-                const newDb = structuredClone(evtState.state.db);
-
-                const { softwareRows, softwareReferentRows } = newDb;
-
-                assert(
-                    softwareReferentRows.find(
-                        ({ referentEmail }) => referentEmail === email,
-                    ) !== undefined,
-                    "The user is not a referent of this software",
-                );
-
-                const index = softwareRows.findIndex(
-                    softwareRow => softwareRow.id === softwareId,
-                );
-
-                assert(index !== -1, "The software does not exist");
-
-                softwareRows[index] = {
-                    ...softwareRows[index],
-                    ...noUndefined(partialSoftwareRow),
-                };
-
-                await writeDb({
-                    "db": newDb,
-                    "commitMessage": `Update ${softwareRows[index].name}`,
-                });
-
-                const software = evtState.state.compiledData.catalog.find(
-                    software => software.id === softwareId,
-                );
-
-                assert(software !== undefined);
-
-                return { software };
-            },
+                    return { software };
+                },
+            ),
         },
     };
 }
@@ -342,265 +348,280 @@ export async function triggerComputationOfCompiledData(params: {
     });
 }
 
-const { fetchCompiledData, createFetchState, createWriteDb } = (() => {
-    function fetchCompiledData(params: {
-        dataRepoUrl: string;
-        githubPersonalAccessToken: string;
-    }): Promise<CompiledData<"with referents">> {
-        const { dataRepoUrl, githubPersonalAccessToken } = params;
+const { fetchCompiledData, createFetchState, createUpdateStateRemoteAndLocal } =
+    (() => {
+        function fetchCompiledData(params: {
+            dataRepoUrl: string;
+            githubPersonalAccessToken: string;
+        }): Promise<CompiledData<"with referents">> {
+            const { dataRepoUrl, githubPersonalAccessToken } = params;
 
-        const dOut = new Deferred<CompiledData<"with referents">>();
+            const dOut = new Deferred<CompiledData<"with referents">>();
 
-        const { owner, repo } = (() => {
-            const { host, pathname } = new URL(dataRepoUrl);
+            const { owner, repo } = (() => {
+                const { host, pathname } = new URL(dataRepoUrl);
 
-            assert(
-                host === "github.com",
-                `${symToStr({
-                    dataRepoUrl,
-                })} is expected to be a GitHub url (until we support other forges)`,
-            );
-
-            const [owner, repo] = pathname.replace(/^\//, "").split("/");
-
-            assert(typeof owner === "string");
-            assert(typeof repo === "string");
-
-            return { owner, repo };
-        })();
-
-        git({
-            owner,
-            repo,
-            "shaish": buildBranch,
-            "github_token": githubPersonalAccessToken,
-            "action": async () => {
-                dOut.resolve(
-                    JSON.parse(
-                        fs
-                            .readFileSync(
-                                id<typeof compiledDataJsonRelativeFilePath>(
-                                    "compiledData.json",
-                                ),
-                            )
-                            .toString("utf8"),
-                    ),
+                assert(
+                    host === "github.com",
+                    `${symToStr({
+                        dataRepoUrl,
+                    })} is expected to be a GitHub url (until we support other forges)`,
                 );
 
-                return { "doCommit": false };
-            },
-        }).catch(error => dOut.reject(error));
+                const [owner, repo] = pathname.replace(/^\//, "").split("/");
 
-        return dOut.pr;
-    }
+                assert(typeof owner === "string");
+                assert(typeof repo === "string");
 
-    function gitDb(params: {
-        dataRepoUrl: string;
-        githubPersonalAccessToken: string;
-        action: Param0<typeof git>["action"];
-    }) {
-        const { dataRepoUrl, githubPersonalAccessToken, action } = params;
+                return { owner, repo };
+            })();
 
-        const { owner, repo } = (() => {
-            const { host, pathname } = new URL(dataRepoUrl);
+            git({
+                owner,
+                repo,
+                "shaish": buildBranch,
+                "github_token": githubPersonalAccessToken,
+                "action": async () => {
+                    dOut.resolve(
+                        JSON.parse(
+                            fs
+                                .readFileSync(
+                                    id<typeof compiledDataJsonRelativeFilePath>(
+                                        "compiledData.json",
+                                    ),
+                                )
+                                .toString("utf8"),
+                        ),
+                    );
 
-            assert(
-                host === "github.com",
-                `${symToStr({
-                    dataRepoUrl,
-                })} is expected to be a GitHub url (until we support other forges)`,
-            );
+                    return { "doCommit": false };
+                },
+            }).catch(error => dOut.reject(error));
 
-            const [owner, repo] = pathname.replace(/^\//, "").split("/");
+            return dOut.pr;
+        }
 
-            assert(typeof owner === "string");
-            assert(typeof repo === "string");
-
-            return { owner, repo };
-        })();
-
-        return git({
-            owner,
-            repo,
-            "github_token": githubPersonalAccessToken,
-            action,
-        });
-    }
-
-    function fetchDb(params: {
-        dataRepoUrl: string;
-        githubPersonalAccessToken: string;
-    }) {
-        const { dataRepoUrl, githubPersonalAccessToken } = params;
-
-        const dOut = new Deferred<{
-            softwareRows: SoftwareRow[];
-            referentRows: ReferentRow[];
-            softwareReferentRows: SoftwareReferentRow[];
-            serviceRows: ServiceRow[];
-        }>();
-
-        gitDb({
-            dataRepoUrl,
-            githubPersonalAccessToken,
-            "action": async () => {
-                const [
-                    softwareRows,
-                    referentRows,
-                    softwareReferentRows,
-                    serviceRows,
-                ] = await Promise.all(
-                    [
-                        softwareJsonRelativeFilePath,
-                        referentJsonRelativeFilePath,
-                        softwareReferentJsonRelativeFilePath,
-                        serviceJsonRelativeFilePath,
-                    ].map(
-                        relativeFilePath =>
-                            new Promise<Buffer>((resolve, reject) =>
-                                fs.readFile(
-                                    relativeFilePath,
-                                    (error, buffer) => {
-                                        if (error) {
-                                            reject(error);
-                                            return;
-                                        }
-
-                                        resolve(buffer);
-                                    },
-                                ),
-                            ),
-                    ),
-                ).then(buffers =>
-                    buffers.map(buffer => JSON.parse(buffer.toString("utf8"))),
-                );
-
-                dOut.resolve({
-                    softwareRows,
-                    referentRows,
-                    softwareReferentRows,
-                    serviceRows,
-                });
-
-                return { "doCommit": false };
-            },
-        });
-
-        return dOut.pr;
-    }
-
-    function createWriteDb(params: {
-        dataRepoUrl: string;
-        githubPersonalAccessToken: string;
-        setCatalog: (
-            catalog: CompiledData.Software<"with referents">[],
-        ) => void;
-        getCatalog: () => CompiledData.Software<"with referents">[];
-    }) {
-        const {
-            dataRepoUrl,
-            githubPersonalAccessToken,
-            setCatalog,
-            getCatalog,
-        } = params;
-
-        async function writeDb(params: {
-            db: ReturnType<typeof fetchDb>;
-            commitMessage: string;
+        function gitDb(params: {
+            dataRepoUrl: string;
+            githubPersonalAccessToken: string;
+            action: Param0<typeof git>["action"];
         }) {
-            const { db, commitMessage } = params;
+            const { dataRepoUrl, githubPersonalAccessToken, action } = params;
 
-            await gitDb({
+            const { owner, repo } = (() => {
+                const { host, pathname } = new URL(dataRepoUrl);
+
+                assert(
+                    host === "github.com",
+                    `${symToStr({
+                        dataRepoUrl,
+                    })} is expected to be a GitHub url (until we support other forges)`,
+                );
+
+                const [owner, repo] = pathname.replace(/^\//, "").split("/");
+
+                assert(typeof owner === "string");
+                assert(typeof repo === "string");
+
+                return { owner, repo };
+            })();
+
+            return git({
+                owner,
+                repo,
+                "github_token": githubPersonalAccessToken,
+                action,
+            });
+        }
+
+        function fetchDb(params: {
+            dataRepoUrl: string;
+            githubPersonalAccessToken: string;
+        }) {
+            const { dataRepoUrl, githubPersonalAccessToken } = params;
+
+            const dOut = new Deferred<{
+                softwareRows: SoftwareRow[];
+                referentRows: ReferentRow[];
+                softwareReferentRows: SoftwareReferentRow[];
+                serviceRows: ServiceRow[];
+            }>();
+
+            gitDb({
                 dataRepoUrl,
                 githubPersonalAccessToken,
                 "action": async () => {
-                    await Promise.all(
-                        (
-                            [
-                                [softwareJsonRelativeFilePath, db.softwareRows],
-                                [referentJsonRelativeFilePath, db.referentRows],
-                                [
-                                    softwareReferentJsonRelativeFilePath,
-                                    db.softwareReferentRows,
-                                ],
-                                [serviceJsonRelativeFilePath, db.serviceRows],
-                            ] as const
-                        )
-                            .map(
-                                ([relativeFilePath, rows]) =>
-                                    [
+                    const [
+                        softwareRows,
+                        referentRows,
+                        softwareReferentRows,
+                        serviceRows,
+                    ] = await Promise.all(
+                        [
+                            softwareJsonRelativeFilePath,
+                            referentJsonRelativeFilePath,
+                            softwareReferentJsonRelativeFilePath,
+                            serviceJsonRelativeFilePath,
+                        ].map(
+                            relativeFilePath =>
+                                new Promise<Buffer>((resolve, reject) =>
+                                    fs.readFile(
                                         relativeFilePath,
-                                        JSON.stringify(rows, null, 4),
-                                    ] as const,
-                            )
-                            .map(
-                                ([relativeFilePath, rowsStr]) =>
-                                    [
-                                        relativeFilePath,
-                                        Buffer.from(rowsStr, "utf8"),
-                                    ] as const,
-                            )
-                            .map(
-                                ([relativeFilePath, buffer]) =>
-                                    new Promise<void>((resolve, reject) =>
-                                        fs.writeFile(
-                                            relativeFilePath,
-                                            buffer,
-                                            error => {
-                                                if (error) {
-                                                    reject(error);
-                                                    return;
-                                                }
-                                                resolve();
-                                            },
-                                        ),
+                                        (error, buffer) => {
+                                            if (error) {
+                                                reject(error);
+                                                return;
+                                            }
+
+                                            resolve(buffer);
+                                        },
                                     ),
-                            ),
+                                ),
+                        ),
+                    ).then(buffers =>
+                        buffers.map(buffer =>
+                            JSON.parse(buffer.toString("utf8")),
+                        ),
                     );
 
-                    return {
-                        "doCommit": true,
-                        "doAddAll": false,
-                        "message": commitMessage,
-                    };
+                    dOut.resolve({
+                        softwareRows,
+                        referentRows,
+                        softwareReferentRows,
+                        serviceRows,
+                    });
+
+                    return { "doCommit": false };
                 },
             });
 
-            setCatalog(
-                await buildCatalog({
-                    "currentCatalog": getCatalog(),
-                    ...db,
-                }).then(({ catalog }) => catalog),
-            );
-        }
-        return { writeDb };
-    }
-
-    function createFetchState(params: {
-        dataRepoUrl: string;
-        githubPersonalAccessToken: string;
-    }) {
-        const { dataRepoUrl, githubPersonalAccessToken } = params;
-
-        async function fetchState(): Promise<DataApi.State> {
-            const [compiledData, db] = await Promise.all([
-                fetchCompiledData({
-                    dataRepoUrl,
-                    githubPersonalAccessToken,
-                }),
-                fetchDb({
-                    dataRepoUrl,
-                    githubPersonalAccessToken,
-                }),
-            ]);
-
-            return { compiledData, db };
+            return dOut.pr;
         }
 
-        return { fetchState };
-    }
+        function createUpdateStateRemoteAndLocal(params: {
+            dataRepoUrl: string;
+            githubPersonalAccessToken: string;
+            evtState: StatefulEvt<DataApi.State>;
+        }) {
+            const { dataRepoUrl, githubPersonalAccessToken, evtState } = params;
 
-    return { fetchCompiledData, createFetchState, createWriteDb };
-})();
+            async function updateStateRemoteAndLocal(params: {
+                newDb: ReturnType<typeof fetchDb>;
+                commitMessage: string;
+            }) {
+                const { newDb, commitMessage } = params;
+
+                await gitDb({
+                    dataRepoUrl,
+                    githubPersonalAccessToken,
+                    "action": async () => {
+                        await Promise.all(
+                            (
+                                [
+                                    [
+                                        softwareJsonRelativeFilePath,
+                                        newDb.softwareRows,
+                                    ],
+                                    [
+                                        referentJsonRelativeFilePath,
+                                        newDb.referentRows,
+                                    ],
+                                    [
+                                        softwareReferentJsonRelativeFilePath,
+                                        newDb.softwareReferentRows,
+                                    ],
+                                    [
+                                        serviceJsonRelativeFilePath,
+                                        newDb.serviceRows,
+                                    ],
+                                ] as const
+                            )
+                                .map(
+                                    ([relativeFilePath, rows]) =>
+                                        [
+                                            relativeFilePath,
+                                            JSON.stringify(rows, null, 4),
+                                        ] as const,
+                                )
+                                .map(
+                                    ([relativeFilePath, rowsStr]) =>
+                                        [
+                                            relativeFilePath,
+                                            Buffer.from(rowsStr, "utf8"),
+                                        ] as const,
+                                )
+                                .map(
+                                    ([relativeFilePath, buffer]) =>
+                                        new Promise<void>((resolve, reject) =>
+                                            fs.writeFile(
+                                                relativeFilePath,
+                                                buffer,
+                                                error => {
+                                                    if (error) {
+                                                        reject(error);
+                                                        return;
+                                                    }
+                                                    resolve();
+                                                },
+                                            ),
+                                        ),
+                                ),
+                        );
+
+                        return {
+                            "doCommit": true,
+                            "doAddAll": false,
+                            "message": commitMessage,
+                        };
+                    },
+                });
+
+                evtState.state = {
+                    ...evtState.state,
+                    "compiledData": {
+                        ...evtState.state.compiledData,
+                        "catalog": await buildCatalog({
+                            "currentCatalog":
+                                evtState.state.compiledData.catalog,
+                            ...newDb,
+                        }).then(({ catalog }) => catalog),
+                    },
+                    "db": newDb,
+                };
+            }
+
+            return { updateStateRemoteAndLocal };
+        }
+
+        function createFetchState(params: {
+            dataRepoUrl: string;
+            githubPersonalAccessToken: string;
+        }) {
+            const { dataRepoUrl, githubPersonalAccessToken } = params;
+
+            async function fetchState(): Promise<DataApi.State> {
+                const [compiledData, db] = await Promise.all([
+                    fetchCompiledData({
+                        dataRepoUrl,
+                        githubPersonalAccessToken,
+                    }),
+                    fetchDb({
+                        dataRepoUrl,
+                        githubPersonalAccessToken,
+                    }),
+                ]);
+
+                return { compiledData, db };
+            }
+
+            return { fetchState };
+        }
+
+        return {
+            fetchCompiledData,
+            createFetchState,
+            createUpdateStateRemoteAndLocal,
+        };
+    })();
 
 export { fetchCompiledData };
