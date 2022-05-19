@@ -306,7 +306,7 @@ export async function createGitHubDataApi(params: {
 
                 await writeDb({
                     "db": newDb,
-                    "commitMessage": `Add ${softwareRows[index].name}`,
+                    "commitMessage": `Update ${softwareRows[index].name}`,
                 });
 
                 const software = evtState.state.compiledData.catalog.find(
