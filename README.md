@@ -59,6 +59,19 @@ To test that the container is up:
 
 http://localhost:80/api/getKeycloakParams
 
+### Trigger scrapping
+
+Every four hours data from WikiData.org and Le-compoirt-du-libre.org are updated.  
+You can, however, trigger the scrapping manually with the following commands.  
+
+```bash
+git clone https://github.com/etalab/sill-api
+cd sill-api
+yarn 
+yarn build
+node dist/bin/trigger-ci-build-data.js
+```
+
 # Licences
 
 DINUM and contributors of the repository, 2022.
