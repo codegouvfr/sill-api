@@ -199,6 +199,7 @@ export namespace CompiledData {
             referents: (ReferentRow & {
                 isExpert: boolean;
                 useCaseDescription: string;
+                isPersonalUse: boolean;
             })[];
         };
     }

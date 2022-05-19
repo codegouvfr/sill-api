@@ -40,6 +40,7 @@ fs.writeFileSync(
             JSON.parse(
                 fs.readFileSync(softwareReferentFilePath).toString("utf8"),
             ).map((softwareReferentRow: SoftwareReferentRow) => {
+                /*
                 try {
                     zSoftwareReferentRow.parse(softwareReferentRow);
                 } catch (exception) {
@@ -47,12 +48,14 @@ fs.writeFileSync(
 
                     throw exception;
                 }
+                */
 
                 const {
                     softwareId,
                     referentEmail,
                     isExpert,
                     useCaseDescription,
+                    isPersonalUse,
                     ...rest
                 } = softwareReferentRow;
 
@@ -69,6 +72,7 @@ fs.writeFileSync(
                     referentEmail,
                     isExpert,
                     useCaseDescription,
+                    "isPersonalUse": false,
                 };
             }),
             null,
