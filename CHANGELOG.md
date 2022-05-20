@@ -1,3 +1,7 @@
+### **0.15.4** (2022-05-20)  
+  
+- Fix Wikidata parser to work with quote character in software name (eg: G'MIC)    
+  
 ### **0.15.3** (2022-05-20)  
   
 - Use mutex when we update state from ping  
