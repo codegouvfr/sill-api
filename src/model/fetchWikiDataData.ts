@@ -78,7 +78,8 @@ export async function fetchWikiDataData(params: {
                 "File:" +
                 encodeURIComponent(value)
                     .replace(/%2C/g, ",") //Preserve ','
-                    .replace(/%20/g, "_"); //Replace ' ' by '_'
+                    .replace(/%20/g, "_") //Replace ' ' by '_'
+                    .replace(/'/g, "%27"); //Replace ''' by '%27'
 
             const url = $(`a[href$="${endOfHref}"] img`).attr("src");
 
@@ -263,4 +264,4 @@ function createGetClaimDataValue(params: { entity: Entity }) {
     return { getClaimDataValue };
 }
 
-//fetchWikiDataData({ "wikidataId": "Q110492908" }).then(console.log)
+//fetchWikiDataData({ "wikidataId": "Q21041255" }).then(console.log)
