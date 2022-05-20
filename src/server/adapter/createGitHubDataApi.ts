@@ -54,7 +54,14 @@ export async function createGitHubDataApi(params: {
 
     const evtState = Evt.create(await fetchState());
 
-    evtDataUpdated.attach(async () => (evtState.state = await fetchState()));
+    const groupRef = runExclusive.createGroupRef();
+
+    evtDataUpdated.attach(
+        runExclusive.build(
+            groupRef,
+            async () => (evtState.state = await fetchState()),
+        ),
+    );
 
     const { updateStateRemoteAndLocal } = createUpdateStateRemoteAndLocal({
         dataRepoUrl,
@@ -72,8 +79,6 @@ export async function createGitHubDataApi(params: {
             });
         }, 24 * 600 * 1000);
     }
-
-    const groupRef = runExclusive.createGroupRef();
 
     return {
         evtState,
