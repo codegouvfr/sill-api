@@ -1,3 +1,8 @@
+### **0.15.3** (2022-05-20)  
+  
+- Use mutex when we update state from ping  
+- Fix buf if build data fails    
+  
 ### **0.15.2** (2022-05-19)  
   
 - Fix bug in keeping the local copy up to date, enable concurent editing    
