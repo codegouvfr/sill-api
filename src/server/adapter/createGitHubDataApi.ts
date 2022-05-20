@@ -511,6 +511,22 @@ const { fetchCompiledData, createFetchState, createUpdateStateRemoteAndLocal } =
             }) {
                 const { newDb, commitMessage } = params;
 
+                evtState.state = {
+                    ...evtState.state,
+                    "compiledData": {
+                        ...evtState.state.compiledData,
+                        //NOTE: It's important to call buildCatalog first as it may crash
+                        //and if it does it mean that if we have committed we'll end up with
+                        //inconsistent state.
+                        "catalog": await buildCatalog({
+                            "currentCatalog":
+                                evtState.state.compiledData.catalog,
+                            ...newDb,
+                        }).then(({ catalog }) => catalog),
+                    },
+                    "db": newDb,
+                };
+
                 await gitDb({
                     dataRepoUrl,
                     githubPersonalAccessToken,
@@ -575,19 +591,6 @@ const { fetchCompiledData, createFetchState, createUpdateStateRemoteAndLocal } =
                         };
                     },
                 });
-
-                evtState.state = {
-                    ...evtState.state,
-                    "compiledData": {
-                        ...evtState.state.compiledData,
-                        "catalog": await buildCatalog({
-                            "currentCatalog":
-                                evtState.state.compiledData.catalog,
-                            ...newDb,
-                        }).then(({ catalog }) => catalog),
-                    },
-                    "db": newDb,
-                };
             }
 
             return { updateStateRemoteAndLocal };
