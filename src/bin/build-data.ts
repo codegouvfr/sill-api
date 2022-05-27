@@ -5,7 +5,7 @@ import { removeReferent } from "../model/types";
 import * as fs from "fs";
 import * as child_process from "child_process";
 import { assert } from "tsafe/assert";
-import { fetchCompiledData } from "../server/adapter/createGitHubDataApi";
+import { fetchCompiledData } from "../server/adapters/createGitHubDataApi";
 import { ErrorNoBranch } from "../tools/git";
 
 export const softwareJsonRelativeFilePath = "software.json";

@@ -1,4 +1,4 @@
-import { triggerComputationOfCompiledData } from "../server/adapter/createGitHubDataApi";
+import { triggerComputationOfCompiledData } from "../server/adapters/createGitHubDataApi";
 import { assert } from "tsafe/assert";
 
 const envVarName = "GITHUB_TOKEN";

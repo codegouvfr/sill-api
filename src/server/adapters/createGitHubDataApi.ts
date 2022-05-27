@@ -328,6 +328,59 @@ export async function createGitHubDataApi(params: {
                     return { software };
                 },
             ),
+            "changeUserAgencyName": runExclusive.build(
+                groupRef,
+                async ({ email, newAgencyName }) => {
+                    const newDb = structuredClone(evtState.state.db);
+
+                    const { referentRows } = newDb;
+
+                    const referent = referentRows.find(
+                        row => row.email === email,
+                    );
+
+                    if (referent === undefined) {
+                        return;
+                    }
+
+                    const { agencyName } = referent;
+
+                    referent.agencyName = newAgencyName;
+
+                    await updateStateRemoteAndLocal({
+                        newDb,
+                        "commitMessage": `Update ${email} agencyName from ${agencyName} to ${newAgencyName}`,
+                    });
+                },
+            ),
+            "updateUserEmail": runExclusive.build(
+                groupRef,
+                async ({ email, newEmail }) => {
+                    const newDb = structuredClone(evtState.state.db);
+
+                    const { referentRows, softwareReferentRows } = newDb;
+
+                    const referent = referentRows.find(
+                        row => row.email === email,
+                    );
+
+                    if (referent === undefined) {
+                        return;
+                    }
+
+                    referent.email = newEmail;
+
+                    softwareReferentRows.forEach(
+                        softwareReferentRow =>
+                            (softwareReferentRow.referentEmail = newEmail),
+                    );
+
+                    await updateStateRemoteAndLocal({
+                        newDb,
+                        "commitMessage": `Updating referent email from ${email} to ${newEmail}`,
+                    });
+                },
+            ),
         },
     };
 }

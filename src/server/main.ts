@@ -17,7 +17,9 @@ import type { DataApi } from "./ports/DataApi";
 import {
     createGitHubDataApi,
     buildBranch,
-} from "./adapter/createGitHubDataApi";
+} from "./adapters/createGitHubDataApi";
+import type { UserApi } from "./ports/UserApi";
+import { createKeycloakUserApi } from "./adapters/createKeycloakUserApi";
 import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWebhookSignature";
 import { fetchWikiDataData as fetchWikidataData } from "../model/fetchWikiDataData";
 import { getLatestSemVersionedTagFromSourceUrl } from "../tools/getLatestSemVersionedTagFromSourceUrl";
@@ -25,6 +27,8 @@ import { fetchComptoirDuLibre } from "../model/fetchComptoirDuLibre";
 import type { Language } from "../model/types";
 import { createResolveLocalizedString } from "i18nifty/LocalizedString";
 import { id } from "tsafe/id";
+import { createObjectThatThrowsIfAccessed } from "../tools/createObjectThatThrowsIfAccessed";
+
 const { resolveLocalizedString } = createResolveLocalizedString({
     "currentLanguage": id<Language>("en"),
     "fallbackLanguage": "en",
@@ -32,36 +36,40 @@ const { resolveLocalizedString } = createResolveLocalizedString({
 
 const configuration = getConfiguration();
 
-const { validateKeycloakSignature } =
-    configuration.keycloakParams !== undefined
-        ? createValidateKeycloakSignature(configuration.keycloakParams)
-        : { "validateKeycloakSignature": undefined };
+const { createContext } = (() => {
+    const { validateKeycloakSignature } =
+        configuration.keycloakParams !== undefined
+            ? createValidateKeycloakSignature(configuration.keycloakParams)
+            : { "validateKeycloakSignature": undefined };
 
-async function createContext({ req }: CreateExpressContextOptions) {
-    // Create your context based on the request object
-    // Will be available as `ctx` in all your resolvers
+    async function createContext({ req }: CreateExpressContextOptions) {
+        // Create your context based on the request object
+        // Will be available as `ctx` in all your resolvers
 
-    const { authorization } = req.headers;
+        const { authorization } = req.headers;
 
-    if (!authorization) {
-        return null;
+        if (!authorization) {
+            return null;
+        }
+
+        const jwtToken = authorization.split(" ")[1];
+
+        await validateKeycloakSignature?.({ jwtToken });
+
+        const parsedJwt = parseJwtPayload({
+            "jwtClaims": configuration.jwtClaims,
+            zParsedJwtTokenPayload,
+            "jwtPayload": jwtSimple.decode(jwtToken, "", true),
+        });
+
+        return { parsedJwt };
     }
 
-    const jwtToken = authorization.split(" ")[1];
+    return { createContext };
+})();
 
-    await validateKeycloakSignature?.({ jwtToken });
-
-    const parsedJwt = parseJwtPayload({
-        "jwtClaims": configuration.jwtClaims,
-        zParsedJwtTokenPayload,
-        "jwtPayload": jwtSimple.decode(jwtToken, "", true),
-    });
-
-    return { parsedJwt };
-}
-
-const createRouter = (params: { dataApi: DataApi }) => {
-    const { dataApi } = params;
+const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
+    const { dataApi, userApi } = params;
     const router = trpc
         .router<ReturnType<typeof createContext>>()
         .query("getOidcParams", {
@@ -197,6 +205,58 @@ const createRouter = (params: { dataApi: DataApi }) => {
                 return { software };
             },
         })
+        .mutation("updateAgencyName", {
+            "input": z.object({
+                "newAgencyName": z.string(),
+            }),
+            "resolve": async ({ ctx, input }) => {
+                if (ctx === null) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+
+                const { newAgencyName } = input;
+
+                const { keycloakParams } = configuration;
+
+                assert(keycloakParams !== undefined);
+
+                await userApi.updateUserAgencyName({
+                    "userId": ctx.parsedJwt.id,
+                    "agencyName": newAgencyName,
+                });
+
+                await dataApi.mutators.changeUserAgencyName({
+                    "email": ctx.parsedJwt.email,
+                    newAgencyName,
+                });
+            },
+        })
+        .mutation("updateEmail", {
+            "input": z.object({
+                "newEmail": z.string().email(),
+            }),
+            "resolve": async ({ ctx, input }) => {
+                if (ctx === null) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+
+                const { newEmail } = input;
+
+                const { keycloakParams } = configuration;
+
+                assert(keycloakParams !== undefined);
+
+                await userApi.updateUserEmail({
+                    "userId": ctx.parsedJwt.id,
+                    "email": newEmail,
+                });
+
+                await dataApi.mutators.updateUserEmail({
+                    "email": ctx.parsedJwt.email,
+                    newEmail,
+                });
+            },
+        })
         .query("autoFillFormInfo", {
             "input": z.object({
                 "wikidataId": z.string(),
@@ -320,6 +380,23 @@ const isDevelopment = process.env["ENVIRONNEMENT"] === "development";
                         "doPeriodicallyTriggerComputationOfCompiledData":
                             !isDevelopment,
                     }),
+                    "userApi": (() => {
+                        const { keycloakParams } = configuration;
+
+                        if (keycloakParams === undefined) {
+                            return createObjectThatThrowsIfAccessed<UserApi>({
+                                "debugMessage": "No keycloak",
+                            });
+                        }
+
+                        const { url, realm, adminPassword } = keycloakParams;
+
+                        return createKeycloakUserApi({
+                            url,
+                            realm,
+                            adminPassword,
+                        });
+                    })(),
                 });
 
                 return trpcExpress.createExpressMiddleware({

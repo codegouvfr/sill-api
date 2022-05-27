@@ -43,6 +43,14 @@ export type DataApi = {
             partialSoftwareRow: Pick<SoftwareRow, PartialSoftwareRowKey>;
             email: string;
         }) => Promise<{ software: CompiledData.Software<"with referents"> }>;
+        changeUserAgencyName: (params: {
+            email: string;
+            newAgencyName: string;
+        }) => Promise<void>;
+        updateUserEmail: (params: {
+            email: string;
+            newEmail: string;
+        }) => Promise<void>;
     };
 };
 

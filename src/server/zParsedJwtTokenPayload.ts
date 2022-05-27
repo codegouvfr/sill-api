@@ -4,6 +4,7 @@ import type { Equals } from "tsafe";
 import { assert } from "tsafe/assert";
 
 export const zParsedJwtTokenPayload = z.object({
+    "id": z.string(),
     "email": z.string(),
     "agencyName": z.string(),
     "locale": z.string().optional(),

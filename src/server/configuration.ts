@@ -16,9 +16,11 @@ export type Configuration = {
         realm: string;
         clientId: string;
         termsOfServices?: LocalizedString;
+        adminPassword: string;
     };
     //The name of the properties in the JWT parsed token.
     jwtClaims: {
+        id: string;
         email: string;
         agencyName: string;
         locale: string;
@@ -120,7 +122,8 @@ export const getConfiguration = memoize(
                 m_1("Is supposed to be an object"),
             );
 
-            const { url, realm, clientId, termsOfServices } = keycloakParams;
+            const { url, realm, clientId, termsOfServices, adminPassword } =
+                keycloakParams;
 
             {
                 const propertiesNames = [
@@ -128,6 +131,7 @@ export const getConfiguration = memoize(
                     symToStr({ realm }),
                     symToStr({ clientId }),
                     symToStr({ termsOfServices }),
+                    symToStr({ adminPassword }),
                 ] as const;
 
                 assert<
@@ -156,6 +160,7 @@ export const getConfiguration = memoize(
                 [symToStr({ url }), url],
                 [symToStr({ realm }), realm],
                 [symToStr({ clientId }), clientId],
+                [symToStr({ adminPassword }), adminPassword],
             ] as const) {
                 assert(
                     propertyValue !== undefined,
@@ -259,10 +264,11 @@ export const getConfiguration = memoize(
                 m_1("Is supposed to be an object"),
             );
 
-            const { email, locale, agencyName } = jwtClaims;
+            const { id, email, locale, agencyName } = jwtClaims;
 
             {
                 const propertiesNames = [
+                    symToStr({ id }),
                     symToStr({ email }),
                     symToStr({ agencyName }),
                     symToStr({ locale }),
@@ -291,6 +297,7 @@ export const getConfiguration = memoize(
             }
 
             for (const [propertyName, propertyValue] of [
+                [symToStr({ id }), id],
                 [symToStr({ email }), email],
                 [symToStr({ agencyName }), agencyName],
                 [symToStr({ locale }), locale],
