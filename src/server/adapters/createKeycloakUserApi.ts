@@ -30,7 +30,7 @@ export function createKeycloakUserApi(params: {
             ({ userId, agencyName }) =>
                 keycloakAdminApiClient.updateUser({
                     userId,
-                    "body": { "attributes": { "agencyName": [agencyName] } },
+                    "body": { "attributes": { agencyName } },
                 }),
         ),
         "getAllowedEmailRegexp": memoize(
