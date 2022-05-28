@@ -1,3 +1,8 @@
+## **0.16.0** (2022-05-28)  
+  
+- Fix email update  
+- Make it possible to update Email and agencyName https://github.com/etalab/sill-web/issues/3    
+  
 ### **0.15.5** (2022-05-20)  
   
   
