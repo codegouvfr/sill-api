@@ -68,28 +68,3 @@ async function fetchKeycloakRealmPublicCert(params: {
         "-----END CERTIFICATE-----",
     ].join("\n");
 }
-
-export async function obtainAdminAccessToken(params: {
-    url: string;
-    adminPassword: string;
-}): Promise<string> {
-    const { url, adminPassword } = params;
-
-    const { access_token } = await fetch(
-        urlJoin(url, "realms/master/protocol/openid-connect/token"),
-        {
-            "method": "POST",
-            "headers": {
-                "Content-Type": "application/json",
-            },
-            "body": JSON.stringify({
-                "client_id": "admin-cli",
-                "username": "admin",
-                "password": adminPassword,
-                "grant_type": "password",
-            }),
-        },
-    ).then(resp => resp.json());
-
-    return access_token;
-}
