@@ -1,3 +1,7 @@
+### **0.16.1** (2022-05-28)  
+  
+- fix bug updating agency name    
+  
 ## **0.16.0** (2022-05-28)  
   
 - Fix email update  
