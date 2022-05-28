@@ -33,7 +33,7 @@ export function createKeycloakUserApi(params: {
                     "body": { "attributes": { "agencyName": [agencyName] } },
                 }),
         ),
-        "getEmailRegexpStringValidator": memoize(
+        "getAllowedEmailRegexp": memoize(
             async () => {
                 const attributes =
                     await keycloakAdminApiClient.getUserProfileAttributes();

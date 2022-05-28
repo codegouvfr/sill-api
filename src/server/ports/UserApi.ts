@@ -7,7 +7,7 @@ export type UserApi = {
         userId: string;
         email: string;
     }) => Promise<void>;
-    getEmailRegexpStringValidator: {
+    getAllowedEmailRegexp: {
         (): Promise<string>;
         clear: () => void;
     };

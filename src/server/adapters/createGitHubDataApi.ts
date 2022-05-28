@@ -370,10 +370,12 @@ export async function createGitHubDataApi(params: {
 
                     referent.email = newEmail;
 
-                    softwareReferentRows.forEach(
-                        softwareReferentRow =>
-                            (softwareReferentRow.referentEmail = newEmail),
-                    );
+                    softwareReferentRows
+                        .filter(({ referentEmail }) => referentEmail === email)
+                        .forEach(
+                            softwareReferentRow =>
+                                (softwareReferentRow.referentEmail = newEmail),
+                        );
 
                     await updateStateRemoteAndLocal({
                         newDb,
