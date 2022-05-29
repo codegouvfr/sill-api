@@ -56,7 +56,16 @@ export const git = runExclusive.build(
             }
         })();
 
-        if (!(changesResult instanceof Error) && changesResult.doCommit) {
+        commit: {
+            if (changesResult instanceof Error || !changesResult.doCommit) {
+                break commit;
+            }
+
+            if ((await exec("git diff")) === "") {
+                //NOTE: No changes
+                break commit;
+            }
+
             await exec(`git config --local user.email "${commitAuthorEmail}"`);
             await exec(
                 `git config --local user.name "${
