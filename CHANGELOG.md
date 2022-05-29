@@ -1,3 +1,7 @@
+### **0.16.2** (2022-05-29)  
+  
+- git: don't crash if no changes, just dont commit    
+  
 ### **0.16.1** (2022-05-28)  
   
 - fix bug updating agency name    
