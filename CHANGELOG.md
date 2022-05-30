@@ -1,3 +1,7 @@
+## **0.17.0** (2022-05-30)  
+  
+- Api endpoint for getting all agencyNames    
+  
 ### **0.16.2** (2022-05-29)  
   
 - git: don't crash if no changes, just dont commit    
