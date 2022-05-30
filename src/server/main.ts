@@ -86,6 +86,9 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
         .query("getAllowedEmailRegexp", {
             "resolve": userApi.getAllowedEmailRegexp,
         })
+        .query("getAgencyNames", {
+            "resolve": userApi.getAgencyNames,
+        })
         .query("getReferentsBySoftwareId", {
             "resolve": async ({ ctx }) => {
                 if (ctx === null) {

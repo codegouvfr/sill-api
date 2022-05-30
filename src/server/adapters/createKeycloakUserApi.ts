@@ -56,7 +56,42 @@ export function createKeycloakUserApi(params: {
             },
             {
                 "promise": true,
-                "maxAge": 60 * 5 * 1000, //5 seconds
+                "maxAge": 5 * 60 * 1000,
+            },
+        ),
+        "getAgencyNames": memoize(
+            async () => {
+                const agencyNames = new Set<string>();
+
+                let first = 0;
+
+                // eslint-disable-next-line no-constant-condition
+                while (true) {
+                    const max = 100;
+
+                    const users = await keycloakAdminApiClient.getUsers({
+                        first,
+                        max,
+                    });
+
+                    users.forEach(user =>
+                        agencyNames.add(
+                            user.attributes["agencyName"][0].toLowerCase(),
+                        ),
+                    );
+
+                    if (users.length < max) {
+                        break;
+                    }
+
+                    first += max;
+                }
+
+                return Array.from(agencyNames);
+            },
+            {
+                "promise": true,
+                "maxAge": 60 * 60 * 1000,
             },
         ),
     };

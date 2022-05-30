@@ -11,4 +11,8 @@ export type UserApi = {
         (): Promise<string>;
         clear: () => void;
     };
+    getAgencyNames: {
+        (): Promise<string[]>;
+        clear: () => void;
+    };
 };

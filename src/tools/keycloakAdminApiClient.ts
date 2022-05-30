@@ -3,6 +3,14 @@ import fetch from "node-fetch";
 import deepMerge from "deepmerge";
 import type { KcContextBase } from "keycloakify";
 
+type User = {
+    id: string;
+    email: string;
+    createdTimestamp: number;
+    attributes: Record<string, string[]>;
+    emailVerified: boolean;
+};
+
 export type KeycloakAdminApiClient = {
     updateUser: (params: {
         userId: string;
@@ -12,6 +20,7 @@ export type KeycloakAdminApiClient = {
     getUserProfileAttributes: () => Promise<
         KcContextBase.RegisterUserProfile["profile"]["attributes"]
     >;
+    getUsers: (params: { first: number; max: number }) => Promise<User[]>;
 };
 
 export function createKeycloakAdminApiClient(params: {
@@ -89,6 +98,32 @@ export function createKeycloakAdminApiClient(params: {
 
             return attributes;
         },
+        "getUsers": async ({ first, max }) =>
+            fetch(
+                urlJoin(
+                    url,
+                    `admin/realms/${realm}/users?${Object.entries({
+                        first,
+                        max,
+                    })
+                        .map(([key, value]) => `${key}=${value}`)
+                        .join("&")}`,
+                ),
+                {
+                    "method": "GET",
+                    "headers": {
+                        "Authorization": `Bearer ${await obtainKeycloakAdminAccessToken(
+                            { url, adminPassword },
+                        )}`,
+                    },
+                },
+            ).then(async resp => {
+                if (`${resp.status}`[0] !== "2") {
+                    throw new Error(await resp.text());
+                }
+
+                return resp.json();
+            }),
     };
 }
 

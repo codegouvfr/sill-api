@@ -3,8 +3,8 @@
 export CONFIGURATION=$(cat << EOF
 {
 	"keycloakParams": {
-		//"url": "https://sill-auth.etalab.gouv.fr/auth",
-		"url": "https://sill-auth-test.lab.sspcloud.fr/auth",
+		"url": "https://sill-auth.etalab.gouv.fr/auth",
+		//"url": "https://sill-auth-test.lab.sspcloud.fr/auth",
 		"realm": "etalab",
 		"clientId": "sill",
 		"termsOfServices": "https://sill.etalab.gouv.fr/tos_fr.md",
