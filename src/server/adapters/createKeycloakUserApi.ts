@@ -74,11 +74,18 @@ export function createKeycloakUserApi(params: {
                         max,
                     });
 
-                    users.forEach(user =>
-                        agencyNames.add(
-                            user.attributes["agencyName"][0].toLowerCase(),
-                        ),
-                    );
+                    users.forEach(user => {
+                        let agencyName: string;
+
+                        try {
+                            agencyName =
+                                user.attributes["agencyName"][0].toLowerCase();
+                        } catch {
+                            return;
+                        }
+
+                        agencyNames.add(agencyName);
+                    });
 
                     if (users.length < max) {
                         break;
