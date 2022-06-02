@@ -81,6 +81,8 @@ export function createKeycloakUserApi(params: {
                             agencyName =
                                 user.attributes["agencyName"][0].toLowerCase();
                         } catch {
+                            console.log("Strange user: ", user);
+
                             return;
                         }
 
