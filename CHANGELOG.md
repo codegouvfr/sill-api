@@ -1,3 +1,8 @@
+### **0.17.1** (2022-06-02)  
+  
+- Dont crash when user do not have an agencyName  
+- Do not crash with user without agencyName    
+  
 ## **0.17.0** (2022-05-30)  
   
 - Api endpoint for getting all agencyNames    
