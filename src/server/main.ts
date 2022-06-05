@@ -28,6 +28,7 @@ import type { Language } from "../model/types";
 import { createResolveLocalizedString } from "i18nifty/LocalizedString";
 import { id } from "tsafe/id";
 import { createObjectThatThrowsIfAccessed } from "../tools/createObjectThatThrowsIfAccessed";
+import compression from "compression";
 
 const { resolveLocalizedString } = createResolveLocalizedString({
     "currentLanguage": id<Language>("en"),
@@ -329,6 +330,7 @@ const isDevelopment = process.env["ENVIRONNEMENT"] === "development";
 
     express()
         .use(cors())
+        .use(compression())
         .use(
             (req, _res, next) => (
                 console.log("⬅", req.method, req.path, req.body ?? req.query),
