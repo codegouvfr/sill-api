@@ -1,3 +1,7 @@
+### **0.17.2** (2022-06-05)  
+  
+- https://github.com/etalab/sill-web/issues/44    
+  
 ### **0.17.1** (2022-06-02)  
   
 - Dont crash when user do not have an agencyName  
