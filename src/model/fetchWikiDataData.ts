@@ -264,4 +264,4 @@ function createGetClaimDataValue(params: { entity: Entity }) {
     return { getClaimDataValue };
 }
 
-//fetchWikiDataData({ "wikidataId": "Q21041255" }).then(console.log)
+//fetchWikiDataData({ "wikidataId": "Q131382" }).then(console.log)

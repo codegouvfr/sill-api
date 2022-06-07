@@ -23,7 +23,15 @@ export function getLatestSemVersionedTagFactory(params: { octokit: Octokit }) {
 
         const { listTags } = listTagsFactory({ octokit });
 
+        let tagsAlreadyListed = 0;
+
         for await (const tag of listTags({ owner, repo })) {
+            if (tagsAlreadyListed === 15) {
+                break;
+            }
+
+            tagsAlreadyListed++;
+
             let version: NpmModuleVersion;
 
             try {
