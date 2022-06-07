@@ -1,6 +1,6 @@
 {
     "name": "sill-api",
-    "version": "0.17.2",
+    "version": "0.17.3",
     "description": "The backend of sill.etalab.gouv.fr",
     "repository": {
         "type": "git",
