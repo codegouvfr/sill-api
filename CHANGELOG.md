@@ -1,3 +1,7 @@
+### **0.17.3** (2022-06-07)  
+  
+- List at most 15 versions when suggesting latest version    
+  
 ### **0.17.2** (2022-06-05)  
   
 - https://github.com/etalab/sill-web/issues/44    
