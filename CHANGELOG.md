@@ -1,3 +1,8 @@
+### **0.17.4** (2022-06-09)  
+  
+- package.json: Bump version to 0.17.4  
+- .github/workflows/data.yaml: Update sill-data.json upload location    
+  
 ### **0.17.3** (2022-06-07)  
   
 - List at most 15 versions when suggesting latest version    
