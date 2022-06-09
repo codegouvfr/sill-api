@@ -29,7 +29,7 @@ export async function buildCatalog(params: {
 
     const { softwares: cdlSoftwares } = await fetchComptoirDuLibre();
 
-    const wikiDataDataById: Record<string, WikidataData> = {};
+    const wikiDataDataById: Record<string, WikidataData | undefined> = {};
 
     {
         const wikidataIds = softwareRows
@@ -100,7 +100,7 @@ export async function buildCatalog(params: {
                 "wikidataData":
                     wikidataId === undefined
                         ? undefined
-                        : wikiDataDataById[wikidataId]!,
+                        : wikiDataDataById[wikidataId],
                 "comptoirDuLibreSoftware":
                     comptoirDuLibreId === undefined
                         ? undefined

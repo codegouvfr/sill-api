@@ -25,10 +25,22 @@ const { resolveLocalizedString } = createResolveLocalizedString({
 // https://git.sr.ht/~etalab/sill-consolidate-data/tree/master/item/src/core.clj#L225-252
 export async function fetchWikiDataData(params: {
     wikidataId: string;
-}): Promise<WikidataData> {
+}): Promise<WikidataData | undefined> {
     const { wikidataId } = params;
 
-    const { entity } = await fetchEntity(wikidataId);
+    const { entity } =
+        (await fetchEntity(wikidataId).catch(error => {
+            if (error instanceof WikidataFetchError) {
+                if (error.status === 404) {
+                    return undefined;
+                }
+                throw error;
+            }
+        })) ?? {};
+
+    if (entity === undefined) {
+        return undefined;
+    }
 
     const { getClaimDataValue } = createGetClaimDataValue({ entity });
 
@@ -216,23 +228,30 @@ function wikidataSingleLocalizedStringToLocalizedString(
     return localizedString;
 }
 
+export class WikidataFetchError extends Error {
+    constructor(public readonly status: number) {
+        super(`Wikidata fetch error status: ${status}`);
+        Object.setPrototypeOf(this, new.target.prototype);
+    }
+}
+
 const fetchEntity = memoize(
     async function callee(wikidataId: string): Promise<{ entity: Entity }> {
-        try {
-            const entity = await fetch(
-                `https://www.wikidata.org/wiki/Special:EntityData/${wikidataId}.json`,
-            )
-                .then(res => res.text())
-                .then(
-                    text => JSON.parse(text)["entities"][wikidataId] as Entity,
-                );
+        const res = await fetch(
+            `https://www.wikidata.org/wiki/Special:EntityData/${wikidataId}.json`,
+        );
 
-            return { entity };
-        } catch {
-            await new Promise(resolve => setTimeout(resolve, 3000));
-
+        if (res.status === 429) {
             return callee(wikidataId);
         }
+
+        if (res.status === 404) {
+            throw new WikidataFetchError(res.status);
+        }
+
+        const entity = (await res.json())["entities"][wikidataId] as Entity;
+
+        return { entity };
     },
     {
         "promise": true,
@@ -264,4 +283,4 @@ function createGetClaimDataValue(params: { entity: Entity }) {
     return { getClaimDataValue };
 }
 
-//fetchWikiDataData({ "wikidataId": "Q131382" }).then(console.log)
+//fetchWikiDataData({ "wikidataId": "Q112074632" }).then(console.log)

@@ -276,6 +276,10 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 
                 const wikidataData = await fetchWikidataData({ wikidataId });
 
+                if (wikidataData === undefined) {
+                    return undefined;
+                }
+
                 const comptoirDuLibreId = await (async () => {
                     const comptoirDuLibre = await fetchComptoirDuLibre();
 
