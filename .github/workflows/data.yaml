@@ -29,4 +29,4 @@ jobs:
         username: web
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         source: "sill-data.json"
-        target: "~/websites/code.gouv.fr/data/"
+        target: "~/codegouvfr_data/"
