@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 COPY . .
-RUN npm install -g @vercel/ncc@0.33.3
+RUN npm install -g @vercel/ncc@0.34.0
 RUN npx ncc build src/server/main.ts 
 
 # production environment
