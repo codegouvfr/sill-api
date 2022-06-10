@@ -25,7 +25,7 @@ jobs:
     - run: cp data/build/compiledData_withoutReferents.json sill-data.json
     - uses: appleboy/scp-action@v0.1.2
       with:
-        host: 193.70.86.67
+        host: 5.39.69.44
         username: web
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         source: "sill-data.json"
