@@ -1,3 +1,8 @@
+### **0.17.5** (2022-06-10)  
+  
+- Update dependencies  
+- Fix problem with deleted wikidata entries    
+  
 ### **0.17.4** (2022-06-09)  
   
 - package.json: Bump version to 0.17.4  
