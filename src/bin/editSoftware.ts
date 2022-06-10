@@ -91,7 +91,6 @@ fs.writeFileSync(
         JSON.stringify(
             JSON.parse(fs.readFileSync(softwareFilePath).toString("utf8")).map(
                 (softwareRow: SoftwareRow) => {
-                    /*
                     try {
                         zSoftwareRow.parse(softwareRow);
                     } catch (exception) {
@@ -99,7 +98,6 @@ fs.writeFileSync(
 
                         throw exception;
                     }
-                    */
 
                     const {
                         id,
@@ -161,7 +159,7 @@ fs.writeFileSync(
                         //"useCaseUrls": [rawCsvRows.find(row => row["ID"] === `${id}`)?.["fiche"] || undefined].filter(exclude(undefined)) ,
                         useCaseUrls,
                         agentWorkstation,
-                        "tags": [],
+                        tags,
                     };
                 },
             ),
