@@ -17,6 +17,7 @@ export type DataApi = {
         evtCompiledDataWithoutReferents: StatefulReadonlyEvt<
             CompiledData<"without referents">
         >;
+        evtTags: StatefulReadonlyEvt<string[]>;
     };
 
     mutators: {
@@ -74,4 +75,5 @@ type PartialSoftwareRowKey =
     | "comptoirDuLibreId"
     | "license"
     | "versionMin"
-    | "agentWorkstation";
+    | "agentWorkstation"
+    | "tags";

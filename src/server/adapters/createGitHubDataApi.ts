@@ -99,6 +99,9 @@ export async function createGitHubDataApi(params: {
                     },
                 ],
             ),
+            "evtTags": evtState.pipe(({ compiledData }) => [
+                compiledData.catalog.map(({ tags }) => tags).flat(),
+            ]),
         },
         "mutators": {
             "createReferent": runExclusive.build(

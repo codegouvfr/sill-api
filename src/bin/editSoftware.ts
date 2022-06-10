@@ -77,6 +77,7 @@ const zSoftwareRow = z.object({
     ),
     "useCaseUrls": z.array(z.string()),
     "agentWorkstation": z.boolean(),
+    "tags": z.array(z.string()),
 });
 
 type Got = ReturnType<typeof zSoftwareRow["parse"]>;
@@ -90,6 +91,7 @@ fs.writeFileSync(
         JSON.stringify(
             JSON.parse(fs.readFileSync(softwareFilePath).toString("utf8")).map(
                 (softwareRow: SoftwareRow) => {
+                    /*
                     try {
                         zSoftwareRow.parse(softwareRow);
                     } catch (exception) {
@@ -97,6 +99,7 @@ fs.writeFileSync(
 
                         throw exception;
                     }
+                    */
 
                     const {
                         id,
@@ -120,8 +123,12 @@ fs.writeFileSync(
                         testUrls,
                         useCaseUrls,
                         agentWorkstation,
+                        tags,
                         ...rest
                     } = softwareRow;
+
+                    // eslint-disable-next-line @typescript-eslint/ban-types
+                    assert<Equals<typeof rest, {}>>();
 
                     try {
                         assert(Object.keys(rest).length === 0);
@@ -154,6 +161,7 @@ fs.writeFileSync(
                         //"useCaseUrls": [rawCsvRows.find(row => row["ID"] === `${id}`)?.["fiche"] || undefined].filter(exclude(undefined)) ,
                         useCaseUrls,
                         agentWorkstation,
+                        "tags": [],
                     };
                 },
             ),

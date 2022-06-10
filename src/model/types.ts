@@ -44,6 +44,7 @@ export type SoftwareRow = {
     }[];
     useCaseUrls: string[];
     agentWorkstation: boolean;
+    tags: string[];
 };
 
 export type ReferentRow = {

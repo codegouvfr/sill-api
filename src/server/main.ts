@@ -98,6 +98,9 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
                 return dataApi.derivedStates.evtReferentsBySoftwareId.state;
             },
         })
+        .query("getTags", {
+            "resolve": () => dataApi.derivedStates.evtTags.state,
+        })
         .mutation("declareUserReferent", {
             "input": z.object({
                 "softwareId": z.number(),
@@ -432,4 +435,5 @@ const zPartialSoftwareRow = z.object({
     "versionMin": z.string(),
     "agentWorkstation": z.boolean(),
     "isPresentInSupportContract": z.boolean(),
+    "tags": z.array(z.string()),
 });
