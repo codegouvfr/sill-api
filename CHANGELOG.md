@@ -1,3 +1,13 @@
+## **0.18.0** (2022-06-14)  
+  
+- Return only uniq tag  
+- Mise a jour de l'IP
+
+@bzg  
+- Restore edit software script  
+- Fix build  
+- Implement tag feature https://github.com/etalab/sill-web/issues/18    
+  
 ### **0.17.5** (2022-06-10)  
   
 - Update dependencies  
