@@ -31,6 +31,7 @@ import { noUndefined } from "tsafe/noUndefined";
 import { buildCatalog } from "../../model/buildCatalog";
 import type { StatefulEvt } from "evt";
 import * as runExclusive from "run-exclusive";
+import { removeDuplicates } from "evt/tools/reducers/removeDuplicates";
 
 export const buildBranch = "build";
 
@@ -100,7 +101,10 @@ export async function createGitHubDataApi(params: {
                 ],
             ),
             "evtTags": evtState.pipe(({ compiledData }) => [
-                compiledData.catalog.map(({ tags }) => tags).flat(),
+                compiledData.catalog
+                    .map(({ tags }) => tags)
+                    .flat()
+                    .reduce(...removeDuplicates<string>()),
             ]),
         },
         "mutators": {
