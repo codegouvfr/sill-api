@@ -1,3 +1,7 @@
+### **0.18.1** (2022-06-23)  
+  
+- Sort tags by most used first    
+  
 ## **0.18.0** (2022-06-14)  
   
 - Return only uniq tag  
