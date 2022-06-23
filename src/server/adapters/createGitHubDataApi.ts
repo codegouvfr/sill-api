@@ -31,7 +31,6 @@ import { noUndefined } from "tsafe/noUndefined";
 import { buildCatalog } from "../../model/buildCatalog";
 import type { StatefulEvt } from "evt";
 import * as runExclusive from "run-exclusive";
-import { removeDuplicates } from "evt/tools/reducers/removeDuplicates";
 
 export const buildBranch = "build";
 
@@ -104,7 +103,17 @@ export async function createGitHubDataApi(params: {
                 compiledData.catalog
                     .map(({ tags }) => tags)
                     .flat()
-                    .reduce(...removeDuplicates<string>()),
+                    .reduce((prev, tag) => {
+                        const wrap = prev.find(wrap => wrap.tag === tag);
+                        if (wrap === undefined) {
+                            prev.push({ tag, "count": 1 });
+                        } else {
+                            wrap.count++;
+                        }
+                        return prev;
+                    }, id<{ tag: string; count: number }[]>([]))
+                    .sort((a, b) => b.count - a.count)
+                    .map(({ tag }) => tag),
             ]),
         },
         "mutators": {
