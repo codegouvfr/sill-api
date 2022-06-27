@@ -111,7 +111,7 @@ export async function buildCatalog(params: {
 
                               assert(
                                   cdlSoftware !== undefined,
-                                  `Comptoir du libre id: ${comptoirDuLibreId} does not match ant software`,
+                                  `Comptoir du libre id: ${comptoirDuLibreId} does not match any software`,
                               );
 
                               return cdlSoftware;
