@@ -1,9 +1,9 @@
 import type { SoftwareRow } from "../model/types";
-import { z } from "zod";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
+import { zSoftwareRow } from "../model/z";
 /*
 import { exclude } from "tsafe/exclude";
 import { rawCsvFileToRawCsvRows } from "../tools/stringifyCsv";
@@ -27,64 +27,6 @@ const rawCsvRows = rawCsvFileToRawCsvRows({ "rawCsvFile": fs.readFileSync(
 */
 
 const softwareFilePath = pathJoin(process.cwd(), "software.json");
-
-const zSoftwareRef = z.union([
-    z.object({
-        "isKnown": z.literal(true),
-        "softwareId": z.number(),
-    }),
-    z.object({
-        "isKnown": z.literal(false),
-        "softwareName": z.string(),
-        "wikidataId": z.string().optional(),
-    }),
-]);
-
-const zSoftwareRow = z.object({
-    "id": z.number(),
-    "name": z.string(),
-    "function": z.string(),
-    "referencedSinceTime": z.number(),
-    "dereferencing": z
-        .object({
-            "reason": z.string().optional(),
-            "time": z.number(),
-            "lastRecommendedVersion": z.string().optional(),
-        })
-        .optional(),
-    "isStillInObservation": z.boolean(),
-    "parentSoftware": zSoftwareRef.optional(),
-    "isFromFrenchPublicService": z.boolean(),
-    "isPresentInSupportContract": z.boolean(),
-    "alikeSoftwares": z.array(zSoftwareRef),
-    "wikidataId": z.string().optional(),
-    "comptoirDuLibreId": z.number().optional(),
-    "license": z.string(),
-    "contextOfUse": z.string().optional(),
-    "catalogNumeriqueGouvFrId": z.string().optional(),
-    "mimGroup": z.union([
-        z.literal("MIMO"),
-        z.literal("MIMDEV"),
-        z.literal("MIMPROD"),
-        z.literal("MIMDEVOPS"),
-    ]),
-    "versionMin": z.string(),
-    "workshopUrls": z.array(z.string()),
-    "testUrls": z.array(
-        z.object({
-            "description": z.string(),
-            "url": z.string(),
-        }),
-    ),
-    "useCaseUrls": z.array(z.string()),
-    "agentWorkstation": z.boolean(),
-    "tags": z.array(z.string()),
-});
-
-type Got = ReturnType<typeof zSoftwareRow["parse"]>;
-type Expected = SoftwareRow;
-
-assert<Equals<Got, Expected>>();
 
 fs.writeFileSync(
     softwareFilePath,

@@ -29,6 +29,7 @@ import { createResolveLocalizedString } from "i18nifty/LocalizedString";
 import { id } from "tsafe/id";
 import { createObjectThatThrowsIfAccessed } from "../tools/createObjectThatThrowsIfAccessed";
 import compression from "compression";
+import { zPartialSoftwareRow } from "./ports/DataApi";
 
 const { resolveLocalizedString } = createResolveLocalizedString({
     "currentLanguage": id<Language>("en"),
@@ -424,16 +425,3 @@ const isDevelopment = process.env["ENVIRONNEMENT"] === "development";
             console.log(`Listening on port ${configuration.port}`),
         );
 })();
-
-const zPartialSoftwareRow = z.object({
-    "name": z.string(),
-    "function": z.string(),
-    "isFromFrenchPublicService": z.boolean(),
-    "wikidataId": z.string().optional(),
-    "comptoirDuLibreId": z.number().optional(),
-    "license": z.string(),
-    "versionMin": z.string(),
-    "agentWorkstation": z.boolean(),
-    "isPresentInSupportContract": z.boolean(),
-    "tags": z.array(z.string()),
-});

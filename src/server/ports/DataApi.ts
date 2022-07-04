@@ -6,6 +6,9 @@ import type {
     ServiceRow,
 } from "../../model/types";
 import type { StatefulReadonlyEvt } from "evt";
+import { assert } from "tsafe/assert";
+import type { Equals } from "tsafe";
+import { zSoftwareRow } from "../../model/z";
 
 export type DataApi = {
     evtState: StatefulReadonlyEvt<DataApi.State>;
@@ -33,7 +36,7 @@ export type DataApi = {
             softwareId: number;
         }) => Promise<void>;
         addSoftware: (params: {
-            partialSoftwareRow: Pick<SoftwareRow, PartialSoftwareRowKey>;
+            partialSoftwareRow: PartialSoftwareRow;
             referentRow: ReferentRow;
             isExpert: boolean;
             useCaseDescription: string;
@@ -41,7 +44,7 @@ export type DataApi = {
         }) => Promise<{ software: CompiledData.Software<"with referents"> }>;
         updateSoftware: (params: {
             softwareId: number;
-            partialSoftwareRow: Pick<SoftwareRow, PartialSoftwareRowKey>;
+            partialSoftwareRow: PartialSoftwareRow;
             email: string;
         }) => Promise<{ software: CompiledData.Software<"with referents"> }>;
         changeUserAgencyName: (params: {
@@ -77,3 +80,26 @@ type PartialSoftwareRowKey =
     | "versionMin"
     | "agentWorkstation"
     | "tags";
+
+assert<PartialSoftwareRowKey extends keyof SoftwareRow ? true : false>();
+
+type PartialSoftwareRow = Pick<SoftwareRow, PartialSoftwareRowKey>;
+
+export const zPartialSoftwareRow = zSoftwareRow.pick({
+    "name": true,
+    "function": true,
+    "isFromFrenchPublicService": true,
+    "wikidataId": true,
+    "comptoirDuLibreId": true,
+    "license": true,
+    "versionMin": true,
+    "agentWorkstation": true,
+    "tags": true,
+});
+
+{
+    type Got = ReturnType<typeof zPartialSoftwareRow["parse"]>;
+    type Expected = PartialSoftwareRow;
+
+    assert<Equals<Got, Expected>>();
+}

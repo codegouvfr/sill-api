@@ -1,0 +1,71 @@
+import { z } from "zod";
+import { assert } from "tsafe/assert";
+import type { Equals } from "tsafe";
+import type { SoftwareRow, SoftwareRef } from "./types";
+
+export const zSoftwareRef = z.union([
+    z.object({
+        "isKnown": z.literal(true),
+        "softwareId": z.number(),
+    }),
+    z.object({
+        "isKnown": z.literal(false),
+        "softwareName": z.string(),
+        "wikidataId": z.string().optional(),
+    }),
+]);
+
+{
+    type Got = ReturnType<typeof zSoftwareRef["parse"]>;
+    type Expected = SoftwareRef;
+
+    assert<Equals<Got, Expected>>();
+}
+
+export const zSoftwareRow = z.object({
+    "id": z.number(),
+    "name": z.string(),
+    "function": z.string(),
+    "referencedSinceTime": z.number(),
+    "dereferencing": z
+        .object({
+            "reason": z.string().optional(),
+            "time": z.number(),
+            "lastRecommendedVersion": z.string().optional(),
+        })
+        .optional(),
+    "isStillInObservation": z.boolean(),
+    "parentSoftware": zSoftwareRef.optional(),
+    "isFromFrenchPublicService": z.boolean(),
+    "isPresentInSupportContract": z.boolean(),
+    "alikeSoftwares": z.array(zSoftwareRef),
+    "wikidataId": z.string().optional(),
+    "comptoirDuLibreId": z.number().optional(),
+    "license": z.string(),
+    "contextOfUse": z.string().optional(),
+    "catalogNumeriqueGouvFrId": z.string().optional(),
+    "mimGroup": z.union([
+        z.literal("MIMO"),
+        z.literal("MIMDEV"),
+        z.literal("MIMPROD"),
+        z.literal("MIMDEVOPS"),
+    ]),
+    "versionMin": z.string(),
+    "workshopUrls": z.array(z.string()),
+    "testUrls": z.array(
+        z.object({
+            "description": z.string(),
+            "url": z.string(),
+        }),
+    ),
+    "useCaseUrls": z.array(z.string()),
+    "agentWorkstation": z.boolean(),
+    "tags": z.array(z.string()),
+});
+
+{
+    type Got = ReturnType<typeof zSoftwareRow["parse"]>;
+    type Expected = SoftwareRow;
+
+    assert<Equals<Got, Expected>>();
+}
