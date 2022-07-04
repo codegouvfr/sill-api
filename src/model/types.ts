@@ -103,6 +103,7 @@ export namespace SoftwareRef {
     export type Unknown = {
         isKnown: false;
         softwareName: string;
+        wikidataId?: string;
     };
 }
 

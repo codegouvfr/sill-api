@@ -36,6 +36,7 @@ const zSoftwareRef = z.union([
     z.object({
         "isKnown": z.literal(false),
         "softwareName": z.string(),
+        "wikidataId": z.string().optional(),
     }),
 ]);
 
