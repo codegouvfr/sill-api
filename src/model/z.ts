@@ -11,7 +11,6 @@ export const zSoftwareRef = z.union([
     z.object({
         "isKnown": z.literal(false),
         "softwareName": z.string(),
-        "wikidataId": z.string().optional(),
     }),
 ]);
 
@@ -38,7 +37,7 @@ export const zSoftwareRow = z.object({
     "parentSoftware": zSoftwareRef.optional(),
     "isFromFrenchPublicService": z.boolean(),
     "isPresentInSupportContract": z.boolean(),
-    "alikeSoftwares": z.array(zSoftwareRef),
+    "alikeSoftwares": z.array(zSoftwareRef).optional(),
     "wikidataId": z.string().optional(),
     "comptoirDuLibreId": z.number().optional(),
     "license": z.string(),
@@ -60,7 +59,7 @@ export const zSoftwareRow = z.object({
     ),
     "useCaseUrls": z.array(z.string()),
     "agentWorkstation": z.boolean(),
-    "tags": z.array(z.string()),
+    "tags": z.array(z.string()).optional(),
 });
 
 {

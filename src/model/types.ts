@@ -22,7 +22,7 @@ export type SoftwareRow = {
     parentSoftware?: SoftwareRef;
     isFromFrenchPublicService: boolean;
     isPresentInSupportContract: boolean;
-    alikeSoftwares: SoftwareRef[];
+    alikeSoftwares?: SoftwareRef[];
     //Should not be optional
     wikidataId?: string;
     //Example https://comptoir-du-libre.org/en/softwares/461 -> 461
@@ -44,7 +44,7 @@ export type SoftwareRow = {
     }[];
     useCaseUrls: string[];
     agentWorkstation: boolean;
-    tags: string[];
+    tags?: string[];
 };
 
 export type ReferentRow = {
@@ -103,7 +103,6 @@ export namespace SoftwareRef {
     export type Unknown = {
         isKnown: false;
         softwareName: string;
-        wikidataId?: string;
     };
 }
 

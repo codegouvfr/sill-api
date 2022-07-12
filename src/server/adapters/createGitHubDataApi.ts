@@ -101,7 +101,7 @@ export async function createGitHubDataApi(params: {
             ),
             "evtTags": evtState.pipe(({ compiledData }) => [
                 compiledData.catalog
-                    .map(({ tags }) => tags)
+                    .map(({ tags }) => tags ?? [])
                     .flat()
                     .reduce((prev, tag) => {
                         const wrap = prev.find(wrap => wrap.tag === tag);
@@ -268,7 +268,6 @@ export async function createGitHubDataApi(params: {
                         "referencedSinceTime": Date.now(),
                         "isStillInObservation": false,
                         "isPresentInSupportContract": false,
-                        "alikeSoftwares": [],
                         "mimGroup": "MIMO",
                         "workshopUrls": [],
                         "testUrls": [],
