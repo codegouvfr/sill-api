@@ -1,3 +1,9 @@
+## **0.19.0** (2022-07-12)  
+  
+- update api  
+- Refactor  
+- Unknown alike software can have a wiki data id    
+  
 ### **0.18.1** (2022-06-23)  
   
 - Sort tags by most used first    
