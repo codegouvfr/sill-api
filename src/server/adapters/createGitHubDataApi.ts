@@ -326,7 +326,7 @@ export async function createGitHubDataApi(params: {
 
                     softwareRows[index] = {
                         ...softwareRows[index],
-                        ...noUndefined(partialSoftwareRow),
+                        ...noUndefined(structuredClone(partialSoftwareRow)),
                     };
 
                     await updateStateRemoteAndLocal({
