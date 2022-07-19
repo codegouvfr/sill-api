@@ -1,3 +1,7 @@
+## **0.20.0** (2022-07-19)  
+  
+- Enable to add a dereferencing date in the backend api (https://github.com/etalab/sill-web/issues/47)    
+  
 ### **0.19.1** (2022-07-17)  
   
 - Update evt and keycloakify    
