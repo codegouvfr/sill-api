@@ -216,6 +216,33 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
                 return { software };
             },
         })
+        .mutation("dereferenceSoftware", {
+            "input": z.object({
+                "softwareId": z.number(),
+                "dereferencing": z.object({
+                    "reason": z.string().optional(),
+                    "lastRecommendedVersion": z.string().optional(),
+                }),
+            }),
+            "resolve": async ({ ctx, input }) => {
+                if (ctx === null) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+
+                const { softwareId, dereferencing } = input;
+
+                const { email } = ctx.parsedJwt;
+
+                await dataApi.mutators.dereferenceSoftware({
+                    softwareId,
+                    email,
+                    "dereferencing": {
+                        ...dereferencing,
+                        "time": Date.now(),
+                    },
+                });
+            },
+        })
         .mutation("updateAgencyName", {
             "input": z.object({
                 "newAgencyName": z.string(),

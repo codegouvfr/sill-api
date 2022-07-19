@@ -55,6 +55,15 @@ export type DataApi = {
             email: string;
             newEmail: string;
         }) => Promise<void>;
+        dereferenceSoftware: (params: {
+            softwareId: number;
+            email: string;
+            dereferencing: {
+                reason?: string;
+                time: number;
+                lastRecommendedVersion?: string;
+            };
+        }) => Promise<void>;
     };
 };
 
@@ -80,8 +89,7 @@ type PartialSoftwareRowKey =
     | "versionMin"
     | "agentWorkstation"
     | "tags"
-    | "alikeSoftwares"
-    | "dereferencing";
+    | "alikeSoftwares";
 
 assert<PartialSoftwareRowKey extends keyof SoftwareRow ? true : false>();
 
@@ -98,7 +106,6 @@ export const zPartialSoftwareRow = zSoftwareRow.pick({
     "agentWorkstation": true,
     "tags": true,
     "alikeSoftwares": true,
-    "dereferencing": true,
 });
 
 {

@@ -27,7 +27,6 @@ import type { Param0, ReturnType } from "tsafe";
 import { Octokit } from "@octokit/rest";
 import { parseGitHubRepoUrl } from "../../tools/parseGithubRepoUrl";
 import structuredClone from "@ungap/structured-clone";
-import { noUndefined } from "tsafe/noUndefined";
 import { buildCatalog } from "../../model/buildCatalog";
 import type { StatefulEvt } from "evt";
 import * as runExclusive from "run-exclusive";
@@ -326,7 +325,7 @@ export async function createGitHubDataApi(params: {
 
                     softwareRows[index] = {
                         ...softwareRows[index],
-                        ...noUndefined(structuredClone(partialSoftwareRow)),
+                        ...structuredClone(partialSoftwareRow),
                     };
 
                     await updateStateRemoteAndLocal({
@@ -341,6 +340,35 @@ export async function createGitHubDataApi(params: {
                     assert(software !== undefined);
 
                     return { software };
+                },
+            ),
+            "dereferenceSoftware": runExclusive.build(
+                groupRef,
+                async ({ softwareId, email, dereferencing }) => {
+                    const newDb = structuredClone(evtState.state.db);
+
+                    const { softwareRows, softwareReferentRows } = newDb;
+
+                    assert(
+                        softwareReferentRows.find(
+                            ({ referentEmail }) => referentEmail === email,
+                        ) !== undefined,
+                        "The user is not a referent of this software",
+                    );
+
+                    const index = softwareRows.findIndex(
+                        softwareRow => softwareRow.id === softwareId,
+                    );
+
+                    assert(index !== -1, "The software does not exist");
+
+                    softwareRows[index].dereferencing =
+                        structuredClone(dereferencing);
+
+                    await updateStateRemoteAndLocal({
+                        newDb,
+                        "commitMessage": `Dereference ${softwareRows[index].name}`,
+                    });
                 },
             ),
             "changeUserAgencyName": runExclusive.build(
