@@ -1,6 +1,6 @@
 {
     "name": "sill-api",
-    "version": "0.21.0",
+    "version": "0.21.1",
     "description": "The backend of sill.etalab.gouv.fr",
     "repository": {
         "type": "git",
@@ -58,12 +58,12 @@
         "cheerio": "^1.0.0-rc.5",
         "comment-json": "^3.0.0",
         "cors": "^2.8.5",
-        "cra-envs": "^1.2.1",
+        "cra-envs": "^1.2.6",
         "csv-parse": "^5.0.4",
         "deepmerge": "^4.2.2",
         "eslint": "^7.32.0",
         "eslint-config-prettier": "^8.3.0",
-        "evt": "^2.2.0",
+        "evt": "^2.2.1",
         "express": "^4.17.2",
         "husky": "^4.3.8",
         "keycloak-backend": "^2.0.1",
