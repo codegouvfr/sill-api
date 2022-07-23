@@ -2,7 +2,7 @@
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "extends": ["config:base"],
     "rangeStrategy": "bump",
-    "ignorePaths": [".github/**"],
+    "ignorePaths": [".github/**", "Dockerfile"],
     "bumpVersion": "patch",
     "packageRules": [
         {
@@ -28,7 +28,8 @@
             ],
             "groupName": "homegrown",
             "matchUpdateTypes": ["minor", "patch"],
-            "automerge": true
+            "automerge": true,
+            "automergeType": "branch"
         }
     ]
 }
