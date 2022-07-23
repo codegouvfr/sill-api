@@ -2,5 +2,21 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base"
+  ],
+  "rangeStrategy": "bump",
+  "ignorePaths": [".github/**"],
+  "bumpVersion": "patch",
+  "packageRules": [
+    {
+      "packagePatterns": ["*"],
+      "excludePackagePatterns": ["cra-envs", "evt", "keycloakify", "run-exclusive", "i18nifty", "tsafe"],
+      "enabled": false
+    },
+    {
+      "packagePatterns": ["cra-envs", "evt", "keycloakify", "run-exclusive", "i18nifty", "tsafe"],
+      "groupName": "homegrown",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    }
   ]
 }
