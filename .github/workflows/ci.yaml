@@ -166,6 +166,7 @@ jobs:
   poke_gitops:
     runs-on: ubuntu-latest
     needs: 
+      - create_github_release
       - publish_on_npm
       - docker
     steps:
