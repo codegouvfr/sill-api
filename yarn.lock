@@ -880,17 +880,17 @@ cosmiconfig@^7.0.0, cosmiconfig@^7.0.1:
     path-type "^4.0.0"
     yaml "^1.10.0"
 
-cra-envs@^1.2.6:
-  version "1.2.6"
-  resolved "https://registry.yarnpkg.com/cra-envs/-/cra-envs-1.2.6.tgz#d85657e418168fab75e3d3acdcf99ddd2961d271"
-  integrity sha512-88N/vwx7GMlv5rkXWIYaVDZtBdlqxU7l0U+RI7FI4wNMwYYcpugtAqvhU6PqbCIu7TJIGtMRsXjHQADPpi4PrQ==
+cra-envs@^1.2.1:
+  version "1.2.7"
+  resolved "https://registry.yarnpkg.com/cra-envs/-/cra-envs-1.2.7.tgz#94ea4534a0d977bd638a39c17361f323352c986c"
+  integrity sha512-bPy287PyCNpgcmSgHDz3A1Use2qYvu2RcJY7jPv7Knp5s4WRRW46MH7xmy8S77mU68p2SCJaH/rRrkfIZ+K4OA==
   dependencies:
     "@types/ejs" "^3.1.0"
     "@types/node" "^10.0.0"
     cheerio "^1.0.0-rc.5"
     dotenv "^8.2.0"
     ejs "^3.1.6"
-    minimal-polyfills "^2.1.6"
+    minimal-polyfills "^2.2.1"
     scripting-tools "^0.19.13"
     typescript "^4.1.5"
 
@@ -1307,15 +1307,6 @@ evt@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/evt/-/evt-2.2.0.tgz#3f4cd36042ae951d4de4b11391cc9a1983a63f7d"
   integrity sha512-osz8IYRfeNVva7KRdHx/ruJJo3e4OowMzL+E1Dw8xBjGNrJsK74hDvWErH9hGhnYQxu9rBDPTq8JXydvgu17kg==
-  dependencies:
-    minimal-polyfills "^2.2.1"
-    run-exclusive "^2.2.14"
-    tsafe "^0.10.0"
-
-evt@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/evt/-/evt-2.2.1.tgz#a3d6b19e92a5fae2801d98e764294c08b8079d78"
-  integrity sha512-MbzwSxMaZrmg09Q0HeK/W0/xwH3u9jFxb78MAXhhFczjog8gqoaO1IQGCAIOlI7FHW7NzuoCKpjcIyJUva7H3w==
   dependencies:
     minimal-polyfills "^2.2.1"
     run-exclusive "^2.2.14"
@@ -2158,7 +2149,7 @@ mimic-fn@^2.1.0:
   resolved "https://registry.yarnpkg.com/mimic-fn/-/mimic-fn-2.1.0.tgz#7ed2c2ccccaf84d3ffcb7a69b57711fc2083401b"
   integrity sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==
 
-minimal-polyfills@^2.1.5, minimal-polyfills@^2.1.6, minimal-polyfills@^2.2.1:
+minimal-polyfills@^2.1.5, minimal-polyfills@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/minimal-polyfills/-/minimal-polyfills-2.2.1.tgz#7249d7ece666d3b4e1ec1c1b8f949eb9d44e2308"
   integrity sha512-WLmHQrsZob4rVYf8yHapZPNJZ3sspGa/sN8abuSD59b0FifDEE7HMfLUi24z7mPZqTpBXy4Svp+iGvAmclCmXg==
