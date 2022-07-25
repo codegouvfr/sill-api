@@ -1303,10 +1303,19 @@ event-emitter@^0.3.5:
     d "1"
     es5-ext "~0.10.14"
 
-evt@^2.2.0, evt@^2.2.1, evt@^2.2.2:
+evt@^2.2.0, evt@^2.2.1:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/evt/-/evt-2.2.2.tgz#36dbc7ada08ae4c73798b072470a681f3695ec50"
   integrity sha512-QBt/OEGIChEBHKaWJrQ2f7CtiWkeXbYOzeGEJbGq3ilnJI5AotgIc2jCsMqb2X6B0IqJdN6GD4ZFscfVUSh7ww==
+  dependencies:
+    minimal-polyfills "^2.2.1"
+    run-exclusive "^2.2.15"
+    tsafe "^0.10.0"
+
+evt@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/evt/-/evt-2.3.0.tgz#709456803f79a125371f709fb32c0989a948a9f8"
+  integrity sha512-Tkv4vM4BrIiW9p+YM7DiWNGcxrajtSaNMsJl6C43gbk/pY5xhN7RNQ9j3wyXNgKrkudNYMTO4dTE+v3JGdJqTQ==
   dependencies:
     minimal-polyfills "^2.2.1"
     run-exclusive "^2.2.15"
