@@ -58,7 +58,6 @@ jobs:
   docker:
     needs: 
       - check_if_version_upgraded
-      - test
     runs-on: ubuntu-latest
     # We publish the the docker image only if it's a push on the default branch or if it's a PR from a 
     # branch (meaning not a PR from a fork). It would be more straightforward to test if secrets.DOCKERHUB_TOKEN is 
@@ -96,48 +95,34 @@ jobs:
           context: .
           tags: ${{ steps.step1.outputs.docker_tags }}
 
-  update_changelog:
-    runs-on: ubuntu-latest
-    needs: check_if_version_upgraded
-    if: needs.check_if_version_upgraded.outputs.is_upgraded_version == 'true'
-    steps:
-    - uses: garronej/ts-ci@v1.1.4
-      with:
-        action_name: update_changelog
-        branch: ${{ github.head_ref || github.ref }}
-
   create_github_release:
     runs-on: ubuntu-latest
+    # We create a release only if the version have been upgraded and we are on a default branch
+    # PR on the default branch can release beta but not real release
+    if: |
+      needs.check_if_version_upgraded.outputs.is_upgraded_version == 'true' &&
+      (
+        github.event_name == 'push' ||
+        needs.check_if_version_upgraded.outputs.is_release_beta == 'true'
+      )
     needs: 
-      - update_changelog
       - check_if_version_upgraded
     steps:
-    - name: Build GitHub release body
-      id: step1
-      run: |
-        if [ "$FROM_VERSION" = "0.0.0" ]; then
-            echo "::set-output name=body::🚀"
-        else
-            echo "::set-output name=body::📋 [CHANGELOG](https://github.com/$GITHUB_REPOSITORY/blob/v$TO_VERSION/CHANGELOG.md)"
-        fi
-      env: 
-        FROM_VERSION: ${{ needs.check_if_version_upgraded.outputs.from_version }}
-        TO_VERSION: ${{ needs.check_if_version_upgraded.outputs.to_version }}
-    - uses: garronej/action-gh-release@v0.2.0
+    - uses: softprops/action-gh-release@v1
       with:
         name: Release v${{ needs.check_if_version_upgraded.outputs.to_version }}
         tag_name: v${{ needs.check_if_version_upgraded.outputs.to_version }}
         target_commitish: ${{ github.head_ref || github.ref }}
-        body: ${{ steps.step1.outputs.body }}
+        generate_release_notes: true
         draft: false
         prerelease: ${{ needs.check_if_version_upgraded.outputs.is_release_beta == 'true' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
 
+
   publish_on_npm:
     runs-on: ubuntu-latest
     needs: 
-      - update_changelog
       - check_if_version_upgraded
     steps:
     - uses: actions/checkout@v2.3.4
