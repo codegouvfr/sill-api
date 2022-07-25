@@ -123,6 +123,7 @@ jobs:
   publish_on_npm:
     runs-on: ubuntu-latest
     needs: 
+      - create_github_release
       - check_if_version_upgraded
     steps:
     - uses: actions/checkout@v2.3.4
