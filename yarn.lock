@@ -1303,16 +1303,7 @@ event-emitter@^0.3.5:
     d "1"
     es5-ext "~0.10.14"
 
-evt@2.0.0-beta.45:
-  version "2.0.0-beta.45"
-  resolved "https://registry.yarnpkg.com/evt/-/evt-2.0.0-beta.45.tgz#8b1a81e1376f6eba254f4ec9865531b2ed118a3e"
-  integrity sha512-Me2/YMCjxLgz4y0aWKIxykyJth2LHKqxc91XnsIN39IRksknObBR9Pjmxwpnhmd1lNCR6mPFv/vBt46iQWtI9g==
-  dependencies:
-    minimal-polyfills "^2.2.1"
-    run-exclusive "^2.2.14"
-    tsafe "^0.4.1"
-
-evt@^2.2.1, evt@^2.2.2:
+evt@^2.2.0, evt@^2.2.1, evt@^2.2.2:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/evt/-/evt-2.2.2.tgz#36dbc7ada08ae4c73798b072470a681f3695ec50"
   integrity sha512-QBt/OEGIChEBHKaWJrQ2f7CtiWkeXbYOzeGEJbGq3ilnJI5AotgIc2jCsMqb2X6B0IqJdN6GD4ZFscfVUSh7ww==
@@ -1905,19 +1896,19 @@ keycloak-backend@^2.0.1:
     axios "^0.21.0"
     jsonwebtoken "^8.5.1"
 
-keycloakify@5.7.0:
-  version "5.7.0"
-  resolved "https://registry.yarnpkg.com/keycloakify/-/keycloakify-5.7.0.tgz#542838a97ef852b4a0340998c1e81d0c8b626e8e"
-  integrity sha512-OE7TAg/MKqhzFYPnxIP1Bbn3u2ox50ofNifEdC9Xq/YGWIbzijU1PG3wIzf0xhTl5J7njFhYCzlsJ9f06+qwzw==
+keycloakify@5.7.3:
+  version "5.7.3"
+  resolved "https://registry.yarnpkg.com/keycloakify/-/keycloakify-5.7.3.tgz#3d54054ecc2a4ff15de0146eae10878650092d30"
+  integrity sha512-34Q1mW6J39XQQtbiFLUf+VEAvF81Bu1iRXe0J2zftlKzzJvKC2E6C7F4fZDo552x/O7CD+MKE1glvcsjvMJ+BA==
   dependencies:
     "@octokit/rest" "^18.12.0"
     cheerio "^1.0.0-rc.5"
     cli-select "^1.1.2"
-    evt "2.0.0-beta.45"
+    evt "^2.2.0"
     memoizee "^0.4.15"
     minimal-polyfills "^2.2.1"
     path-browserify "^1.0.1"
-    powerhooks "^0.20.3"
+    powerhooks "^0.20.4"
     react-markdown "^5.0.3"
     scripting-tools "^0.19.13"
     tsafe "^0.10.0"
@@ -2158,7 +2149,7 @@ mimic-fn@^2.1.0:
   resolved "https://registry.yarnpkg.com/mimic-fn/-/mimic-fn-2.1.0.tgz#7ed2c2ccccaf84d3ffcb7a69b57711fc2083401b"
   integrity sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==
 
-minimal-polyfills@^2.1.5, minimal-polyfills@^2.2.1:
+minimal-polyfills@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/minimal-polyfills/-/minimal-polyfills-2.2.1.tgz#7249d7ece666d3b4e1ec1c1b8f949eb9d44e2308"
   integrity sha512-WLmHQrsZob4rVYf8yHapZPNJZ3sspGa/sN8abuSD59b0FifDEE7HMfLUi24z7mPZqTpBXy4Svp+iGvAmclCmXg==
@@ -2405,7 +2396,7 @@ please-upgrade-node@^3.2.0:
   dependencies:
     semver-compare "^1.0.0"
 
-powerhooks@^0.20.3, powerhooks@^0.20.7:
+powerhooks@^0.20.4, powerhooks@^0.20.7:
   version "0.20.7"
   resolved "https://registry.yarnpkg.com/powerhooks/-/powerhooks-0.20.7.tgz#02e8816f93f00f692fc7d23b11ef4ca43b6709d9"
   integrity sha512-m179An2lh90CNwvMMtGLHmmMrvG/c5kJVK1hNrCC0VjkrY6YAPDSazqKlLwZfb3nKhF+E88Uo20D4UhBgUFViQ==
@@ -2561,13 +2552,6 @@ rimraf@^3.0.2:
   integrity sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==
   dependencies:
     glob "^7.1.3"
-
-run-exclusive@^2.2.14:
-  version "2.2.14"
-  resolved "https://registry.yarnpkg.com/run-exclusive/-/run-exclusive-2.2.14.tgz#4f41dc7843e091f10991f8708fce87b09022a0ce"
-  integrity sha512-NHaQfB3zPJFx7p4M06AcmoK8xz/h8YDMCdy3jxfyoC9VqIbl1U+DiVjUuAYZBRMwvj5qkQnOUGfsmyUC4k46dg==
-  dependencies:
-    minimal-polyfills "^2.1.5"
 
 run-exclusive@^2.2.15:
   version "2.2.15"
@@ -2846,11 +2830,6 @@ tsafe@^0.10.0:
   version "0.10.0"
   resolved "https://registry.yarnpkg.com/tsafe/-/tsafe-0.10.0.tgz#c4fba365a49467ea6167e8c9482ddb94ee51b795"
   integrity sha512-CFfa1uJKfU0DDRbuB8bf2mfXjkOqiTsrltexzMMLxq5gjd1LttFECNGsO8dYUALJDbShb6+f3CwAppW/wf9BrA==
-
-tsafe@^0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/tsafe/-/tsafe-0.4.1.tgz#00af1be2db82abb4be531209b90232d7954e1a03"
-  integrity sha512-+OZ0gdgmwcru+MOSheCx+ymAvQz+1/ui+KFJRuaq0t2m8RNrlf7eSzEieptoPQXPY67Mdkqgkdjknn8azoD5sw==
 
 tslib@^1.8.1:
   version "1.14.1"
