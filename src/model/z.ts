@@ -2,6 +2,7 @@ import { z } from "zod";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import type { SoftwareRow, SoftwareRef } from "./types";
+import type { Language, LocalizedString } from "./types";
 
 export const zSoftwareRef = z.union([
     z.object({
@@ -65,6 +66,27 @@ export const zSoftwareRow = z.object({
 {
     type Got = ReturnType<typeof zSoftwareRow["parse"]>;
     type Expected = SoftwareRow;
+
+    assert<Equals<Got, Expected>>();
+}
+
+const zLanguage = z.union([z.literal("en"), z.literal("fr")]);
+
+{
+    type Got = ReturnType<typeof zLanguage["parse"]>;
+    type Expected = Language;
+
+    assert<Equals<Got, Expected>>();
+}
+
+export const zLocalizedString = z.union([
+    z.string(),
+    z.record(zLanguage, z.string()),
+]);
+
+{
+    type Got = ReturnType<typeof zLocalizedString["parse"]>;
+    type Expected = LocalizedString;
 
     assert<Equals<Got, Expected>>();
 }

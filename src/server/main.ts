@@ -358,10 +358,16 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 };
 export type TrpcRouter = ReturnType<typeof createRouter>["router"];
 
-const isDevelopment = process.env["ENVIRONNEMENT"] === "development";
-
 (async function main() {
     const evtDataUpdated = Evt.create();
+
+    const dataApi = await createGitHubDataApi({
+        "dataRepoSshUrl": configuration.dataRepoSshUrl,
+        "sshPrivateKey": configuration.sshPrivateKeyForGit,
+        evtDataUpdated,
+    });
+
+    const exposedSubpath = "api";
 
     express()
         .use(cors())
@@ -374,12 +380,22 @@ const isDevelopment = process.env["ENVIRONNEMENT"] === "development";
         )
         .use("/public/healthcheck", (...[, res]) => res.sendStatus(200))
         .post(
-            "/api/ondataupdated",
+            `/${exposedSubpath}/ondataupdated`,
             (() => {
+                const { githubWebhookSecret } = configuration;
+
+                if (githubWebhookSecret === undefined) {
+                    setInterval(() => {
+                        console.log("Checking if data refreshed");
+                        evtDataUpdated.post();
+                    }, 3600 * 1000);
+
+                    return async (...[, res]) => res.sendStatus(410);
+                }
+
                 const { validateGitHubWebhookSignature } =
                     createValidateGitHubWebhookSignature({
-                        "githubWebhookSecret":
-                            configuration.githubWebhookSecret,
+                        githubWebhookSecret,
                     });
 
                 return async (req, res) => {
@@ -387,12 +403,6 @@ const isDevelopment = process.env["ENVIRONNEMENT"] === "development";
                     const reqBody = await validateGitHubWebhookSignature(
                         req,
                         res,
-                    );
-
-                    assert(
-                        configuration.dataRepoUrl.replace(/\/$/, "") ===
-                            reqBody.repository.url,
-                        "Webhook doesn't come from the right repo",
                     );
 
                     if (reqBody.ref !== `refs/heads/${buildBranch}`) {
@@ -411,18 +421,27 @@ const isDevelopment = process.env["ENVIRONNEMENT"] === "development";
                 };
             })(),
         )
+        .get(
+            `/${exposedSubpath}/sill.json`,
+            (() => {
+                const evtBuff =
+                    dataApi.derivedStates.evtCompiledDataWithoutReferents.pipe(
+                        data => [
+                            Buffer.from(JSON.stringify(data, null, 2), "utf8"),
+                        ],
+                    );
+
+                return (...[, res]) =>
+                    res
+                        .setHeader("Content-Type", "application/json")
+                        .send(evtBuff.state);
+            })(),
+        )
         .use(
-            "/api",
+            `/${exposedSubpath}`,
             await (async () => {
                 const { router } = createRouter({
-                    "dataApi": await createGitHubDataApi({
-                        "dataRepoUrl": configuration.dataRepoUrl,
-                        "githubPersonalAccessToken":
-                            configuration.githubPersonalAccessToken,
-                        evtDataUpdated,
-                        "doPeriodicallyTriggerComputationOfCompiledData":
-                            !isDevelopment,
-                    }),
+                    dataApi,
                     "userApi": (() => {
                         const { keycloakParams } = configuration;
 
