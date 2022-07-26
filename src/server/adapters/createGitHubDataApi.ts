@@ -27,12 +27,15 @@ export const buildBranch = "build";
 
 export async function createGitHubDataApi(params: {
     dataRepoSshUrl: string;
+    sshPrivateKeyName: string;
     sshPrivateKey: string;
     evtDataUpdated: NonPostableEvt<void>;
 }): Promise<DataApi> {
-    const { dataRepoSshUrl, sshPrivateKey, evtDataUpdated } = params;
+    const { dataRepoSshUrl, sshPrivateKeyName, sshPrivateKey, evtDataUpdated } =
+        params;
 
     const { fetchState } = createFetchState({
+        sshPrivateKeyName,
         dataRepoSshUrl,
         sshPrivateKey,
     });
@@ -49,6 +52,7 @@ export async function createGitHubDataApi(params: {
     );
 
     const { updateStateRemoteAndLocal } = createUpdateStateRemoteAndLocal({
+        sshPrivateKeyName,
         dataRepoSshUrl,
         sshPrivateKey,
         evtState,
@@ -420,15 +424,17 @@ const {
 
     function fetchCompiledData(params: {
         dataRepoSshUrl: string;
+        sshPrivateKeyName: string;
         sshPrivateKey: string;
     }): Promise<CompiledData<"with referents">> {
-        const { dataRepoSshUrl, sshPrivateKey } = params;
+        const { dataRepoSshUrl, sshPrivateKeyName, sshPrivateKey } = params;
 
         const dOut = new Deferred<CompiledData<"with referents">>();
 
         gitSsh({
             "sshUrl": dataRepoSshUrl,
             "shaish": buildBranch,
+            sshPrivateKeyName,
             sshPrivateKey,
             "action": async ({ repoPath }) => {
                 dOut.resolve(
@@ -453,9 +459,10 @@ const {
 
     function fetchDb(params: {
         dataRepoSshUrl: string;
+        sshPrivateKeyName: string;
         sshPrivateKey: string;
     }) {
-        const { dataRepoSshUrl, sshPrivateKey } = params;
+        const { dataRepoSshUrl, sshPrivateKeyName, sshPrivateKey } = params;
 
         const dOut = new Deferred<{
             softwareRows: SoftwareRow[];
@@ -466,6 +473,7 @@ const {
 
         gitSsh({
             "sshUrl": dataRepoSshUrl,
+            sshPrivateKeyName,
             sshPrivateKey,
             "action": async ({ repoPath }) => {
                 const [
@@ -504,10 +512,12 @@ const {
 
     function createUpdateStateRemoteAndLocal(params: {
         dataRepoSshUrl: string;
+        sshPrivateKeyName: string;
         sshPrivateKey: string;
         evtState: StatefulEvt<DataApi.State>;
     }) {
-        const { dataRepoSshUrl, sshPrivateKey, evtState } = params;
+        const { dataRepoSshUrl, sshPrivateKeyName, sshPrivateKey, evtState } =
+            params;
 
         async function updateStateRemoteAndLocal(params: {
             newDb: ReturnType<typeof fetchDb>;
@@ -532,6 +542,7 @@ const {
 
             await gitSsh({
                 "sshUrl": dataRepoSshUrl,
+                sshPrivateKeyName,
                 sshPrivateKey,
                 "action": async ({ repoPath }) => {
                     await Promise.all(
@@ -595,17 +606,20 @@ const {
 
     function createFetchState(params: {
         dataRepoSshUrl: string;
+        sshPrivateKeyName: string;
         sshPrivateKey: string;
     }) {
-        const { dataRepoSshUrl, sshPrivateKey } = params;
+        const { dataRepoSshUrl, sshPrivateKeyName, sshPrivateKey } = params;
 
         async function fetchState(): Promise<DataApi.State> {
             const [compiledData, db] = await Promise.all([
                 fetchCompiledData({
+                    sshPrivateKeyName,
                     dataRepoSshUrl,
                     sshPrivateKey,
                 }),
                 fetchDb({
+                    sshPrivateKeyName,
                     dataRepoSshUrl,
                     sshPrivateKey,
                 }),

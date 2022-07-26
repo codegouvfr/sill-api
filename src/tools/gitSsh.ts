@@ -1,5 +1,4 @@
 import { exec } from "./exec";
-import * as crypto from "crypto";
 import { join as pathJoin } from "path";
 import * as fs from "fs";
 import * as runExclusive from "run-exclusive";
@@ -8,6 +7,7 @@ export const gitSsh = runExclusive.build(
     async (params: {
         workingDirectoryPath?: string;
         sshUrl: string; // e.g.: git@github.com:garronej/evt.git
+        sshPrivateKeyName: string;
         sshPrivateKey: string;
         shaish?: string;
         commitAuthorEmail?: string;
@@ -21,13 +21,14 @@ export const gitSsh = runExclusive.build(
         const {
             workingDirectoryPath = process.cwd(),
             sshUrl,
+            sshPrivateKeyName,
             sshPrivateKey,
             shaish,
             commitAuthorEmail = "actions@github.com",
             action,
         } = params;
 
-        await configureOpenSshClient({ sshPrivateKey });
+        await configureOpenSshClient({ sshPrivateKeyName, sshPrivateKey });
 
         const repoDirBasename = `gitSsh_${Date.now()}`;
 
@@ -103,50 +104,34 @@ export class ErrorNoBranch extends Error {
     }
 }
 
-function getShortHash(str: string) {
-    return crypto
-        .createHash("shake256", { "outputLength": 8 })
-        .update(str)
-        .digest("hex");
-}
-
 export async function configureOpenSshClient(params: {
+    sshPrivateKeyName: string;
     sshPrivateKey: string;
 }) {
-    const { sshPrivateKey } = params;
+    const { sshPrivateKey, sshPrivateKeyName } = params;
 
-    const sshConfigDirPath = (await exec(`cd ~/.ssh && pwd`)).replace(
-        /\r?\n$/,
-        "",
+    const sshConfigDirPath = (
+        await exec(`cd ~ && mkdir -p .ssh && cd .ssh && pwd`)
+    ).replace(/\r?\n$/, "");
+
+    await fs.promises.writeFile(
+        pathJoin(sshConfigDirPath, sshPrivateKeyName),
+        Buffer.from(sshPrivateKey, "utf8"),
+        { "mode": 0o600 },
     );
 
     const sshConfigFilePath = pathJoin(sshConfigDirPath, "config");
 
     const doesSshConfigFileExists = !!(await fs.promises
-        .stat(sshConfigDirPath)
+        .stat(sshConfigFilePath)
         .catch(() => null));
 
-    const sshConfigFileTargetContent = "StrictHostKeyChecking=no";
-
-    const sshConfigFileActualContent = (
-        await fs.promises.readFile(sshConfigFilePath)
-    ).toString("utf8");
-
-    if (
-        doesSshConfigFileExists &&
-        sshConfigFileActualContent !== sshConfigFileTargetContent
-    ) {
+    if (doesSshConfigFileExists) {
         return;
     }
 
     await fs.promises.writeFile(
-        sshConfigDirPath,
-        Buffer.from(sshConfigFileTargetContent, "utf8"),
-        { "mode": 0o600 },
-    );
-
-    await fs.promises.writeFile(
-        getShortHash(sshPrivateKey),
-        Buffer.from(sshPrivateKey, "utf8"),
+        sshConfigFilePath,
+        Buffer.from("StrictHostKeyChecking=no\n", "utf8"),
     );
 }

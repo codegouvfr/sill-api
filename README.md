@@ -15,6 +15,8 @@
     -   [Model](#model)
         -   [Publishing a new version of the types definitions](#publishing-a-new-version-of-the-types-definitions)
     -   [Server](#server)
+        -   [Trigger scrapping](#trigger-scrapping)
+        -   [Reset `etalab/sill-data-test` as `etalab/sill-data`](#reset-etalabsill-data-test-as-etalabsill-data)
 -   [Licences](#licences)
 
 # Dev
@@ -50,9 +52,34 @@ This is a node program that constitute the backend of `sill-web`
 To see what to put in configuration look at `src/server/configuration.ts` and `.env.local.sh` for an example.
 
 ```bash
+# In your ~/.bash_profile
+# export KEYCLOAK_ETALAB_ADMIN_PASSWORD=xxx
+# export SSH_PRIVATE_KEY_FOR_GIT="-----BEGIN OPENSSH PRIVATE KEY-----\nxxx\nxxx\nxxx\n-----END OPENSSH PRIVATE KEY-----\n"
+
+CONFIGURATION=$(cat << EOF
+{
+  "keycloakParams": {
+    "url": "https://sill-auth.etalab.gouv.fr/auth",
+    "realm": "etalab",
+    "clientId": "sill",
+    "termsOfServices": "https://sill.etalab.gouv.fr/tos_fr.md",
+    "adminPassword": "$KEYCLOAK_ETALAB_ADMIN_PASSWORD"
+  },
+    "jwtClaims": {
+    "id": "sub",
+    "email": "email",
+    "agencyName": "agency_name",
+    "locale": "locale"
+  },
+  "sshPrivateKeyForGitName": "id_ed25519",
+  "sshPrivateKeyForGit": "$SSH_PRIVATE_KEY_FOR_GIT",
+  "dataRepoSshUrl": "git@github.com:etalab/sill-data-test.git"
+}
+EOF
+)
+
 docker build -t etalab/sill-api:main .
-docker run -it -p 8080:8080 --env GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_PERSONAL_ACCESS_TOKEN --env CONFIGURATION='
-{ "keycloakParams": { "url": "https://etalab-auth.lab.sspcloud.fr/auth", "realm": "etalab", "clientId": "sill" }, "jwtClaims": { "email": "email", "familyName": "family_name", "firstName": "given_name", "username": "preferred_username", "groups": "groups", "locale": "locale" }, "dataRepoUrl": "https://github.com/etalab/sill-data", "buildBranch": "build", "githubPersonalAccessToken": { "envName": "GITHUB_PERSONAL_ACCESS_TOKEN" }, "port": 8080 }' etalab/sill-api:main
+docker run -it -p 8080:8080 --env CONFIGURATION="$CONFIGURATION" etalab/sill-api:main
 ```
 
 To test that the container is up:
@@ -70,6 +97,16 @@ cd sill-api
 yarn
 yarn build
 node dist/bin/trigger-ci-build-data.js
+```
+
+### Reset `etalab/sill-data-test` as `etalab/sill-data`
+
+```bash
+git clone https://github.com/etalab/sill-api
+cd sill-api
+yarn
+yarn build
+node dist/bin/reset-data-test.js
 ```
 
 # Licences

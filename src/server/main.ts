@@ -363,6 +363,7 @@ export type TrpcRouter = ReturnType<typeof createRouter>["router"];
 
     const dataApi = await createGitHubDataApi({
         "dataRepoSshUrl": configuration.dataRepoSshUrl,
+        "sshPrivateKeyName": configuration.sshPrivateKeyForGitName,
         "sshPrivateKey": configuration.sshPrivateKeyForGit,
         evtDataUpdated,
     });

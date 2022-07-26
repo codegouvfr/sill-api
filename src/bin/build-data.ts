@@ -18,12 +18,14 @@ import { gitSsh } from "../tools/gitSsh";
 
 async function main(params: {
     dataRepoSshUrl: string;
+    sshPrivateKeyName: string;
     sshPrivateKey: string;
     isIncremental: boolean;
 }): Promise<void> {
-    const { dataRepoSshUrl, sshPrivateKey, isIncremental } = params;
+    const { dataRepoSshUrl, sshPrivateKeyName, sshPrivateKey, isIncremental } =
+        params;
 
-    await configureOpenSshClient({ sshPrivateKey });
+    await configureOpenSshClient({ sshPrivateKeyName, sshPrivateKey });
 
     const { compiledData } = await (async () => {
         const {
@@ -33,12 +35,14 @@ async function main(params: {
             serviceRows,
         } = await fetchDb({
             "dataRepoSshUrl": dataRepoSshUrl,
+            sshPrivateKeyName,
             sshPrivateKey,
         });
 
         const currentCatalog = isIncremental
             ? await fetchCompiledData({
                   "dataRepoSshUrl": dataRepoSshUrl,
+                  sshPrivateKeyName,
                   sshPrivateKey,
               }).then(
                   ({ catalog }) => catalog,
@@ -73,6 +77,7 @@ async function main(params: {
 
     gitSsh({
         "sshUrl": dataRepoSshUrl,
+        sshPrivateKeyName,
         sshPrivateKey,
         "shaish": buildBranch,
         "action": ({ repoPath }) => {
@@ -106,6 +111,10 @@ if (require.main === module) {
 
     assert(dataRepoSshUrl !== undefined);
 
+    const sshPrivateKeyName = process.env["SSH_PRIVATE_KEY_NAME"];
+
+    assert(sshPrivateKeyName !== undefined);
+
     const sshPrivateKey = process.env["SSH_PRIVATE_KEY"];
 
     assert(sshPrivateKey !== undefined);
@@ -116,6 +125,7 @@ if (require.main === module) {
 
     main({
         dataRepoSshUrl,
+        sshPrivateKeyName,
         sshPrivateKey,
         "isIncremental": INCREMENTAL === "true",
     });

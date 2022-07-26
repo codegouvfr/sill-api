@@ -24,7 +24,9 @@ export type Configuration = {
         locale: string;
     };
     dataRepoSshUrl: string;
-    // Starts with -----BEGIN OPENSSH PRIVATE KEY----- ...
+    // Like id_ed25537
+    sshPrivateKeyForGitName: string;
+    // Like -----BEGIN OPENSSH PRIVATE KEY-----\nxxx ... xxx\n-----END OPENSSH PRIVATE KEY-----\n
     // You can a fake key in .env.local.sh for running yarn dev
     sshPrivateKeyForGit: string;
     githubWebhookSecret?: string;
@@ -52,6 +54,7 @@ const zConfiguration = z.object({
         "locale": z.string(),
     }),
     "dataRepoSshUrl": z.string(),
+    "sshPrivateKeyForGitName": z.string(),
     "sshPrivateKeyForGit": z.string(),
     "githubWebhookSecret": z.string().optional(),
     "githubPersonalAccessToken": z.string().optional(),

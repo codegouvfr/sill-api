@@ -9,5 +9,6 @@ jobs:
     - run: npx -y -p sill-api@latest build-data
       env:
         DATA_REPO_SSH_URL: ${{github.event.client_payload.dataRepoSshUrl}}
+        SSH_PRIVATE_KEY_NAME: ${{secrets.SSH_PRIVATE_KEY_NAME}}
         SSH_PRIVATE_KEY: ${{secrets.SSH_PRIVATE_KEY}}
         INCREMENTAL: ${{github.event.client_payload.incremental}}

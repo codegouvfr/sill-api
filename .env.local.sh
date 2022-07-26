@@ -16,8 +16,8 @@ export CONFIGURATION=$(cat << EOF
     "locale": "locale"
   },
   "dataRepoSshUrl": "git@github.com:etalab/sill-data-test.git",
-  // We assume the key is already pressent in the ssh config
-  "sshPrivateKeyForGit": "" 
+  "sshPrivateKeyForGitName": "id_ed25519",
+  "sshPrivateKeyForGit": "$SSH_PRIVATE_KEY_FOR_GIT" 
 }
 EOF
 ) 
