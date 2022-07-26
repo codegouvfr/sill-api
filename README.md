@@ -54,6 +54,7 @@ To see what to put in configuration look at `src/server/configuration.ts` and `.
 ```bash
 # In your ~/.bash_profile
 # export KEYCLOAK_ETALAB_ADMIN_PASSWORD=xxx
+# export SSH_PRIVATE_KEY_FOR_GIT_NAME="id_ed25519" (for example)
 # export SSH_PRIVATE_KEY_FOR_GIT="-----BEGIN OPENSSH PRIVATE KEY-----\nxxx\nxxx\nxxx\n-----END OPENSSH PRIVATE KEY-----\n"
 
 CONFIGURATION=$(cat << EOF
