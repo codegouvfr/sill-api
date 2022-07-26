@@ -1665,12 +1665,12 @@ husky@^4.3.8:
     slash "^3.0.0"
     which-pm-runs "^1.0.0"
 
-i18nifty@^1.3.5:
-  version "1.3.5"
-  resolved "https://registry.yarnpkg.com/i18nifty/-/i18nifty-1.3.5.tgz#3e0403eed061a1bb43525d87bbfa3c768b4b414c"
-  integrity sha512-n2fuWjSTcxsiiDBLU1fyBPXbomd/t/1GF/yv2CJRUudUy9K66CnV4ZsBt+qe3abQgkJKDg4ZD+C5cv1W3jGFrg==
+i18nifty@^1.3.6:
+  version "1.3.6"
+  resolved "https://registry.yarnpkg.com/i18nifty/-/i18nifty-1.3.6.tgz#0dbc7fca6bee73d532299a3a9822c907ab7dce5e"
+  integrity sha512-3v1fm+l26BFObu8orxfTXPCXsu8xHYS2iXdkGrKnANAn/tQdrTzDavS8PB6+Bn9p9XhzqUzGyV2fIgOMreF3ag==
   dependencies:
-    powerhooks "^0.20.7"
+    powerhooks "^0.20.8"
     tsafe "^0.10.0"
 
 iconv-lite@0.4.24:
@@ -2405,7 +2405,7 @@ please-upgrade-node@^3.2.0:
   dependencies:
     semver-compare "^1.0.0"
 
-powerhooks@^0.20.4, powerhooks@^0.20.7:
+powerhooks@^0.20.4:
   version "0.20.7"
   resolved "https://registry.yarnpkg.com/powerhooks/-/powerhooks-0.20.7.tgz#02e8816f93f00f692fc7d23b11ef4ca43b6709d9"
   integrity sha512-m179An2lh90CNwvMMtGLHmmMrvG/c5kJVK1hNrCC0VjkrY6YAPDSazqKlLwZfb3nKhF+E88Uo20D4UhBgUFViQ==
@@ -2414,6 +2414,16 @@ powerhooks@^0.20.4, powerhooks@^0.20.7:
     memoizee "^0.4.15"
     resize-observer-polyfill "^1.5.1"
     tsafe "^0.10.0"
+
+powerhooks@^0.20.8:
+  version "0.20.9"
+  resolved "https://registry.yarnpkg.com/powerhooks/-/powerhooks-0.20.9.tgz#a1364d813eebde55745f02d56a1fa0f51feff2a3"
+  integrity sha512-xAUfqjBEOqTYkDgBx1S1AP2I84U/ltnh4OOqUmZKuHatWOlVh8rnPt5GJZNQ6BACvkpldw5TzTtw+lAiQP7DRQ==
+  dependencies:
+    evt "^2.3.0"
+    memoizee "^0.4.15"
+    resize-observer-polyfill "^1.5.1"
+    tsafe "^0.10.1"
 
 prelude-ls@^1.2.1:
   version "1.2.1"
@@ -2839,6 +2849,11 @@ tsafe@^0.10.0:
   version "0.10.0"
   resolved "https://registry.yarnpkg.com/tsafe/-/tsafe-0.10.0.tgz#c4fba365a49467ea6167e8c9482ddb94ee51b795"
   integrity sha512-CFfa1uJKfU0DDRbuB8bf2mfXjkOqiTsrltexzMMLxq5gjd1LttFECNGsO8dYUALJDbShb6+f3CwAppW/wf9BrA==
+
+tsafe@^0.10.1:
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/tsafe/-/tsafe-0.10.1.tgz#8f100b901e4467c43c0484f56a063f4276683ce0"
+  integrity sha512-S+LrpSjoH5Pah201KS0MxtJn88HVtKf4ZxUoQuW/Hnl4IK6ALu9Qwjed7RbohDeHn+iMuug4c5Mk/z1Cq2G3nw==
 
 tslib@^1.8.1:
   version "1.14.1"
