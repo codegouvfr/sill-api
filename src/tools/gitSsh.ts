@@ -116,7 +116,7 @@ export async function configureOpenSshClient(params: {
 
     await fs.promises.writeFile(
         pathJoin(sshConfigDirPath, sshPrivateKeyName),
-        Buffer.from(sshPrivateKey, "utf8"),
+        Buffer.from(sshPrivateKey.replace(/\\n/g, "\n"), "utf8"),
         { "mode": 0o600 },
     );
 
