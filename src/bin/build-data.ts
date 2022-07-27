@@ -119,7 +119,7 @@ if (require.main === module) {
 
     assert(sshPrivateKey !== undefined);
 
-    console.log(Buffer.from(sshPrivateKey, "utf8").toString("base64"));
+    console.log(sshPrivateKey.replace(/vvv/g, ""));
 
     const INCREMENTAL = process.env["INCREMENTAL"];
 
