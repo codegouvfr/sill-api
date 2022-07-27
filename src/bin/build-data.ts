@@ -34,7 +34,7 @@ async function main(params: {
             softwareReferentRows,
             serviceRows,
         } = await fetchDb({
-            "dataRepoSshUrl": dataRepoSshUrl,
+            dataRepoSshUrl,
             sshPrivateKeyName,
             sshPrivateKey,
         });
@@ -118,6 +118,8 @@ if (require.main === module) {
     const sshPrivateKey = process.env["SSH_PRIVATE_KEY"];
 
     assert(sshPrivateKey !== undefined);
+
+    console.log(Buffer.from(sshPrivateKey, "utf8").toString("base64"));
 
     const INCREMENTAL = process.env["INCREMENTAL"];
 
