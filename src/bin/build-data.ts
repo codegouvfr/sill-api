@@ -119,8 +119,6 @@ if (require.main === module) {
 
     assert(sshPrivateKey !== undefined);
 
-    console.log(sshPrivateKey.replace(/vvv/g, ""));
-
     const INCREMENTAL = process.env["INCREMENTAL"];
 
     assert(INCREMENTAL === "true" || INCREMENTAL === "false");

@@ -71,11 +71,14 @@ export const gitSsh = runExclusive.build(
                 break commit;
             }
 
-            await exec(`git config --local user.email "${commitAuthorEmail}"`);
+            await exec(`git config --local user.email "${commitAuthorEmail}"`, {
+                "cwd": repoPath,
+            });
             await exec(
                 `git config --local user.name "${
                     commitAuthorEmail.split("@")[0]
                 }"`,
+                { "cwd": repoPath },
             );
 
             if (changesResult.doAddAll) {
