@@ -1849,10 +1849,10 @@ keycloak-backend@^2.0.1:
     axios "^0.21.0"
     jsonwebtoken "^8.5.1"
 
-keycloakify@5.7.3:
-  version "5.7.3"
-  resolved "https://registry.yarnpkg.com/keycloakify/-/keycloakify-5.7.3.tgz#3d54054ecc2a4ff15de0146eae10878650092d30"
-  integrity sha512-34Q1mW6J39XQQtbiFLUf+VEAvF81Bu1iRXe0J2zftlKzzJvKC2E6C7F4fZDo552x/O7CD+MKE1glvcsjvMJ+BA==
+keycloakify@5.8.0:
+  version "5.8.0"
+  resolved "https://registry.yarnpkg.com/keycloakify/-/keycloakify-5.8.0.tgz#986e47eeab76214883dc285533bf9a5fac1450ac"
+  integrity sha512-HE8D0CiIyDYEvzl5qBtTI3fZ/d5HPdPs3z0x6jwI4FARfsUUvVJXSt2jwyEAZtCLWmU19kxBe04STzpgsUWqpA==
   dependencies:
     "@octokit/rest" "^18.12.0"
     cheerio "^1.0.0-rc.5"
