@@ -30,6 +30,9 @@ import { id } from "tsafe/id";
 import { createObjectThatThrowsIfAccessed } from "../tools/createObjectThatThrowsIfAccessed";
 import compression from "compression";
 import { zPartialSoftwareRow } from "./ports/DataApi";
+import * as fs from "fs";
+import { join as pathJoin } from "path";
+import { getProjectRoot } from "../tools/getProjectRoot";
 
 const { resolveLocalizedString } = createResolveLocalizedString({
     "currentLanguage": id<Language>("en"),
@@ -74,6 +77,19 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
     const { dataApi, userApi } = params;
     const router = trpc
         .router<ReturnType<typeof createContext>>()
+        .query("getVersion", {
+            "resolve": (() => {
+                const version: string = JSON.parse(
+                    fs
+                        .readFileSync(
+                            pathJoin(getProjectRoot(), "package.json"),
+                        )
+                        .toString("utf8"),
+                )["version"];
+
+                return () => version;
+            })(),
+        })
         .query("getOidcParams", {
             "resolve": (() => {
                 const { keycloakParams, jwtClaims } = configuration;
