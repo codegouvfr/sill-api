@@ -30,9 +30,9 @@ import { id } from "tsafe/id";
 import { createObjectThatThrowsIfAccessed } from "../tools/createObjectThatThrowsIfAccessed";
 import compression from "compression";
 import { zPartialSoftwareRow } from "./ports/DataApi";
-//import * as fs from "fs";
-//import { join as pathJoin } from "path";
-//import { getProjectRoot } from "../tools/getProjectRoot";
+import * as fs from "fs";
+import { join as pathJoin } from "path";
+import { getProjectRoot } from "../tools/getProjectRoot";
 
 const { resolveLocalizedString } = createResolveLocalizedString({
     "currentLanguage": id<Language>("en"),
@@ -79,7 +79,6 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
         .router<ReturnType<typeof createContext>>()
         .query("getVersion", {
             "resolve": (() => {
-                /*
                 const version: string = JSON.parse(
                     fs
                         .readFileSync(
@@ -87,9 +86,8 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
                         )
                         .toString("utf8"),
                 )["version"];
-                */
 
-                return () => "0.22.1";
+                return () => version;
             })(),
         })
         .query("getOidcParams", {

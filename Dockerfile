@@ -17,5 +17,7 @@ RUN apk add --no-cache \
   openssh-client \
   ca-certificates
 COPY --from=build /app/dist/index.js .    
+# For reading the version number
+COPY --from=build /app/package.json .
 RUN npm install -g forever@4.0.3
 ENTRYPOINT sh -c "forever index.js"
