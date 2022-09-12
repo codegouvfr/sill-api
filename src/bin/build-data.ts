@@ -85,7 +85,7 @@ async function main(params: {
                 [compiledDataJsonRelativeFilePath, compiledData],
                 [
                     `${compiledDataJsonRelativeFilePath.replace(
-                        ".json$",
+                        /\.json$/,
                         "",
                     )}_withoutReferents.json`,
                     compiledData_withoutReferents,

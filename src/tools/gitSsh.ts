@@ -66,8 +66,11 @@ export const gitSsh = runExclusive.build(
                 break commit;
             }
 
-            if ((await exec("git diff", { "cwd": repoPath })) === "") {
-                //NOTE: No changes
+            if (
+                (await exec("git status --porcelain", { "cwd": repoPath })) ===
+                ""
+            ) {
+                console.log("No change");
                 break commit;
             }
 
