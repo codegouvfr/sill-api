@@ -21,16 +21,6 @@
 
 # Dev
 
-> This repo contains a private submodules that should be
-> checked out after cloning the repo.
-
-## Checking out the code
-
-```bash
-git clone https://github.com/etalab/sill-api
-cd sill-api
-git submodule update --init
-```
 
 ## Model
 
@@ -49,7 +39,22 @@ of the [`package.json`](/package.json) file.
 
 This is a node program that constitute the backend of `sill-web`
 
-To see what to put in configuration look at `src/server/configuration.ts` and `.env.local.sh` for an example.
+To see what to put in configuration look at `src/server/configuration.ts` and `.env.local.sh` for an example.  
+
+### Starting dev environnement
+
+> You probably want to refer to the etalab/sill-web documentation to start a complete 
+> developpement environement. 
+
+```bash
+git clone https://github.com/etalab/sill-api
+cd sill-api
+yarn
+yarn build
+yarn dev
+```
+
+### Starting with Docker
 
 ```bash
 # In your ~/.bash_profile
@@ -81,11 +86,9 @@ EOF
 
 docker build -t etalab/sill-api:main .
 docker run -it -p 8080:8080 --env CONFIGURATION="$CONFIGURATION" etalab/sill-api:main
-```
+```  
 
-To test that the container is up:
-
-http://localhost:80/api/getKeycloakParams
+To test that the container is up: http://localhost:80/api/getKeycloakParams
 
 ### Trigger scrapping
 
