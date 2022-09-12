@@ -21,7 +21,6 @@
 
 # Dev
 
-
 ## Model
 
 This repo publish a [`sill-data.json`](https://code.gouv.fr/data/sill-data.json) files that compiles data from [the data private submodule](/data)
@@ -39,12 +38,12 @@ of the [`package.json`](/package.json) file.
 
 This is a node program that constitute the backend of `sill-web`
 
-To see what to put in configuration look at `src/server/configuration.ts` and `.env.local.sh` for an example.  
+To see what to put in configuration look at `src/server/configuration.ts` and `.env.local.sh` for an example.
 
 ### Starting dev environnement
 
-> You probably want to refer to the etalab/sill-web documentation to start a complete 
-> developpement environement. 
+> You probably want to refer to the etalab/sill-web documentation to start a complete
+> developpement environement.
 
 ```bash
 git clone https://github.com/etalab/sill-api
@@ -69,7 +68,7 @@ CONFIGURATION=$(cat << EOF
     "realm": "etalab",
     "clientId": "sill",
     "termsOfServices": "https://sill.etalab.gouv.fr/tos_fr.md",
-    "adminPassword": "$KEYCLOAK_ETALAB_ADMIN_PASSWORD" 
+    "adminPassword": "$KEYCLOAK_ETALAB_ADMIN_PASSWORD"
   },
     "jwtClaims": {
     "id": "sub",
@@ -79,14 +78,14 @@ CONFIGURATION=$(cat << EOF
   },
   "dataRepoSshUrl": "git@github.com:etalab/sill-data-test.git",
   "sshPrivateKeyForGitName": "id_ed25519",
-  "sshPrivateKeyForGit": "$SSH_PRIVATE_KEY_FOR_GIT" 
+  "sshPrivateKeyForGit": "$SSH_PRIVATE_KEY_FOR_GIT"
 }
 EOF
 )
 
 docker build -t etalab/sill-api:main .
 docker run -it -p 8080:8080 --env CONFIGURATION="$CONFIGURATION" etalab/sill-api:main
-```  
+```
 
 To test that the container is up: http://localhost:80/api/getKeycloakParams
 
