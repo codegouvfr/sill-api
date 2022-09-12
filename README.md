@@ -64,7 +64,7 @@ CONFIGURATION=$(cat << EOF
     "realm": "etalab",
     "clientId": "sill",
     "termsOfServices": "https://sill.etalab.gouv.fr/tos_fr.md",
-    "adminPassword": "$KEYCLOAK_ETALAB_ADMIN_PASSWORD"
+    "adminPassword": "$KEYCLOAK_ETALAB_ADMIN_PASSWORD" 
   },
     "jwtClaims": {
     "id": "sub",
@@ -72,9 +72,9 @@ CONFIGURATION=$(cat << EOF
     "agencyName": "agency_name",
     "locale": "locale"
   },
+  "dataRepoSshUrl": "git@github.com:etalab/sill-data-test.git",
   "sshPrivateKeyForGitName": "id_ed25519",
-  "sshPrivateKeyForGit": "$SSH_PRIVATE_KEY_FOR_GIT",
-  "dataRepoSshUrl": "git@github.com:etalab/sill-data-test.git"
+  "sshPrivateKeyForGit": "$SSH_PRIVATE_KEY_FOR_GIT" 
 }
 EOF
 )
