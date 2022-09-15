@@ -12,7 +12,6 @@
     <a href="https://etalab-2.gitbook.io/sill/">Documentation</a>
 </p>
 
-
 # Licences
 
 DINUM and contributors of the repository, 2022.
