@@ -1276,6 +1276,15 @@ evt@^2.3.1:
     run-exclusive "^2.2.16"
     tsafe "^0.10.1"
 
+evt@^2.4.4:
+  version "2.4.4"
+  resolved "https://registry.yarnpkg.com/evt/-/evt-2.4.4.tgz#37d6e28ccb5b1bc91162fc3d5bcfbeb1ef3191cf"
+  integrity sha512-w/ZYdPCRdSfslOhcQHq7DuYoaU04YZKkFPyBwF8pYmOkRizivpbI0jZ8ffY/jITzbLo7RZ0wxN2dqyi62kyGwg==
+  dependencies:
+    minimal-polyfills "^2.2.2"
+    run-exclusive "^2.2.16"
+    tsafe "^1.1.1"
+
 execa@^5.1.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/execa/-/execa-5.1.1.tgz#f80ad9cbf4298f7bd1d4c9555c21e93741c411dd"
@@ -1849,23 +1858,25 @@ keycloak-backend@^2.0.1:
     axios "^0.21.0"
     jsonwebtoken "^8.5.1"
 
-keycloakify@5.9.0:
-  version "5.9.0"
-  resolved "https://registry.yarnpkg.com/keycloakify/-/keycloakify-5.9.0.tgz#a0778c99c8cdc2621bbfadaa76b03c3b08c5d46a"
-  integrity sha512-/l+rfWZO6qTjrx3PM8W4ld0LsxRGs3LNu4AYRgcVvQQwUnEmbccHToyFvmDjcW+u+F7f5XxfUeoJvfm1/bTF8Q==
+keycloakify@^6.4.2:
+  version "6.4.2"
+  resolved "https://registry.yarnpkg.com/keycloakify/-/keycloakify-6.4.2.tgz#92b909b5cced0dc6b7d6a11163fa35a782694b7a"
+  integrity sha512-Eq+Co4XbjSFOpVVNPRPAEC28Dogr08RQDIt4VMvg7MT+iFMOTKd0PqPynGFXWyneiTJkB2iq6g+CI08pHhSBKA==
   dependencies:
     "@octokit/rest" "^18.12.0"
     cheerio "^1.0.0-rc.5"
     cli-select "^1.1.2"
-    evt "^2.3.1"
+    evt "^2.4.4"
     memoizee "^0.4.15"
-    minimal-polyfills "^2.2.1"
+    minimal-polyfills "^2.2.2"
+    minimist "^1.2.6"
     path-browserify "^1.0.1"
-    powerhooks "^0.20.10"
+    powerhooks "^0.20.20"
     react-markdown "^5.0.3"
     scripting-tools "^0.19.13"
-    tsafe "^0.10.1"
-    tss-react "^3.7.1"
+    tsafe "^1.1.1"
+    tss-react "^4.2.0"
+    zod "^3.17.10"
 
 levn@^0.4.1:
   version "0.4.1"
@@ -2107,6 +2118,11 @@ minimal-polyfills@^2.2.1:
   resolved "https://registry.yarnpkg.com/minimal-polyfills/-/minimal-polyfills-2.2.1.tgz#7249d7ece666d3b4e1ec1c1b8f949eb9d44e2308"
   integrity sha512-WLmHQrsZob4rVYf8yHapZPNJZ3sspGa/sN8abuSD59b0FifDEE7HMfLUi24z7mPZqTpBXy4Svp+iGvAmclCmXg==
 
+minimal-polyfills@^2.2.2:
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/minimal-polyfills/-/minimal-polyfills-2.2.2.tgz#6b06a004acce420eb91cf94698f5e6e7f2518378"
+  integrity sha512-eEOUq/LH/DbLWihrxUP050Wi7H/N/I2dQT98Ep6SqOpmIbk4sXOI4wqalve66QoZa+6oljbZWU6I6T4dehQGmw==
+
 minimatch@^3.0.4, minimatch@^3.1.1:
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.1.2.tgz#19cd194bfd3e428f049a70817c038d89ab4be35b"
@@ -2120,6 +2136,11 @@ minimatch@^5.0.1:
   integrity sha512-9TPBGGak4nHfGZsPBohm9AWg6NoT7QTCehS3BIJABslyZbzxfV78QM2Y6+i741OPZIafFAaiiEMh5OyIrJPgtg==
   dependencies:
     brace-expansion "^2.0.1"
+
+minimist@^1.2.6:
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.6.tgz#8637a5b759ea0d6e98702cfb3a9283323c93af44"
+  integrity sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==
 
 ms@2.0.0:
   version "2.0.0"
@@ -2358,6 +2379,16 @@ powerhooks@^0.20.10:
     memoizee "^0.4.15"
     resize-observer-polyfill "^1.5.1"
     tsafe "^0.10.1"
+
+powerhooks@^0.20.20:
+  version "0.20.20"
+  resolved "https://registry.yarnpkg.com/powerhooks/-/powerhooks-0.20.20.tgz#f9b2549710f5166f63d80e07c46c16d6da4c6f78"
+  integrity sha512-98Ymz0bjo5Ds9u273wYz1tdJ51sB1jcyjqGa08mRY5dKumewydA/+71zrFelfgkOLRRhVZ+mWynG6DZ7zOVjrQ==
+  dependencies:
+    evt "^2.4.4"
+    memoizee "^0.4.15"
+    resize-observer-polyfill "^1.5.1"
+    tsafe "^1.1.1"
 
 prelude-ls@^1.2.1:
   version "1.2.1"
@@ -2779,6 +2810,11 @@ tsafe@^0.10.1:
   resolved "https://registry.yarnpkg.com/tsafe/-/tsafe-0.10.1.tgz#8f100b901e4467c43c0484f56a063f4276683ce0"
   integrity sha512-S+LrpSjoH5Pah201KS0MxtJn88HVtKf4ZxUoQuW/Hnl4IK6ALu9Qwjed7RbohDeHn+iMuug4c5Mk/z1Cq2G3nw==
 
+tsafe@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/tsafe/-/tsafe-1.1.1.tgz#8d6998c726f8c63c518e1d1e283bbcd282a2b9a9"
+  integrity sha512-Ogblm3uh0dVupcCcC4IT641rnSQ7CW9IO0q8yIncG8OBe4DDXEqGtUE8LWf7+0MK1qZGeWPWEqSxlLzY2xzREA==
+
 tslib@^1.8.1:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
@@ -2789,10 +2825,10 @@ tslib@^2.1.0:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.4.0.tgz#7cecaa7f073ce680a05847aa77be941098f36dc3"
   integrity sha512-d6xOpEDfsi2CZVlPQzGeux8XMwLT9hssAsaPYExaQMuYskwb+x1x7J371tWlbBdWHroy99KnVB6qIkUbs5X3UQ==
 
-tss-react@^3.7.1:
-  version "3.7.1"
-  resolved "https://registry.yarnpkg.com/tss-react/-/tss-react-3.7.1.tgz#119647731490f9e7e62c7f6a38a78df981929a4b"
-  integrity sha512-dfWUoxBlKZfIG9UC1A2h02OmcE/Ni0itCmmZu94E9g+KyBhKMHKcsKvUm0bNlRqTmYjXiCgPJDmj5fyc8CSrLg==
+tss-react@^4.2.0:
+  version "4.3.3"
+  resolved "https://registry.yarnpkg.com/tss-react/-/tss-react-4.3.3.tgz#fca93e91b93a2e52c40dc904c7067a2b1905a160"
+  integrity sha512-gXCocAaCDkLpMy0yYdr6AB9/FAetkiRsFnkoDYhjngMBni6ELyZStUwOmZ/LFdBGzKRFlrtext63J+UaaavgZg==
   dependencies:
     "@emotion/cache" "*"
     "@emotion/serialize" "*"
@@ -3018,6 +3054,11 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
+
+zod@^3.17.10:
+  version "3.19.1"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.19.1.tgz#112f074a97b50bfc4772d4ad1576814bd8ac4473"
+  integrity sha512-LYjZsEDhCdYET9ikFu6dVPGp2YH9DegXjdJToSzD9rO6fy4qiRYFoyEYwps88OseJlPyl2NOe2iJuhEhL7IpEA==
 
 zod@^3.17.3:
   version "3.17.10"
