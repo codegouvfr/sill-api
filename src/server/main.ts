@@ -33,6 +33,7 @@ import { zPartialSoftwareRow } from "./ports/DataApi";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { getProjectRoot } from "../tools/getProjectRoot";
+import fetch from "node-fetch";
 
 const { resolveLocalizedString } = createResolveLocalizedString({
     "currentLanguage": id<Language>("en"),
@@ -367,6 +368,18 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
                     latestSemVersionedTag,
                     comptoirDuLibreId,
                 };
+            },
+        })
+        .query("downloadCorsProtectedTextFile", {
+            "input": z.object({
+                "url": z.string(),
+            }),
+            "resolve": async ({ input }) => {
+                const { url } = input;
+
+                const textContent = await fetch(url).then(res => res.text());
+
+                return textContent;
             },
         });
 
