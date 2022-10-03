@@ -89,7 +89,8 @@ type PartialSoftwareRowKey =
     | "versionMin"
     | "agentWorkstation"
     | "tags"
-    | "alikeSoftwares";
+    | "alikeSoftwares"
+    | "generalInfoMd";
 
 assert<PartialSoftwareRowKey extends keyof SoftwareRow ? true : false>();
 
@@ -106,6 +107,7 @@ export const zPartialSoftwareRow = zSoftwareRow.pick({
     "agentWorkstation": true,
     "tags": true,
     "alikeSoftwares": true,
+    "generalInfoMd": true,
 });
 
 {

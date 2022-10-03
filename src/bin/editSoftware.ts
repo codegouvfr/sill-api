@@ -65,6 +65,7 @@ fs.writeFileSync(
                         useCaseUrls,
                         agentWorkstation,
                         tags,
+                        generalInfoMd,
                         ...rest
                     } = softwareRow;
 
@@ -103,6 +104,7 @@ fs.writeFileSync(
                         useCaseUrls,
                         agentWorkstation,
                         tags,
+                        generalInfoMd,
                     };
                 },
             ),

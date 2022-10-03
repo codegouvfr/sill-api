@@ -61,6 +61,7 @@ export const zSoftwareRow = z.object({
     "useCaseUrls": z.array(z.string()),
     "agentWorkstation": z.boolean(),
     "tags": z.array(z.string()).optional(),
+    "generalInfoMd": z.string().optional(),
 });
 
 {
