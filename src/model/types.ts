@@ -174,7 +174,7 @@ export type CompiledData<
     T extends "with referents" | "without referents" = "without referents",
 > = {
     catalog: CompiledData.Software<T>[];
-    services: ServiceRow[];
+    services: CompiledData.Service[];
 };
 
 export namespace CompiledData {
@@ -205,6 +205,8 @@ export namespace CompiledData {
             })[];
         };
     }
+
+    export type Service = ServiceRow;
 }
 
 export function removeReferent(
