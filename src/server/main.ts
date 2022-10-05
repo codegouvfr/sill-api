@@ -381,6 +381,22 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 
                 return textContent;
             },
+        })
+        .mutation("dereferenceService", {
+            "input": z.object({
+                "serviceId": z.number(),
+            }),
+            "resolve": async ({ ctx, input }) => {
+                if (ctx === null) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+
+                const { serviceId } = input;
+
+                await dataApi.mutators.dereferenceService({
+                    serviceId,
+                });
+            },
         });
 
     return { router };

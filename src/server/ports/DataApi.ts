@@ -64,6 +64,7 @@ export type DataApi = {
                 lastRecommendedVersion?: string;
             };
         }) => Promise<void>;
+        dereferenceService: (params: { serviceId: number }) => Promise<void>;
     };
 };
 

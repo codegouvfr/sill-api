@@ -405,6 +405,27 @@ export async function createGitHubDataApi(params: {
                     });
                 },
             ),
+            "dereferenceService": runExclusive.build(
+                groupRef,
+                async ({ serviceId }) => {
+                    const newDb = structuredClone(evtState.state.db);
+
+                    const { serviceRows } = newDb;
+
+                    const index = serviceRows.findIndex(
+                        softwareRow => softwareRow.id === serviceId,
+                    );
+
+                    assert(index !== -1, "The service does not exist");
+
+                    serviceRows.splice(index, 1);
+
+                    await updateStateRemoteAndLocal({
+                        newDb,
+                        "commitMessage": `Dereference service ${serviceRows[index].serviceUrl}`,
+                    });
+                },
+            ),
         },
     };
 }
