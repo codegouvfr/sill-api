@@ -382,7 +382,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
                 return textContent;
             },
         })
-        .mutation("dereferenceService", {
+        .mutation("deleteService", {
             "input": z.object({
                 "serviceId": z.number(),
             }),
@@ -393,7 +393,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 
                 const { serviceId } = input;
 
-                await dataApi.mutators.dereferenceService({
+                await dataApi.mutators.deleteService({
                     serviceId,
                 });
             },

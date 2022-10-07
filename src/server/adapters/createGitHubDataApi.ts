@@ -405,7 +405,7 @@ export async function createGitHubDataApi(params: {
                     });
                 },
             ),
-            "dereferenceService": runExclusive.build(
+            "deleteService": runExclusive.build(
                 groupRef,
                 async ({ serviceId }) => {
                     const newDb = structuredClone(evtState.state.db);
