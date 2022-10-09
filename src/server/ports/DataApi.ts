@@ -64,7 +64,10 @@ export type DataApi = {
                 lastRecommendedVersion?: string;
             };
         }) => Promise<void>;
-        deleteService: (params: { serviceId: number }) => Promise<void>;
+        deleteService: (params: {
+            serviceId: number;
+            reason: string;
+        }) => Promise<void>;
     };
 };
 

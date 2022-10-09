@@ -385,16 +385,18 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
         .mutation("deleteService", {
             "input": z.object({
                 "serviceId": z.number(),
+                "reason": z.string(),
             }),
             "resolve": async ({ ctx, input }) => {
                 if (ctx === null) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const { serviceId } = input;
+                const { serviceId, reason } = input;
 
                 await dataApi.mutators.deleteService({
                     serviceId,
+                    reason,
                 });
             },
         });

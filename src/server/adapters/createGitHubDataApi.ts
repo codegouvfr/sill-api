@@ -407,7 +407,7 @@ export async function createGitHubDataApi(params: {
             ),
             "deleteService": runExclusive.build(
                 groupRef,
-                async ({ serviceId }) => {
+                async ({ serviceId, reason }) => {
                     const newDb = structuredClone(evtState.state.db);
 
                     const { serviceRows } = newDb;
@@ -422,7 +422,12 @@ export async function createGitHubDataApi(params: {
 
                     await updateStateRemoteAndLocal({
                         newDb,
-                        "commitMessage": `Dereference service ${serviceRows[index].serviceUrl}`,
+                        "commitMessage": `Delete service ${
+                            serviceRows[index].serviceUrl
+                                .replace(/^https?:\/\//, "")
+                                .replace(/^www\./, "")
+                                .split("/")[0]
+                        }, reason: ${reason}`,
                     });
                 },
             ),
