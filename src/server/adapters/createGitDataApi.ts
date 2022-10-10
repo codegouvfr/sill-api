@@ -2,10 +2,8 @@ import type { DataApi } from "../ports/DataApi";
 import { gitSsh } from "../../tools/gitSsh";
 import { Deferred } from "evt/tools/Deferred";
 import * as fs from "fs";
-
 import { assert } from "tsafe/assert";
 import { id } from "tsafe/id";
-
 import type {
     CompiledData,
     SoftwareRow,
@@ -23,6 +21,7 @@ import { buildServices } from "../../model/buildServices";
 import type { StatefulEvt } from "evt";
 import * as runExclusive from "run-exclusive";
 import { join as pathJoin } from "path";
+import type { Equals } from "tsafe";
 
 export const buildBranch = "build";
 
@@ -410,7 +409,7 @@ export async function createGitDataApi(params: {
             ),
             "deleteService": runExclusive.build(
                 groupRef,
-                async ({ serviceId, reason }) => {
+                async ({ serviceId, reason, email }) => {
                     const newDb = structuredClone(evtState.state.db);
 
                     const { serviceRows } = newDb;
@@ -425,13 +424,149 @@ export async function createGitDataApi(params: {
 
                     await updateStateRemoteAndLocal({
                         newDb,
-                        "commitMessage": `Delete service ${
-                            serviceRows[index].serviceUrl
-                                .replace(/^https?:\/\//, "")
-                                .replace(/^www\./, "")
-                                .split("/")[0]
-                        }, reason: ${reason}`,
+                        "commitMessage": `Service ${prettyPrintServiceUrl(
+                            serviceRows[index].serviceUrl,
+                        )} deleted by ${email}. Reason: ${reason}`,
                     });
+                },
+            ),
+
+            "addService": runExclusive.build(
+                groupRef,
+                async ({ serviceFormData, email }) => {
+                    const newDb = structuredClone(evtState.state.db);
+
+                    const { serviceRows } = newDb;
+
+                    const serviceId =
+                        newDb.softwareRows
+                            .map(({ id }) => id)
+                            .reduce((prev, curr) => Math.max(prev, curr), 0) +
+                        1;
+
+                    const {
+                        agencyName,
+                        serviceUrl,
+                        description,
+                        deployedSoftware,
+                        ...rest
+                    } = serviceFormData;
+
+                    assert<Equals<keyof typeof rest, never>>();
+
+                    serviceRows.push({
+                        "id": serviceId,
+                        agencyName,
+                        "publicSector": "",
+                        "agencyUrl": "",
+                        "serviceName": "",
+                        serviceUrl,
+                        description,
+                        "publicationDate": "",
+                        "lastUpdateDate": "",
+                        "signupScope": "",
+                        "usageScope": "",
+                        "signupValidationMethod": "",
+                        "contentModerationMethod": "",
+                        ...(deployedSoftware.isInSill
+                            ? (() => {
+                                  const { isInSill, softwareSillId, ...rest } =
+                                      deployedSoftware;
+
+                                  assert<Equals<keyof typeof rest, never>>();
+
+                                  return {
+                                      softwareSillId,
+                                  };
+                              })()
+                            : (() => {
+                                  const { isInSill, softwareName, ...rest } =
+                                      deployedSoftware;
+
+                                  assert<Equals<keyof typeof rest, never>>();
+
+                                  return { softwareName };
+                              })()),
+                    });
+
+                    await updateStateRemoteAndLocal({
+                        newDb,
+                        "commitMessage": `Service ${prettyPrintServiceUrl(
+                            serviceFormData.serviceUrl,
+                        )} added by ${email}`,
+                    });
+
+                    const service = evtState.state.compiledData.services.find(
+                        service => service.id === serviceId,
+                    );
+
+                    assert(service !== undefined);
+
+                    return { service };
+                },
+            ),
+            "updateService": runExclusive.build(
+                groupRef,
+                async ({ serviceId, serviceFormData, email }) => {
+                    const newDb = structuredClone(evtState.state.db);
+
+                    const { serviceRows } = newDb;
+
+                    const index = serviceRows.findIndex(
+                        service => service.id === serviceId,
+                    );
+
+                    assert(index !== -1, "The service doesn't exist");
+
+                    const {
+                        agencyName,
+                        serviceUrl,
+                        description,
+                        deployedSoftware,
+                        ...rest
+                    } = serviceFormData;
+
+                    assert<Equals<keyof typeof rest, never>>();
+
+                    serviceRows[index] = {
+                        ...serviceRows[index],
+                        "id": serviceId,
+                        agencyName,
+                        serviceUrl,
+                        description,
+                        ...(deployedSoftware.isInSill
+                            ? (() => {
+                                  const { isInSill, softwareSillId, ...rest } =
+                                      deployedSoftware;
+
+                                  assert<Equals<keyof typeof rest, never>>();
+
+                                  return { softwareSillId };
+                              })()
+                            : (() => {
+                                  const { isInSill, softwareName, ...rest } =
+                                      deployedSoftware;
+
+                                  assert<Equals<keyof typeof rest, never>>();
+
+                                  return { softwareName };
+                              })()),
+                    };
+
+                    await updateStateRemoteAndLocal({
+                        newDb,
+                        "commitMessage": `Service ${prettyPrintServiceUrl(
+                            serviceRows[index].serviceUrl,
+                        )} updated by ${email}`,
+                    });
+
+                    const service = evtState.state.compiledData.services.find(
+                        service => service.id === serviceId,
+                    );
+
+                    assert(service !== undefined);
+
+                    return { service };
                 },
             ),
         },
@@ -670,5 +805,12 @@ const {
         createUpdateStateRemoteAndLocal,
     };
 })();
+
+function prettyPrintServiceUrl(serviceUrl: string): string {
+    return serviceUrl
+        .replace(/^https?:\/\//, "")
+        .replace(/^www\./, "")
+        .split("/")[0];
+}
 
 export { fetchCompiledData, fetchDb };

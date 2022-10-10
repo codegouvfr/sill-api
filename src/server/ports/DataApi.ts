@@ -7,8 +7,9 @@ import type {
 } from "../../model/types";
 import type { StatefulReadonlyEvt } from "evt";
 import { assert } from "tsafe/assert";
-import type { Equals } from "tsafe";
+import type { Equals, Extends } from "tsafe";
 import { zSoftwareRow } from "../../model/z";
+import { z } from "zod";
 
 export type DataApi = {
     evtState: StatefulReadonlyEvt<DataApi.State>;
@@ -67,7 +68,17 @@ export type DataApi = {
         deleteService: (params: {
             serviceId: number;
             reason: string;
+            email: string;
         }) => Promise<void>;
+        addService: (params: {
+            serviceFormData: ServiceFormData;
+            email: string;
+        }) => Promise<{ service: CompiledData.Service }>;
+        updateService: (params: {
+            serviceId: number;
+            serviceFormData: ServiceFormData;
+            email: string;
+        }) => Promise<{ service: CompiledData.Service }>;
     };
 };
 
@@ -96,7 +107,7 @@ type SoftwareRowKeyEditableByForm =
     | "alikeSoftwares"
     | "generalInfoMd";
 
-assert<SoftwareRowKeyEditableByForm extends keyof SoftwareRow ? true : false>();
+assert<Extends<SoftwareRowKeyEditableByForm, keyof SoftwareRow>>();
 
 type SoftwareRowEditableByForm = Pick<
     SoftwareRow,
@@ -120,6 +131,44 @@ export const zSoftwareRowEditableByForm = zSoftwareRow.pick({
 {
     type Got = ReturnType<typeof zSoftwareRowEditableByForm["parse"]>;
     type Expected = SoftwareRowEditableByForm;
+
+    assert<Equals<Got, Expected>>();
+}
+
+export type ServiceFormData = {
+    serviceUrl: string;
+    description: string;
+    agencyName: string;
+    deployedSoftware:
+        | {
+              isInSill: false;
+              softwareName: string;
+          }
+        | {
+              isInSill: true;
+              softwareSillId: number;
+          };
+};
+
+export const zServiceFormData = z.object({
+    "serviceUrl": z.string(),
+    "description": z.string(),
+    "agencyName": z.string(),
+    "deployedSoftware": z.union([
+        z.object({
+            "isInSill": z.literal(false),
+            "softwareName": z.string(),
+        }),
+        z.object({
+            "isInSill": z.literal(true),
+            "softwareSillId": z.number(),
+        }),
+    ]),
+});
+
+{
+    type Got = ReturnType<typeof zServiceFormData["parse"]>;
+    type Expected = ServiceFormData;
 
     assert<Equals<Got, Expected>>();
 }

@@ -26,7 +26,7 @@ import { createResolveLocalizedString } from "i18nifty/LocalizedString";
 import { id } from "tsafe/id";
 import { createObjectThatThrowsIfAccessed } from "../tools/createObjectThatThrowsIfAccessed";
 import compression from "compression";
-import { zSoftwareRowEditableByForm } from "./ports/DataApi";
+import { zSoftwareRowEditableByForm, zServiceFormData } from "./ports/DataApi";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { getProjectRoot } from "../tools/getProjectRoot";
@@ -389,12 +389,59 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
+                const { email } = ctx.parsedJwt;
+
                 const { serviceId, reason } = input;
 
                 await dataApi.mutators.deleteService({
                     serviceId,
                     reason,
+                    email,
                 });
+            },
+        })
+        .mutation("addService", {
+            "input": z.object({
+                "serviceFormData": zServiceFormData,
+            }),
+            "resolve": async ({ ctx, input }) => {
+                if (ctx === null) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+
+                const { email } = ctx.parsedJwt;
+
+                const { serviceFormData } = input;
+
+                const { service } = await dataApi.mutators.addService({
+                    serviceFormData,
+                    email,
+                });
+
+                return { service };
+            },
+        })
+        .mutation("updateService", {
+            "input": z.object({
+                "serviceId": z.number(),
+                "serviceFormData": zServiceFormData,
+            }),
+            "resolve": async ({ ctx, input }) => {
+                if (ctx === null) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+
+                const { email } = ctx.parsedJwt;
+
+                const { serviceFormData, serviceId } = input;
+
+                const { service } = await dataApi.mutators.updateService({
+                    serviceId,
+                    serviceFormData,
+                    email,
+                });
+
+                return { service };
             },
         });
 
