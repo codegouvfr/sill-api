@@ -14,10 +14,7 @@ import { zParsedJwtTokenPayload } from "./zParsedJwtTokenPayload";
 import { z } from "zod";
 import { Evt } from "evt";
 import type { DataApi } from "./ports/DataApi";
-import {
-    createGitHubDataApi,
-    buildBranch,
-} from "./adapters/createGitHubDataApi";
+import { createGitDataApi, buildBranch } from "./adapters/createGitDataApi";
 import type { UserApi } from "./ports/UserApi";
 import { createKeycloakUserApi } from "./adapters/createKeycloakUserApi";
 import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWebhookSignature";
@@ -408,7 +405,7 @@ export type TrpcRouter = ReturnType<typeof createRouter>["router"];
 (async function main() {
     const evtDataUpdated = Evt.create();
 
-    const dataApi = await createGitHubDataApi({
+    const dataApi = await createGitDataApi({
         "dataRepoSshUrl": configuration.dataRepoSshUrl,
         "sshPrivateKeyName": configuration.sshPrivateKeyForGitName,
         "sshPrivateKey": configuration.sshPrivateKeyForGit,

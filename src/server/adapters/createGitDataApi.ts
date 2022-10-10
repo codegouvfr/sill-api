@@ -26,7 +26,7 @@ import { join as pathJoin } from "path";
 
 export const buildBranch = "build";
 
-export async function createGitHubDataApi(params: {
+export async function createGitDataApi(params: {
     dataRepoSshUrl: string;
     sshPrivateKeyName: string;
     sshPrivateKey: string;

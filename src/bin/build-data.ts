@@ -12,7 +12,7 @@ import {
     fetchCompiledData,
     compiledDataJsonRelativeFilePath,
     buildBranch,
-} from "../server/adapters/createGitHubDataApi";
+} from "../server/adapters/createGitDataApi";
 import { ErrorNoBranch } from "../tools/gitSsh";
 import { configureOpenSshClient } from "../tools/gitSsh";
 import { gitSsh } from "../tools/gitSsh";
