@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { buildCatalog } from "../model/buildCatalog";
+import { buildServices } from "../model/buildServices";
 import { join as pathJoin } from "path";
 import type { CompiledData } from "../model/types";
 import { removeReferent } from "../model/types";
@@ -62,9 +63,13 @@ async function main(params: {
             "log": console.log,
         });
 
+        const { services } = await buildServices({
+            serviceRows,
+        });
+
         const compiledData: CompiledData<"with referents"> = {
             catalog,
-            "services": serviceRows,
+            services,
         };
 
         return { compiledData };

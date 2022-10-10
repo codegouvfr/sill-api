@@ -19,6 +19,7 @@ import type { NonPostableEvt } from "evt";
 import type { ReturnType } from "tsafe";
 import structuredClone from "@ungap/structured-clone";
 import { buildCatalog } from "../../model/buildCatalog";
+import { buildServices } from "../../model/buildServices";
 import type { StatefulEvt } from "evt";
 import * as runExclusive from "run-exclusive";
 import { join as pathJoin } from "path";
@@ -413,7 +414,7 @@ export async function createGitHubDataApi(params: {
                     const { serviceRows } = newDb;
 
                     const index = serviceRows.findIndex(
-                        softwareRow => softwareRow.id === serviceId,
+                        serviceRow => serviceRow.id === serviceId,
                     );
 
                     assert(index !== -1, "The service does not exist");
@@ -562,6 +563,9 @@ const {
                         "currentCatalog": evtState.state.compiledData.catalog,
                         ...newDb,
                     }).then(({ catalog }) => catalog),
+                    "services": await buildServices({
+                        "serviceRows": newDb.serviceRows,
+                    }).then(({ services }) => services),
                 },
                 "db": newDb,
             };
