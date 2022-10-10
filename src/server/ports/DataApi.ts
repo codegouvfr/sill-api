@@ -36,7 +36,7 @@ export type DataApi = {
             softwareId: number;
         }) => Promise<void>;
         addSoftware: (params: {
-            partialSoftwareRow: PartialSoftwareRow;
+            softwareRowEditableByForm: SoftwareRowEditableByForm;
             referentRow: ReferentRow;
             isExpert: boolean;
             useCaseDescription: string;
@@ -44,7 +44,7 @@ export type DataApi = {
         }) => Promise<{ software: CompiledData.Software<"with referents"> }>;
         updateSoftware: (params: {
             softwareId: number;
-            partialSoftwareRow: PartialSoftwareRow;
+            softwareRowEditableByForm: SoftwareRowEditableByForm;
             email: string;
         }) => Promise<{ software: CompiledData.Software<"with referents"> }>;
         changeUserAgencyName: (params: {
@@ -83,7 +83,7 @@ export namespace DataApi {
     };
 }
 
-type PartialSoftwareRowKey =
+type SoftwareRowKeyEditableByForm =
     | "name"
     | "function"
     | "isFromFrenchPublicService"
@@ -96,11 +96,14 @@ type PartialSoftwareRowKey =
     | "alikeSoftwares"
     | "generalInfoMd";
 
-assert<PartialSoftwareRowKey extends keyof SoftwareRow ? true : false>();
+assert<SoftwareRowKeyEditableByForm extends keyof SoftwareRow ? true : false>();
 
-type PartialSoftwareRow = Pick<SoftwareRow, PartialSoftwareRowKey>;
+type SoftwareRowEditableByForm = Pick<
+    SoftwareRow,
+    SoftwareRowKeyEditableByForm
+>;
 
-export const zPartialSoftwareRow = zSoftwareRow.pick({
+export const zSoftwareRowEditableByForm = zSoftwareRow.pick({
     "name": true,
     "function": true,
     "isFromFrenchPublicService": true,
@@ -115,8 +118,8 @@ export const zPartialSoftwareRow = zSoftwareRow.pick({
 });
 
 {
-    type Got = ReturnType<typeof zPartialSoftwareRow["parse"]>;
-    type Expected = PartialSoftwareRow;
+    type Got = ReturnType<typeof zSoftwareRowEditableByForm["parse"]>;
+    type Expected = SoftwareRowEditableByForm;
 
     assert<Equals<Got, Expected>>();
 }

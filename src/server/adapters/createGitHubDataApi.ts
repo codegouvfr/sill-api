@@ -215,7 +215,7 @@ export async function createGitHubDataApi(params: {
             "addSoftware": runExclusive.build(
                 groupRef,
                 async ({
-                    partialSoftwareRow,
+                    softwareRowEditableByForm,
                     referentRow,
                     isExpert,
                     useCaseDescription,
@@ -230,7 +230,9 @@ export async function createGitHubDataApi(params: {
                         softwareRows.find(s => {
                             const t = (name: string) =>
                                 name.toLowerCase().replace(/ /g, "-");
-                            return t(s.name) === t(partialSoftwareRow.name);
+                            return (
+                                t(s.name) === t(softwareRowEditableByForm.name)
+                            );
                         }) === undefined,
                         "There is already a software with this name",
                     );
@@ -243,7 +245,6 @@ export async function createGitHubDataApi(params: {
 
                     softwareRows.push({
                         "id": softwareId,
-                        ...partialSoftwareRow,
                         "referencedSinceTime": Date.now(),
                         "isStillInObservation": false,
                         "isPresentInSupportContract": false,
@@ -251,6 +252,7 @@ export async function createGitHubDataApi(params: {
                         "workshopUrls": [],
                         "testUrls": [],
                         "useCaseUrls": [],
+                        ...softwareRowEditableByForm,
                     });
 
                     if (
@@ -271,7 +273,7 @@ export async function createGitHubDataApi(params: {
 
                     await updateStateRemoteAndLocal({
                         newDb,
-                        "commitMessage": `Add ${partialSoftwareRow.name} and ${referentRow.email} as referent`,
+                        "commitMessage": `Add ${softwareRowEditableByForm.name} and ${referentRow.email} as referent`,
                     });
 
                     const software = evtState.state.compiledData.catalog.find(
@@ -285,7 +287,7 @@ export async function createGitHubDataApi(params: {
             ),
             "updateSoftware": runExclusive.build(
                 groupRef,
-                async ({ softwareId, email, partialSoftwareRow }) => {
+                async ({ softwareId, email, softwareRowEditableByForm }) => {
                     const newDb = structuredClone(evtState.state.db);
 
                     const { softwareRows, softwareReferentRows } = newDb;
@@ -305,7 +307,7 @@ export async function createGitHubDataApi(params: {
 
                     softwareRows[index] = {
                         ...softwareRows[index],
-                        ...structuredClone(partialSoftwareRow),
+                        ...structuredClone(softwareRowEditableByForm),
                     };
 
                     await updateStateRemoteAndLocal({

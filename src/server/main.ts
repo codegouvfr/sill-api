@@ -29,7 +29,7 @@ import { createResolveLocalizedString } from "i18nifty/LocalizedString";
 import { id } from "tsafe/id";
 import { createObjectThatThrowsIfAccessed } from "../tools/createObjectThatThrowsIfAccessed";
 import compression from "compression";
-import { zPartialSoftwareRow } from "./ports/DataApi";
+import { zSoftwareRowEditableByForm } from "./ports/DataApi";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { getProjectRoot } from "../tools/getProjectRoot";
@@ -175,7 +175,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
         })
         .mutation("addSoftware", {
             "input": z.object({
-                "partialSoftwareRow": zPartialSoftwareRow,
+                "softwareRowEditableByForm": zSoftwareRowEditableByForm,
                 "isExpert": z.boolean(),
                 "useCaseDescription": z.string(),
                 "isPersonalUse": z.boolean(),
@@ -187,7 +187,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 
                 const {
                     isExpert,
-                    partialSoftwareRow,
+                    softwareRowEditableByForm,
                     useCaseDescription,
                     isPersonalUse,
                 } = input;
@@ -195,7 +195,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
                 const { email, agencyName } = ctx.parsedJwt;
 
                 const { software } = await dataApi.mutators.addSoftware({
-                    partialSoftwareRow,
+                    softwareRowEditableByForm,
                     "referentRow": {
                         agencyName,
                         email,
@@ -213,19 +213,19 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
         .mutation("updateSoftware", {
             "input": z.object({
                 "softwareId": z.number(),
-                "partialSoftwareRow": zPartialSoftwareRow,
+                "softwareRowEditableByForm": zSoftwareRowEditableByForm,
             }),
             "resolve": async ({ ctx, input }) => {
                 if (ctx === null) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const { softwareId, partialSoftwareRow } = input;
+                const { softwareId, softwareRowEditableByForm } = input;
 
                 const { email } = ctx.parsedJwt;
 
                 const { software } = await dataApi.mutators.updateSoftware({
-                    partialSoftwareRow,
+                    softwareRowEditableByForm,
                     softwareId,
                     email,
                 });
