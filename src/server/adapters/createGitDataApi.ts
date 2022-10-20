@@ -420,12 +420,14 @@ export async function createGitDataApi(params: {
 
                     assert(index !== -1, "The service does not exist");
 
+                    const { serviceUrl } = serviceRows[index];
+
                     serviceRows.splice(index, 1);
 
                     await updateStateRemoteAndLocal({
                         newDb,
                         "commitMessage": `Service ${prettyPrintServiceUrl(
-                            serviceRows[index].serviceUrl,
+                            serviceUrl,
                         )} deleted by ${email}. Reason: ${reason}`,
                     });
                 },
