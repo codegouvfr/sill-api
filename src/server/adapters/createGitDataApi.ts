@@ -439,7 +439,7 @@ export async function createGitDataApi(params: {
                     const { serviceRows } = newDb;
 
                     const serviceId =
-                        newDb.softwareRows
+                        newDb.serviceRows
                             .map(({ id }) => id)
                             .reduce((prev, curr) => Math.max(prev, curr), 0) +
                         1;
