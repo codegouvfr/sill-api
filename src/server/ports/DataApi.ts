@@ -64,6 +64,7 @@ export type DataApi = {
                 time: number;
                 lastRecommendedVersion?: string;
             };
+            isDeletion: boolean;
         }) => Promise<void>;
         deleteService: (params: {
             serviceId: number;

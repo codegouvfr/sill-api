@@ -325,7 +325,7 @@ export async function createGitDataApi(params: {
             ),
             "dereferenceSoftware": runExclusive.build(
                 groupRef,
-                async ({ softwareId, email, dereferencing }) => {
+                async ({ softwareId, email, dereferencing, isDeletion }) => {
                     const newDb = structuredClone(evtState.state.db);
 
                     const { softwareRows, softwareReferentRows } = newDb;
@@ -343,12 +343,27 @@ export async function createGitDataApi(params: {
 
                     assert(index !== -1, "The software does not exist");
 
+                    if (isDeletion) {
+                        const softwareName = softwareRows[index].name;
+
+                        softwareRows.splice(index, 1);
+
+                        await updateStateRemoteAndLocal({
+                            newDb,
+                            "commitMessage": `${email} delete ${softwareName}: ${
+                                dereferencing.reason ?? ""
+                            }`,
+                        });
+
+                        return;
+                    }
+
                     softwareRows[index].dereferencing =
                         structuredClone(dereferencing);
 
                     await updateStateRemoteAndLocal({
                         newDb,
-                        "commitMessage": `Dereference ${softwareRows[index].name}`,
+                        "commitMessage": `${email} dereference ${softwareRows[index].name}`,
                     });
                 },
             ),

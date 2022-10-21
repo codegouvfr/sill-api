@@ -237,13 +237,14 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
                     "reason": z.string().optional(),
                     "lastRecommendedVersion": z.string().optional(),
                 }),
+                "isDeletion": z.boolean(),
             }),
             "resolve": async ({ ctx, input }) => {
                 if (ctx === null) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const { softwareId, dereferencing } = input;
+                const { softwareId, dereferencing, isDeletion } = input;
 
                 const { email } = ctx.parsedJwt;
 
@@ -254,6 +255,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
                         ...dereferencing,
                         "time": Date.now(),
                     },
+                    isDeletion,
                 });
             },
         })
