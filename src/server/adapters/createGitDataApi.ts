@@ -344,13 +344,27 @@ export async function createGitDataApi(params: {
                     assert(index !== -1, "The software does not exist");
 
                     if (isDeletion) {
-                        const softwareName = softwareRows[index].name;
+                        const { name, id } = softwareRows[index];
 
                         softwareRows.splice(index, 1);
 
+                        softwareReferentRows
+                            .filter(
+                                softwareReferentRow =>
+                                    softwareReferentRow.softwareId === id,
+                            )
+                            .forEach(softwareReferentRow =>
+                                softwareReferentRows.splice(
+                                    softwareReferentRows.indexOf(
+                                        softwareReferentRow,
+                                    ),
+                                    1,
+                                ),
+                            );
+
                         await updateStateRemoteAndLocal({
                             newDb,
-                            "commitMessage": `${email} delete ${softwareName}: ${
+                            "commitMessage": `${email} delete ${name}: ${
                                 dereferencing.reason ?? ""
                             }`,
                         });
