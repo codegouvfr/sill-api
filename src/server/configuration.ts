@@ -8,7 +8,6 @@ import { z } from "zod";
 import { zLocalizedString } from "../model/z";
 
 export type Configuration = {
-    //If not defined we will not check the signature and just trust the claims in the JWT.
     keycloakParams?: {
         url: string; //Example: https://etalab-auth.lab.sspcloud.fr/auth (with the /auth at the end)
         realm: string;

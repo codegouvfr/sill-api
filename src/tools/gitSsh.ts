@@ -110,7 +110,7 @@ export class ErrorNoBranch extends Error {
     }
 }
 
-export async function configureOpenSshClient(params: {
+async function configureOpenSshClient(params: {
     sshPrivateKeyName: string;
     sshPrivateKey: string;
 }) {

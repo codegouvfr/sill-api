@@ -11,8 +11,6 @@
     "scripts": {
         "build": "tsc && yarn grant-exec-perms",
         "dev": "./.env.local.sh node dist/server/main.js",
-        "lint:check": "eslint . --ext .ts,.tsx",
-        "lint": "npm run lint:check -- --fix",
         "_format": "prettier '**/*.{ts,tsx,json,md}'",
         "format": "npm run _format -- --write",
         "format:check": "npm run _format -- --list-different",
@@ -22,9 +20,6 @@
         "build-data": "dist/bin/build-data.js"
     },
     "lint-staged": {
-        "*.{ts,tsx}": [
-            "eslint --fix"
-        ],
         "*.{ts,tsx,json,md}": [
             "prettier --write"
         ]
@@ -46,45 +41,44 @@
     "keywords": [],
     "homepage": "https://github.com/etalab/sill",
     "devDependencies": {
+        "@octokit/rest": "^18.12.0",
         "@types/compression": "^1.7.2",
         "@types/cors": "^2.8.12",
-        "@types/deepmerge": "^2.2.0",
         "@types/express": "4.17.13",
         "@types/memoizee": "^0.4.7",
         "@types/node": "^16.4.9",
         "@types/node-fetch": "^2.5.7",
         "@types/ungap__structured-clone": "^0.3.0",
-        "@typescript-eslint/eslint-plugin": "^4.28.5",
-        "@typescript-eslint/parser": "^4.28.5",
-        "url-join": "^4.0.1",
         "comment-json": "^3.0.0",
-        "@octokit/rest": "^18.12.0",
         "cors": "^2.8.5",
         "cra-envs": "^1.2.1",
         "csv-parse": "^5.0.4",
-        "deepmerge": "^4.2.2",
-        "eslint": "^7.32.0",
-        "eslint-config-prettier": "^8.3.0",
         "express": "^4.17.2",
         "husky": "^4.3.8",
         "keycloak-backend": "^2.0.1",
         "keycloakify": "^6.8.4",
         "lint-staged": "^11.1.1",
-        "prettier": "^2.3.2",
-        "typescript": "^4.7.3"
+        "prettier": "^2.7.1",
+        "typescript": "^4.9.1-beta",
+        "url-join": "^4.0.1",
+        "deepmerge": "^4.2.2",
+        "@types/deepmerge": "^2.2.0"
     },
     "dependencies": {
-        "run-exclusive": "^2.2.16",
+        "@reduxjs/toolkit": "^1.8.6",
         "@trpc/server": "^9.24.0",
+        "@ungap/structured-clone": "^0.3.4",
+        "async-mutex": "^0.4.0",
+        "cheerio": "^1.0.0-rc.5",
         "compression": "^1.7.4",
+        "evt": "^2.4.6",
         "i18nifty": "^1.3.25",
         "jwt-simple": "^0.5.6",
-        "tsafe": "^1.1.3",
-        "zod": "^3.17.3",
-        "evt": "^2.4.6",
-        "cheerio": "^1.0.0-rc.5",
         "memoizee": "^0.4.15",
         "node-fetch": "^2.6.7",
-        "@ungap/structured-clone": "^0.3.4"
+        "redux-clean-architecture": "^2.5.1",
+        "run-exclusive": "^2.2.16",
+        "tsafe": "^1.1.3",
+        "zod": "^3.17.3"
     }
 }

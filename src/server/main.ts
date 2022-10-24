@@ -12,11 +12,6 @@ import cors from "cors";
 import { assert } from "tsafe/assert";
 import { zParsedJwtTokenPayload } from "./zParsedJwtTokenPayload";
 import { z } from "zod";
-import { Evt } from "evt";
-import type { DataApi } from "./ports/DataApi";
-import { createGitDataApi, buildBranch } from "./adapters/createGitDataApi";
-import type { UserApi } from "./ports/UserApi";
-import { createKeycloakUserApi } from "./adapters/createKeycloakUserApi";
 import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWebhookSignature";
 import { fetchWikiDataData as fetchWikidataData } from "../model/fetchWikiDataData";
 import { getLatestSemVersionedTagFromSourceUrl } from "../tools/getLatestSemVersionedTagFromSourceUrl";
@@ -24,13 +19,17 @@ import { fetchComptoirDuLibre } from "../model/fetchComptoirDuLibre";
 import type { Language } from "../model/types";
 import { createResolveLocalizedString } from "i18nifty/LocalizedString";
 import { id } from "tsafe/id";
-import { createObjectThatThrowsIfAccessed } from "../tools/createObjectThatThrowsIfAccessed";
 import compression from "compression";
-import { zSoftwareRowEditableByForm, zServiceFormData } from "./ports/DataApi";
+import {
+    zSoftwareRowEditableByForm,
+    zServiceFormData,
+} from "./core/usecases/webApi";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { getProjectRoot } from "../tools/getProjectRoot";
 import fetch from "node-fetch";
+import { createCoreApi } from "./core";
+import { buildBranch } from "./core/adapters/createGitDbApi";
 
 const { resolveLocalizedString } = createResolveLocalizedString({
     "currentLanguage": id<Language>("en"),
@@ -71,8 +70,14 @@ const { createContext } = (() => {
     return { createContext };
 })();
 
-const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
-    const { dataApi, userApi } = params;
+const createRouter = async (coreApi: ReturnType<typeof createCoreApi>) => {
+    const {
+        selectors,
+        getState,
+        extras: { userApi },
+        functions: { webApi },
+    } = coreApi;
+
     const router = trpc
         .router<ReturnType<typeof createContext>>()
         .query("getVersion", {
@@ -96,8 +101,12 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
             })(),
         })
         .query("getCompiledData", {
-            "resolve": () =>
-                dataApi.derivedStates.evtCompiledDataWithoutReferents.state,
+            "resolve": () => {
+                const { compiledDataWithoutReferents } =
+                    selectors.webApi.compiledDataWithoutReferents(getState());
+
+                return compiledDataWithoutReferents;
+            },
         })
         .query("getAllowedEmailRegexp", {
             "resolve": userApi.getAllowedEmailRegexp,
@@ -110,11 +119,16 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
                 if (ctx === null) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
-                return dataApi.derivedStates.evtReferentsBySoftwareId.state;
+                const { referentsBySoftwareId } =
+                    selectors.webApi.referentsBySoftwareId(getState());
+                return referentsBySoftwareId;
             },
         })
         .query("getTags", {
-            "resolve": () => dataApi.derivedStates.evtTags.state,
+            "resolve": () => {
+                const { tags } = selectors.webApi.tags(getState());
+                return tags;
+            },
         })
         .mutation("declareUserReferent", {
             "input": z.object({
@@ -137,7 +151,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 
                 const { agencyName, email } = ctx.parsedJwt;
 
-                await dataApi.mutators.createReferent({
+                await webApi.createReferent({
                     "referentRow": {
                         agencyName,
                         email,
@@ -164,7 +178,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 
                 const { email } = ctx.parsedJwt;
 
-                await dataApi.mutators.userNoLongerReferent({
+                await webApi.userNoLongerReferent({
                     softwareId,
                     email,
                 });
@@ -191,7 +205,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 
                 const { email, agencyName } = ctx.parsedJwt;
 
-                const { software } = await dataApi.mutators.addSoftware({
+                const { software } = await webApi.addSoftware({
                     softwareRowEditableByForm,
                     "referentRow": {
                         agencyName,
@@ -221,7 +235,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 
                 const { email } = ctx.parsedJwt;
 
-                const { software } = await dataApi.mutators.updateSoftware({
+                const { software } = await webApi.updateSoftware({
                     softwareRowEditableByForm,
                     softwareId,
                     email,
@@ -248,7 +262,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 
                 const { email } = ctx.parsedJwt;
 
-                await dataApi.mutators.dereferenceSoftware({
+                await webApi.dereferenceSoftware({
                     softwareId,
                     email,
                     "dereferencing": {
@@ -279,7 +293,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
                     "agencyName": newAgencyName,
                 });
 
-                await dataApi.mutators.changeUserAgencyName({
+                await webApi.changeUserAgencyName({
                     "email": ctx.parsedJwt.email,
                     newAgencyName,
                 });
@@ -305,7 +319,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
                     "email": newEmail,
                 });
 
-                await dataApi.mutators.updateUserEmail({
+                await webApi.updateUserEmail({
                     "email": ctx.parsedJwt.email,
                     newEmail,
                 });
@@ -395,7 +409,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 
                 const { serviceId, reason } = input;
 
-                await dataApi.mutators.deleteService({
+                await webApi.deleteService({
                     serviceId,
                     reason,
                     email,
@@ -415,7 +429,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 
                 const { serviceFormData } = input;
 
-                const { service } = await dataApi.mutators.addService({
+                const { service } = await webApi.addService({
                     serviceFormData,
                     email,
                 });
@@ -437,7 +451,7 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 
                 const { serviceFormData, serviceId } = input;
 
-                const { service } = await dataApi.mutators.updateService({
+                const { service } = await webApi.updateService({
                     serviceId,
                     serviceFormData,
                     email,
@@ -452,14 +466,20 @@ const createRouter = (params: { dataApi: DataApi; userApi: UserApi }) => {
 export type TrpcRouter = ReturnType<typeof createRouter>["router"];
 
 (async function main() {
-    const evtDataUpdated = Evt.create();
-
-    const dataApi = await createGitDataApi({
-        "dataRepoSshUrl": configuration.dataRepoSshUrl,
-        "sshPrivateKeyName": configuration.sshPrivateKeyForGitName,
-        "sshPrivateKey": configuration.sshPrivateKeyForGit,
-        evtDataUpdated,
+    const coreApi = await createCoreApi({
+        "gitDbApiParams": {
+            "dataRepoSshUrl": configuration.dataRepoSshUrl,
+            "sshPrivateKeyName": configuration.sshPrivateKeyForGitName,
+            "sshPrivateKey": configuration.sshPrivateKeyForGit,
+        },
+        "keycloakUserApiParams": configuration.keycloakParams,
     });
+
+    const { router } = await createRouter(coreApi);
+
+    const {
+        functions: { webApi },
+    } = coreApi;
 
     const exposedSubpath = "api";
 
@@ -481,7 +501,7 @@ export type TrpcRouter = ReturnType<typeof createRouter>["router"];
                 if (githubWebhookSecret === undefined) {
                     setInterval(() => {
                         console.log("Checking if data refreshed");
-                        evtDataUpdated.post();
+                        webApi.refreshRemoteData();
                     }, 3600 * 1000);
 
                     return async (...[, res]) => res.sendStatus(410);
@@ -509,57 +529,23 @@ export type TrpcRouter = ReturnType<typeof createRouter>["router"];
 
                     console.log("Refreshing data");
 
-                    evtDataUpdated.post();
+                    webApi.refreshRemoteData();
 
                     res.sendStatus(200);
                 };
             })(),
         )
-        .get(
-            `/${exposedSubpath}/sill.json`,
-            (() => {
-                const evtBuff =
-                    dataApi.derivedStates.evtCompiledDataWithoutReferents.pipe(
-                        data => [
-                            Buffer.from(JSON.stringify(data, null, 2), "utf8"),
-                        ],
-                    );
-
-                return (...[, res]) =>
-                    res
-                        .setHeader("Content-Type", "application/json")
-                        .send(evtBuff.state);
-            })(),
+        .get(`/${exposedSubpath}/sill.json`, (...[, res]) =>
+            res
+                .setHeader("Content-Type", "application/json")
+                .send(webApi.getSillJsonBuffer()),
         )
         .use(
             `/${exposedSubpath}`,
-            await (async () => {
-                const { router } = createRouter({
-                    dataApi,
-                    "userApi": (() => {
-                        const { keycloakParams } = configuration;
-
-                        if (keycloakParams === undefined) {
-                            return createObjectThatThrowsIfAccessed<UserApi>({
-                                "debugMessage": "No keycloak",
-                            });
-                        }
-
-                        const { url, realm, adminPassword } = keycloakParams;
-
-                        return createKeycloakUserApi({
-                            url,
-                            realm,
-                            adminPassword,
-                        });
-                    })(),
-                });
-
-                return trpcExpress.createExpressMiddleware({
-                    router,
-                    createContext,
-                });
-            })(),
+            trpcExpress.createExpressMiddleware({
+                router,
+                createContext,
+            }),
         )
         .listen(configuration.port, () =>
             console.log(`Listening on port ${configuration.port}`),

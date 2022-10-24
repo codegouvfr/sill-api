@@ -8,13 +8,11 @@ import { removeReferent } from "../model/types";
 import * as fs from "fs";
 import { assert } from "tsafe/assert";
 import {
-    fetchDb,
-    fetchCompiledData,
     compiledDataJsonRelativeFilePath,
     buildBranch,
-} from "../server/adapters/createGitDataApi";
+    createGitDbApi,
+} from "../server/core/adapters/createGitDbApi";
 import { ErrorNoBranch } from "../tools/gitSsh";
-import { configureOpenSshClient } from "../tools/gitSsh";
 import { gitSsh } from "../tools/gitSsh";
 
 async function main(params: {
@@ -26,7 +24,11 @@ async function main(params: {
     const { dataRepoSshUrl, sshPrivateKeyName, sshPrivateKey, isIncremental } =
         params;
 
-    await configureOpenSshClient({ sshPrivateKeyName, sshPrivateKey });
+    const { fetchCompiledData, fetchDb } = createGitDbApi({
+        dataRepoSshUrl,
+        sshPrivateKey,
+        sshPrivateKeyName,
+    });
 
     const { compiledData } = await (async () => {
         const {
@@ -34,18 +36,10 @@ async function main(params: {
             referentRows,
             softwareReferentRows,
             serviceRows,
-        } = await fetchDb({
-            dataRepoSshUrl,
-            sshPrivateKeyName,
-            sshPrivateKey,
-        });
+        } = await fetchDb();
 
         const currentCatalog = isIncremental
-            ? await fetchCompiledData({
-                  "dataRepoSshUrl": dataRepoSshUrl,
-                  sshPrivateKeyName,
-                  sshPrivateKey,
-              }).then(
+            ? await fetchCompiledData().then(
                   ({ catalog }) => catalog,
                   error =>
                       error instanceof ErrorNoBranch

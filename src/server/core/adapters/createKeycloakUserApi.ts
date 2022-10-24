@@ -1,13 +1,15 @@
-import { createKeycloakAdminApiClient } from "../../tools/keycloakAdminApiClient";
+import { createKeycloakAdminApiClient } from "../../../tools/keycloakAdminApiClient";
 import * as runExclusive from "run-exclusive";
 import memoize from "memoizee";
 import { UserApi } from "../ports/UserApi";
 
-export function createKeycloakUserApi(params: {
+export type KeycloakUserApiParams = {
     url: string;
     adminPassword: string;
     realm: string;
-}): UserApi {
+};
+
+export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
     const { url, adminPassword, realm } = params;
 
     const keycloakAdminApiClient = createKeycloakAdminApiClient({

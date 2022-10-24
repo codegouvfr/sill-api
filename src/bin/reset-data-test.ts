@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import { buildBranch } from "../server/adapters/createGitDataApi";
+import { buildBranch } from "../server/core/adapters/createGitDbApi";
 
 // Script to run that will make etalab/sill-data-test is the same as etalab/sill-data
 
