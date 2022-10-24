@@ -9,6 +9,7 @@ import { assert } from "tsafe/assert";
 import { exclude } from "tsafe/exclude";
 import { fetchWikiDataData } from "./fetchWikiDataData";
 import { fetchComptoirDuLibre } from "./fetchComptoirDuLibre";
+import { fetchCnllPrestatairesSill } from "./fetchCnllPrestatairesSill";
 
 export async function buildCatalog(params: {
     softwareRows: SoftwareRow[];
@@ -27,7 +28,11 @@ export async function buildCatalog(params: {
         },
     } = params;
 
-    const { softwares: cdlSoftwares } = await fetchComptoirDuLibre();
+    const [{ softwares: cdlSoftwares }, cnllPrestatairesSill] =
+        await Promise.all([
+            fetchComptoirDuLibre(),
+            fetchCnllPrestatairesSill(),
+        ]);
 
     const wikiDataDataById: Record<string, WikidataData | undefined> = {};
 
@@ -116,6 +121,13 @@ export async function buildCatalog(params: {
 
                               return cdlSoftware;
                           })(),
+                "annuaireCnllServiceProviders": cnllPrestatairesSill
+                    .find(({ sill_id }) => sill_id === rest.id)
+                    ?.prestataires.map(({ nom, siren, url }) => ({
+                        "name": nom,
+                        siren,
+                        url,
+                    })),
                 referents,
             }),
         );

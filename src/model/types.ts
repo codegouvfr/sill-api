@@ -189,7 +189,14 @@ export namespace CompiledData {
             "wikidataId" | "comptoirDuLibreId"
         > & {
             wikidataData?: WikidataData;
-            comptoirDuLibreSoftware?: ComptoirDuLibre.Software;
+            comptoirDuLibreSoftware: ComptoirDuLibre.Software | undefined;
+            annuaireCnllServiceProviders:
+                | {
+                      name: string;
+                      siren: string;
+                      url: string;
+                  }[]
+                | undefined;
         };
 
         export type WithoutReferent = Common & {

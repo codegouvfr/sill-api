@@ -10,5 +10,5 @@ export const fetchComptoirDuLibre = memoize(
         fetch(url)
             .then(res => res.text())
             .then(text => JSON.parse(text) as ComptoirDuLibre),
-    { "promise": true },
+    { "promise": true, "maxAge": 5 * 60 * 1000 },
 );
