@@ -15,17 +15,14 @@ node ../sill-api/dist/bin/editSoftwareReferent.js
 
 */
 
-const softwareReferentFilePath = pathJoin(
-    process.cwd(),
-    "softwareReferent.json",
-);
+const softwareReferentFilePath = pathJoin(process.cwd(), "softwareReferent.json");
 
 const zSoftwareReferentRow = z.object({
     "softwareId": z.number(),
     "referentEmail": z.string(),
     "isExpert": z.boolean(),
     "useCaseDescription": z.string(),
-    "isPersonalUse": z.boolean(),
+    "isPersonalUse": z.boolean()
 });
 
 type Got = ReturnType<typeof zSoftwareReferentRow["parse"]>;
@@ -37,10 +34,9 @@ fs.writeFileSync(
     softwareReferentFilePath,
     Buffer.from(
         JSON.stringify(
-            JSON.parse(
-                fs.readFileSync(softwareReferentFilePath).toString("utf8"),
-            ).map((softwareReferentRow: SoftwareReferentRow) => {
-                /*
+            JSON.parse(fs.readFileSync(softwareReferentFilePath).toString("utf8")).map(
+                (softwareReferentRow: SoftwareReferentRow) => {
+                    /*
                 try {
                     zSoftwareReferentRow.parse(softwareReferentRow);
                 } catch (exception) {
@@ -50,34 +46,29 @@ fs.writeFileSync(
                 }
                 */
 
-                const {
-                    softwareId,
-                    referentEmail,
-                    isExpert,
-                    useCaseDescription,
-                    isPersonalUse,
-                    ...rest
-                } = softwareReferentRow;
+                    const { softwareId, referentEmail, isExpert, useCaseDescription, isPersonalUse, ...rest } =
+                        softwareReferentRow;
 
-                try {
-                    assert(Object.keys(rest).length === 0);
-                } catch (error) {
-                    console.log(rest);
+                    try {
+                        assert(Object.keys(rest).length === 0);
+                    } catch (error) {
+                        console.log(rest);
 
-                    throw error;
+                        throw error;
+                    }
+
+                    return {
+                        softwareId,
+                        referentEmail,
+                        isExpert,
+                        useCaseDescription,
+                        "isPersonalUse": false
+                    };
                 }
-
-                return {
-                    softwareId,
-                    referentEmail,
-                    isExpert,
-                    useCaseDescription,
-                    "isPersonalUse": false,
-                };
-            }),
+            ),
             null,
-            2,
+            2
         ),
-        "utf8",
-    ),
+        "utf8"
+    )
 );

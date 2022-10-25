@@ -3,5 +3,5 @@ import { usecasesApi, createCore } from "./setup";
 
 export const { createCoreApi } = createCoreApiFactory({
     createCore,
-    usecasesApi,
+    usecasesApi
 });

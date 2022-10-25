@@ -12,14 +12,9 @@ type User = {
 };
 
 export type KeycloakAdminApiClient = {
-    updateUser: (params: {
-        userId: string;
-        body: Record<string, unknown>;
-    }) => Promise<void>;
+    updateUser: (params: { userId: string; body: Record<string, unknown> }) => Promise<void>;
     /** NOTE: The return type isn't correct but it would be if Keycloak was consistent */
-    getUserProfileAttributes: () => Promise<
-        KcContextBase.RegisterUserProfile["profile"]["attributes"]
-    >;
+    getUserProfileAttributes: () => Promise<KcContextBase.RegisterUserProfile["profile"]["attributes"]>;
     getUsers: (params: { first: number; max: number }) => Promise<User[]>;
 };
 
@@ -31,27 +26,21 @@ export function createKeycloakAdminApiClient(params: {
     const { url, adminPassword, realm } = params;
 
     return {
-        "updateUser": async (params: {
-            userId: string;
-            body: Record<string, unknown>;
-        }) => {
+        "updateUser": async (params: { userId: string; body: Record<string, unknown> }) => {
             const { userId, body } = params;
 
             const token = await obtainKeycloakAdminAccessToken({
                 url,
-                adminPassword,
+                adminPassword
             });
 
-            const endpointUrl = urlJoin(
-                url,
-                `admin/realms/${realm}/users/${userId}`,
-            );
+            const endpointUrl = urlJoin(url, `admin/realms/${realm}/users/${userId}`);
 
             const currentBody = await fetch(endpointUrl, {
                 "method": "GET",
                 "headers": {
-                    "Authorization": `Bearer ${token}`,
-                },
+                    "Authorization": `Bearer ${token}`
+                }
             }).then(async resp => {
                 if (`${resp.status}`[0] !== "2") {
                     throw new Error(await resp.text());
@@ -64,9 +53,9 @@ export function createKeycloakAdminApiClient(params: {
                 "method": "PUT",
                 "headers": {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
+                    "Authorization": `Bearer ${token}`
                 },
-                "body": JSON.stringify(deepMerge(currentBody, body)),
+                "body": JSON.stringify(deepMerge(currentBody, body))
             }).then(async resp => {
                 const out = await resp.text();
 
@@ -78,17 +67,12 @@ export function createKeycloakAdminApiClient(params: {
             });
         },
         "getUserProfileAttributes": async () => {
-            const { attributes } = await fetch(
-                urlJoin(url, `admin/realms/${realm}/users/profile`),
-                {
-                    "method": "GET",
-                    "headers": {
-                        "Authorization": `Bearer ${await obtainKeycloakAdminAccessToken(
-                            { url, adminPassword },
-                        )}`,
-                    },
-                },
-            ).then(async resp => {
+            const { attributes } = await fetch(urlJoin(url, `admin/realms/${realm}/users/profile`), {
+                "method": "GET",
+                "headers": {
+                    "Authorization": `Bearer ${await obtainKeycloakAdminAccessToken({ url, adminPassword })}`
+                }
+            }).then(async resp => {
                 if (`${resp.status}`[0] !== "2") {
                     throw new Error(await resp.text());
                 }
@@ -104,52 +88,44 @@ export function createKeycloakAdminApiClient(params: {
                     url,
                     `admin/realms/${realm}/users?${Object.entries({
                         first,
-                        max,
+                        max
                     })
                         .map(([key, value]) => `${key}=${value}`)
-                        .join("&")}`,
+                        .join("&")}`
                 ),
                 {
                     "method": "GET",
                     "headers": {
-                        "Authorization": `Bearer ${await obtainKeycloakAdminAccessToken(
-                            { url, adminPassword },
-                        )}`,
-                    },
-                },
+                        "Authorization": `Bearer ${await obtainKeycloakAdminAccessToken({ url, adminPassword })}`
+                    }
+                }
             ).then(async resp => {
                 if (`${resp.status}`[0] !== "2") {
                     throw new Error(await resp.text());
                 }
 
                 return resp.json();
-            }),
+            })
     };
 }
 
-async function obtainKeycloakAdminAccessToken(params: {
-    url: string;
-    adminPassword: string;
-}): Promise<string> {
+async function obtainKeycloakAdminAccessToken(params: { url: string; adminPassword: string }): Promise<string> {
     const { url, adminPassword } = params;
 
-    const { access_token } = await fetch(
-        urlJoin(url, "realms/master/protocol/openid-connect/token"),
-        {
-            "method": "POST",
-            "headers": {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            "body": Object.entries({
-                "client_id": "admin-cli",
-                "username": "admin",
-                "password": adminPassword,
-                "grant_type": "password",
-            })
-                .map(([key, value]) => `${key}=${value}`)
-                .join("&"),
+    const { access_token } = await fetch(urlJoin(url, "realms/master/protocol/openid-connect/token"), {
+        "method": "POST",
+        "headers": {
+            "Content-Type": "application/x-www-form-urlencoded"
         },
-    ).then(async resp => {
+        "body": Object.entries({
+            "client_id": "admin-cli",
+            "username": "admin",
+            "password": adminPassword,
+            "grant_type": "password"
+        })
+            .map(([key, value]) => `${key}=${value}`)
+            .join("&")
+    }).then(async resp => {
         if (`${resp.status}`[0] !== "2") {
             throw new Error(await resp.text());
         }

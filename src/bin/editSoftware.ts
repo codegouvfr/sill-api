@@ -32,85 +32,83 @@ fs.writeFileSync(
     softwareFilePath,
     Buffer.from(
         JSON.stringify(
-            JSON.parse(fs.readFileSync(softwareFilePath).toString("utf8")).map(
-                (softwareRow: SoftwareRow) => {
-                    try {
-                        zSoftwareRow.parse(softwareRow);
-                    } catch (exception) {
-                        console.log(softwareRow);
+            JSON.parse(fs.readFileSync(softwareFilePath).toString("utf8")).map((softwareRow: SoftwareRow) => {
+                try {
+                    zSoftwareRow.parse(softwareRow);
+                } catch (exception) {
+                    console.log(softwareRow);
 
-                        throw exception;
-                    }
+                    throw exception;
+                }
 
-                    const {
-                        id,
-                        name,
-                        "function": fun,
-                        referencedSinceTime,
-                        dereferencing,
-                        isStillInObservation,
-                        parentSoftware,
-                        isFromFrenchPublicService,
-                        isPresentInSupportContract,
-                        alikeSoftwares,
-                        wikidataId,
-                        comptoirDuLibreId,
-                        license,
-                        contextOfUse,
-                        catalogNumeriqueGouvFrId,
-                        mimGroup,
-                        versionMin,
-                        workshopUrls,
-                        testUrls,
-                        useCaseUrls,
-                        agentWorkstation,
-                        tags,
-                        generalInfoMd,
-                        ...rest
-                    } = softwareRow;
+                const {
+                    id,
+                    name,
+                    "function": fun,
+                    referencedSinceTime,
+                    dereferencing,
+                    isStillInObservation,
+                    parentSoftware,
+                    isFromFrenchPublicService,
+                    isPresentInSupportContract,
+                    alikeSoftwares,
+                    wikidataId,
+                    comptoirDuLibreId,
+                    license,
+                    contextOfUse,
+                    catalogNumeriqueGouvFrId,
+                    mimGroup,
+                    versionMin,
+                    workshopUrls,
+                    testUrls,
+                    useCaseUrls,
+                    agentWorkstation,
+                    tags,
+                    generalInfoMd,
+                    ...rest
+                } = softwareRow;
 
-                    // eslint-disable-next-line @typescript-eslint/ban-types
-                    assert<Equals<typeof rest, {}>>();
+                // eslint-disable-next-line @typescript-eslint/ban-types
+                assert<Equals<typeof rest, {}>>();
 
-                    try {
-                        assert(Object.keys(rest).length === 0);
-                    } catch (error) {
-                        console.log(rest);
+                try {
+                    assert(Object.keys(rest).length === 0);
+                } catch (error) {
+                    console.log(rest);
 
-                        throw error;
-                    }
+                    throw error;
+                }
 
-                    return {
-                        id,
-                        name,
-                        "function": fun,
-                        referencedSinceTime,
-                        dereferencing,
-                        isStillInObservation,
-                        parentSoftware,
-                        isFromFrenchPublicService,
-                        isPresentInSupportContract,
-                        alikeSoftwares,
-                        wikidataId,
-                        comptoirDuLibreId,
-                        license,
-                        contextOfUse,
-                        catalogNumeriqueGouvFrId,
-                        mimGroup,
-                        versionMin,
-                        workshopUrls,
-                        testUrls,
-                        //"useCaseUrls": [rawCsvRows.find(row => row["ID"] === `${id}`)?.["fiche"] || undefined].filter(exclude(undefined)) ,
-                        useCaseUrls,
-                        agentWorkstation,
-                        tags,
-                        generalInfoMd,
-                    };
-                },
-            ),
+                return {
+                    id,
+                    name,
+                    "function": fun,
+                    referencedSinceTime,
+                    dereferencing,
+                    isStillInObservation,
+                    parentSoftware,
+                    isFromFrenchPublicService,
+                    isPresentInSupportContract,
+                    alikeSoftwares,
+                    wikidataId,
+                    comptoirDuLibreId,
+                    license,
+                    contextOfUse,
+                    catalogNumeriqueGouvFrId,
+                    mimGroup,
+                    versionMin,
+                    workshopUrls,
+                    testUrls,
+                    //"useCaseUrls": [rawCsvRows.find(row => row["ID"] === `${id}`)?.["fiche"] || undefined].filter(exclude(undefined)) ,
+                    useCaseUrls,
+                    agentWorkstation,
+                    tags,
+                    generalInfoMd
+                };
+            }),
             null,
-            2,
+            2
         ),
-        "utf8",
-    ),
+        "utf8"
+    )
 );

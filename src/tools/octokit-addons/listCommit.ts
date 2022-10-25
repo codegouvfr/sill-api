@@ -8,21 +8,16 @@ export function listCommitFactory(params: { octokit: Octokit }) {
     const { octokit } = params;
 
     const { getCommitAsyncIterable } = getCommitAsyncIterableFactory({
-        octokit,
+        octokit
     });
 
-    async function listCommit(params: {
-        owner: string;
-        repo: string;
-        branch: string;
-        sha: string;
-    }): Promise<Commit[]> {
+    async function listCommit(params: { owner: string; repo: string; branch: string; sha: string }): Promise<Commit[]> {
         const { owner, repo, branch, sha } = params;
 
         const commitAsyncIterable = getCommitAsyncIterable({
             owner,
             repo,
-            branch,
+            branch
         });
 
         const commits: Commit[] = [];

@@ -13,10 +13,7 @@ export const gitSsh = runExclusive.build(
         commitAuthorEmail?: string;
         action: (params: {
             repoPath: string;
-        }) => Promise<
-            | { doCommit: false }
-            | { doCommit: true; doAddAll: boolean; message: string }
-        >;
+        }) => Promise<{ doCommit: false } | { doCommit: true; doAddAll: boolean; message: string }>;
     }) => {
         const {
             workingDirectoryPath = process.cwd(),
@@ -25,7 +22,7 @@ export const gitSsh = runExclusive.build(
             sshPrivateKey,
             shaish,
             commitAuthorEmail = "actions@github.com",
-            action,
+            action
         } = params;
 
         await configureOpenSshClient({ sshPrivateKeyName, sshPrivateKey });
@@ -35,15 +32,12 @@ export const gitSsh = runExclusive.build(
         const repoPath = pathJoin(workingDirectoryPath, repoDirBasename);
 
         await exec(`rm -rf ${repoDirBasename}`, {
-            "cwd": workingDirectoryPath,
+            "cwd": workingDirectoryPath
         });
 
-        await exec(
-            `git clone ${
-                shaish === undefined ? "--depth 1 " : ""
-            }${sshUrl} ${repoDirBasename}`,
-            { "cwd": workingDirectoryPath },
-        );
+        await exec(`git clone ${shaish === undefined ? "--depth 1 " : ""}${sshUrl} ${repoDirBasename}`, {
+            "cwd": workingDirectoryPath
+        });
 
         if (shaish !== undefined) {
             try {
@@ -66,30 +60,22 @@ export const gitSsh = runExclusive.build(
                 break commit;
             }
 
-            if (
-                (await exec("git status --porcelain", { "cwd": repoPath })) ===
-                ""
-            ) {
+            if ((await exec("git status --porcelain", { "cwd": repoPath })) === "") {
                 console.log("No change");
                 break commit;
             }
 
             await exec(`git config --local user.email "${commitAuthorEmail}"`, {
-                "cwd": repoPath,
+                "cwd": repoPath
             });
-            await exec(
-                `git config --local user.name "${
-                    commitAuthorEmail.split("@")[0]
-                }"`,
-                { "cwd": repoPath },
-            );
+            await exec(`git config --local user.name "${commitAuthorEmail.split("@")[0]}"`, { "cwd": repoPath });
 
             if (changesResult.doAddAll) {
                 await exec(`git add -A`, { "cwd": repoPath });
             }
 
             await exec(`git commit -am "${changesResult.message}"`, {
-                "cwd": repoPath,
+                "cwd": repoPath
             });
 
             await exec(`git push`, { "cwd": repoPath });
@@ -100,7 +86,7 @@ export const gitSsh = runExclusive.build(
         if (changesResult instanceof Error) {
             throw changesResult;
         }
-    },
+    }
 );
 
 export class ErrorNoBranch extends Error {
@@ -110,34 +96,24 @@ export class ErrorNoBranch extends Error {
     }
 }
 
-async function configureOpenSshClient(params: {
-    sshPrivateKeyName: string;
-    sshPrivateKey: string;
-}) {
+async function configureOpenSshClient(params: { sshPrivateKeyName: string; sshPrivateKey: string }) {
     const { sshPrivateKey, sshPrivateKeyName } = params;
 
-    const sshConfigDirPath = (
-        await exec(`cd ~ && mkdir -p .ssh && cd .ssh && pwd`)
-    ).replace(/\r?\n$/, "");
+    const sshConfigDirPath = (await exec(`cd ~ && mkdir -p .ssh && cd .ssh && pwd`)).replace(/\r?\n$/, "");
 
     await fs.promises.writeFile(
         pathJoin(sshConfigDirPath, sshPrivateKeyName),
         Buffer.from(sshPrivateKey.replace(/\\n/g, "\n"), "utf8"),
-        { "mode": 0o600 },
+        { "mode": 0o600 }
     );
 
     const sshConfigFilePath = pathJoin(sshConfigDirPath, "config");
 
-    const doesSshConfigFileExists = !!(await fs.promises
-        .stat(sshConfigFilePath)
-        .catch(() => null));
+    const doesSshConfigFileExists = !!(await fs.promises.stat(sshConfigFilePath).catch(() => null));
 
     if (doesSshConfigFileExists) {
         return;
     }
 
-    await fs.promises.writeFile(
-        sshConfigFilePath,
-        Buffer.from("StrictHostKeyChecking=no\n", "utf8"),
-    );
+    await fs.promises.writeFile(sshConfigFilePath, Buffer.from("StrictHostKeyChecking=no\n", "utf8"));
 }

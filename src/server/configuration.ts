@@ -43,21 +43,21 @@ const zConfiguration = z.object({
             "realm": z.string(),
             "clientId": z.string(),
             "termsOfServices": zLocalizedString.optional(),
-            "adminPassword": z.string(),
+            "adminPassword": z.string()
         })
         .optional(),
     "jwtClaims": z.object({
         "id": z.string(),
         "email": z.string(),
         "agencyName": z.string(),
-        "locale": z.string(),
+        "locale": z.string()
     }),
     "dataRepoSshUrl": z.string(),
     "sshPrivateKeyForGitName": z.string(),
     "sshPrivateKeyForGit": z.string(),
     "githubWebhookSecret": z.string().optional(),
     "githubPersonalAccessToken": z.string().optional(),
-    "port": z.number().optional(),
+    "port": z.number().optional()
 });
 
 {
@@ -76,8 +76,8 @@ export const getConfiguration = memoize(
         if (CONFIGURATION === undefined) {
             throw new Error(
                 `We need a ${symToStr({
-                    CONFIGURATION,
-                })} environnement variable`,
+                    CONFIGURATION
+                })} environnement variable`
             );
         }
 
@@ -87,7 +87,7 @@ export const getConfiguration = memoize(
             configuration = JSONC.parse(CONFIGURATION) as any;
         } catch {
             throw new Error(
-                `The CONFIGURATION environnement variable is not a valid JSONC string (JSONC = JSON + Comment support)\n${CONFIGURATION}`,
+                `The CONFIGURATION environnement variable is not a valid JSONC string (JSONC = JSON + Comment support)\n${CONFIGURATION}`
             );
         }
 
@@ -95,9 +95,9 @@ export const getConfiguration = memoize(
 
         return {
             ...configuration,
-            "port": configuration.port ?? 8080,
+            "port": configuration.port ?? 8080
         };
-    },
+    }
 );
 
 if (require.main === module) {

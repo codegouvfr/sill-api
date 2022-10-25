@@ -10,19 +10,11 @@ export type GitHubWebhookReqBody = {
     };
 };
 
-export function createValidateGitHubWebhookSignature(params: {
-    githubWebhookSecret: string;
-}) {
+export function createValidateGitHubWebhookSignature(params: { githubWebhookSecret: string }) {
     const { githubWebhookSecret } = params;
 
-    async function validateGitHubWebhookSignature(
-        req: Request,
-        res: Response,
-    ): Promise<GitHubWebhookReqBody> {
-        const receivedHash =
-            githubWebhookSecret === "NO VERIFY"
-                ? null
-                : req.header("X-Hub-Signature-256");
+    async function validateGitHubWebhookSignature(req: Request, res: Response): Promise<GitHubWebhookReqBody> {
+        const receivedHash = githubWebhookSecret === "NO VERIFY" ? null : req.header("X-Hub-Signature-256");
 
         if (receivedHash === undefined) {
             console.log("No authentication header");
@@ -36,19 +28,9 @@ export function createValidateGitHubWebhookSignature(params: {
         const body = await getRequestBody(req);
 
         if (receivedHash !== null) {
-            const hash =
-                "sha256=" +
-                crypto
-                    .createHmac("sha256", githubWebhookSecret)
-                    .update(body)
-                    .digest("hex");
+            const hash = "sha256=" + crypto.createHmac("sha256", githubWebhookSecret).update(body).digest("hex");
 
-            if (
-                !crypto.timingSafeEqual(
-                    Buffer.from(receivedHash, "utf8"),
-                    Buffer.from(hash, "utf8"),
-                )
-            ) {
+            if (!crypto.timingSafeEqual(Buffer.from(receivedHash, "utf8"), Buffer.from(hash, "utf8"))) {
                 res.sendStatus(403);
                 await new Promise<never>(() => {
                     /*never*/

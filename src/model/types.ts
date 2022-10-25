@@ -170,24 +170,16 @@ export type WikidataData = {
     license: string;
 }>;
 
-export type CompiledData<
-    T extends "with referents" | "without referents" = "without referents",
-> = {
+export type CompiledData<T extends "with referents" | "without referents" = "without referents"> = {
     catalog: CompiledData.Software<T>[];
     services: CompiledData.Service[];
 };
 
 export namespace CompiledData {
-    export type Software<
-        T extends "with referents" | "without referents" = "without referents",
-    > = T extends "with referents"
-        ? Software.WithReferent
-        : Software.WithoutReferent;
+    export type Software<T extends "with referents" | "without referents" = "without referents"> =
+        T extends "with referents" ? Software.WithReferent : Software.WithoutReferent;
     export namespace Software {
-        export type Common = Omit<
-            SoftwareRow,
-            "wikidataId" | "comptoirDuLibreId"
-        > & {
+        export type Common = Omit<SoftwareRow, "wikidataId" | "comptoirDuLibreId"> & {
             wikidataData?: WikidataData;
             comptoirDuLibreSoftware: ComptoirDuLibre.Software | undefined;
             annuaireCnllServiceProviders:
@@ -217,13 +209,12 @@ export namespace CompiledData {
 }
 
 export function removeReferent(
-    software: CompiledData.Software<"with referents">,
+    software: CompiledData.Software<"with referents">
 ): CompiledData.Software<"without referents"> {
     const { referents, ...rest } = software;
     return {
         ...rest,
-        "hasExpertReferent":
-            referents.find(({ isExpert }) => isExpert) !== undefined,
-        "referentCount": referents.length,
+        "hasExpertReferent": referents.find(({ isExpert }) => isExpert) !== undefined,
+        "referentCount": referents.length
     };
 }

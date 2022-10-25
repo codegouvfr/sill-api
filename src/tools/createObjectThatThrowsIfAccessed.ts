@@ -1,6 +1,6 @@
-export function createObjectThatThrowsIfAccessed<
-    T extends Record<string, unknown>,
->(params?: { debugMessage?: string }): T {
+export function createObjectThatThrowsIfAccessed<T extends Record<string, unknown>>(params?: {
+    debugMessage?: string;
+}): T {
     const { debugMessage = "" } = params ?? {};
 
     const get: NonNullable<ProxyHandler<T>["get"]> = (...args) => {
@@ -11,6 +11,6 @@ export function createObjectThatThrowsIfAccessed<
 
     return new Proxy<T>({} as any, {
         get,
-        "set": get,
+        "set": get
     });
 }

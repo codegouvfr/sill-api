@@ -5,13 +5,10 @@ const envVarName = "GITHUB_TOKEN";
 
 const githubPersonalAccessToken = process.env[envVarName];
 
-assert(
-    githubPersonalAccessToken !== undefined,
-    `${envVarName} env variable is required`,
-);
+assert(githubPersonalAccessToken !== undefined, `${envVarName} env variable is required`);
 
 const octokit = new Octokit({
-    "auth": githubPersonalAccessToken,
+    "auth": githubPersonalAccessToken
 });
 
 octokit.rest.repos
@@ -21,7 +18,7 @@ octokit.rest.repos
         "event_type": "build-data",
         "client_payload": {
             "dataRepoSshUrl": "git@github.com:etalab/sill-data.git",
-            "incremental": false,
-        },
+            "incremental": false
+        }
     })
     .then(() => console.log(`https://github.com/etalab/sill-api/actions`));

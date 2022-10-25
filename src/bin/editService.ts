@@ -42,18 +42,18 @@ const zServiceRow = z.intersection(
         "signupScope": z.string(),
         "usageScope": z.string(),
         "signupValidationMethod": z.string(),
-        "contentModerationMethod": z.string(),
+        "contentModerationMethod": z.string()
     }),
     z.union([
         z.object({
-            "softwareSillId": z.number(),
+            "softwareSillId": z.number()
         }),
         z.object({
             "softwareSillId": z.literal(undefined).optional(),
             "softwareName": z.string(),
-            "comptoirDuLibreId": z.number().optional(),
-        }),
-    ]),
+            "comptoirDuLibreId": z.number().optional()
+        })
+    ])
 );
 
 type Got = ReturnType<typeof zServiceRow["parse"]>;
@@ -65,91 +65,84 @@ fs.writeFileSync(
     serviceFilePath,
     Buffer.from(
         JSON.stringify(
-            JSON.parse(fs.readFileSync(serviceFilePath).toString("utf8")).map(
-                (serviceRow: ServiceRow) => {
-                    try {
-                        zServiceRow.parse(serviceRow);
-                    } catch (exception) {
-                        console.log(serviceRow);
+            JSON.parse(fs.readFileSync(serviceFilePath).toString("utf8")).map((serviceRow: ServiceRow) => {
+                try {
+                    zServiceRow.parse(serviceRow);
+                } catch (exception) {
+                    console.log(serviceRow);
 
-                        throw exception;
-                    }
+                    throw exception;
+                }
 
-                    const {
-                        id,
-                        agencyName,
-                        publicSector,
-                        agencyUrl,
-                        serviceName,
-                        serviceUrl,
-                        description,
-                        publicationDate,
-                        lastUpdateDate,
-                        signupScope,
-                        usageScope,
-                        signupValidationMethod,
-                        contentModerationMethod,
-                        ...rest
-                    } = serviceRow;
+                const {
+                    id,
+                    agencyName,
+                    publicSector,
+                    agencyUrl,
+                    serviceName,
+                    serviceUrl,
+                    description,
+                    publicationDate,
+                    lastUpdateDate,
+                    signupScope,
+                    usageScope,
+                    signupValidationMethod,
+                    contentModerationMethod,
+                    ...rest
+                } = serviceRow;
 
-                    return {
-                        id,
-                        agencyName,
-                        publicSector,
-                        agencyUrl,
-                        serviceName,
-                        serviceUrl,
-                        description,
-                        //"description": rawCsvRows.find(row => row["id"] === `${id}`)!["description"],
-                        publicationDate,
-                        lastUpdateDate,
-                        signupScope,
-                        usageScope,
-                        signupValidationMethod,
-                        contentModerationMethod,
-                        ...(() => {
-                            if ("softwareName" in rest) {
-                                const {
-                                    softwareSillId,
-                                    softwareName,
-                                    comptoirDuLibreId,
-                                    ...rest2
-                                } = rest;
+                return {
+                    id,
+                    agencyName,
+                    publicSector,
+                    agencyUrl,
+                    serviceName,
+                    serviceUrl,
+                    description,
+                    //"description": rawCsvRows.find(row => row["id"] === `${id}`)!["description"],
+                    publicationDate,
+                    lastUpdateDate,
+                    signupScope,
+                    usageScope,
+                    signupValidationMethod,
+                    contentModerationMethod,
+                    ...(() => {
+                        if ("softwareName" in rest) {
+                            const { softwareSillId, softwareName, comptoirDuLibreId, ...rest2 } = rest;
 
-                                try {
-                                    assert(Object.keys(rest2).length === 0);
-                                } catch (error) {
-                                    console.log("===>", rest2);
+                            try {
+                                assert(Object.keys(rest2).length === 0);
+                            } catch (error) {
+                                console.log("===>", rest2);
 
-                                    throw error;
-                                }
-
-                                return {
-                                    softwareName,
-                                    comptoirDuLibreId,
-                                };
-                            } else {
-                                const { softwareSillId, ...rest2 } = rest;
-
-                                try {
-                                    assert(Object.keys(rest2).length === 0);
-                                } catch (error) {
-                                    console.log("!!!!", rest2);
-
-                                    throw error;
-                                }
-
-                                return {
-                                    softwareSillId,
-                                };
+                                throw error;
                             }
-                        })(),
-                    };
-                },
-            ),
+
+                            return {
+                                softwareName,
+                                comptoirDuLibreId
+                            };
+                        } else {
+                            const { softwareSillId, ...rest2 } = rest;
+
+                            try {
+                                assert(Object.keys(rest2).length === 0);
+                            } catch (error) {
+                                console.log("!!!!", rest2);
+
+                                throw error;
+                            }
+
+                            return {
+                                softwareSillId
+                            };
+                        }
+                    })()
+                };
+            }),
             null,
-            2,
+            2
         ),
-        "utf8",
-    ),
+        "utf8"
+    )
 );

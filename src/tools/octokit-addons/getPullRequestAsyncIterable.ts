@@ -6,9 +6,7 @@ export type PullRequest = ReturnType<Octokit["pulls"]["list"]>["data"][number];
 
 const per_page = 99;
 
-export function getPullRequestAsyncIterableFactory(params: {
-    octokit: Octokit;
-}) {
+export function getPullRequestAsyncIterableFactory(params: { octokit: Octokit }) {
     const { octokit } = params;
 
     function getPullRequestAsyncIterable(params: {
@@ -31,7 +29,7 @@ export function getPullRequestAsyncIterableFactory(params: {
                     repo,
                     state,
                     per_page,
-                    "page": params.page,
+                    "page": params.page
                 })
                 .then(({ data }) => data);
         return {
@@ -46,7 +44,7 @@ export function getPullRequestAsyncIterableFactory(params: {
                             page++;
 
                             pullRequests = await getPullsListResponseData({
-                                page,
+                                page
                             });
 
                             if (pullRequests.length === 0) {
@@ -57,7 +55,7 @@ export function getPullRequestAsyncIterableFactory(params: {
                                 pullRequests.length !== per_page ||
                                 (
                                     await getPullsListResponseData({
-                                        "page": page + 1,
+                                        "page": page + 1
                                     })
                                 ).length === 0;
                         }
@@ -68,11 +66,11 @@ export function getPullRequestAsyncIterableFactory(params: {
 
                         return {
                             "value": pullRequest,
-                            "done": false,
+                            "done": false
                         };
-                    },
+                    }
                 };
-            },
+            }
         };
     }
 

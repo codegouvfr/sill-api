@@ -15,8 +15,8 @@ execSync(
         `git checkout ${buildBranch}`,
         `git push -f`,
         `cd ..`,
-        `rm -rf ${tmpDirBasename}`,
-    ].join(" && "),
+        `rm -rf ${tmpDirBasename}`
+    ].join(" && ")
 );
 
 console.log("https://github.com/etalab/sill-data-test");

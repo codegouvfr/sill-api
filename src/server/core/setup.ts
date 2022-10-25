@@ -1,8 +1,5 @@
 import type { ReturnType } from "tsafe";
-import {
-    createCoreFromUsecases,
-    createUsecasesApi,
-} from "redux-clean-architecture";
+import { createCoreFromUsecases, createUsecasesApi } from "redux-clean-architecture";
 import type { GenericCreateEvt, GenericThunks } from "redux-clean-architecture";
 import type { UserApi } from "./ports/UserApi";
 import type { GitDbApiParams } from "./adapters/createGitDbApi";
@@ -31,11 +28,11 @@ export async function createCore(params: CoreParams) {
             "userApi":
                 keycloakUserApiParams === undefined
                     ? createObjectThatThrowsIfAccessed<UserApi>({
-                          "debugMessage": "No Keycloak server",
+                          "debugMessage": "No Keycloak server"
                       })
-                    : createKeycloakUserApi(keycloakUserApiParams),
+                    : createKeycloakUserApi(keycloakUserApiParams)
         },
-        usecases,
+        usecases
     });
 
     await core.dispatch(webApiUsecase.privateThunks.initialize());

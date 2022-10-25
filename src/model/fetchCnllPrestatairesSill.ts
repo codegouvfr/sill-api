@@ -10,12 +10,12 @@ const url = "https://annuaire.cnll.fr/api/prestataires-sill.json";
 export const fetchCnllPrestatairesSill = memoize(
     () =>
         fetch(url, {
-            "agent": new https.Agent({ "rejectUnauthorized": false }),
+            "agent": new https.Agent({ "rejectUnauthorized": false })
         })
             .then(res => res.text())
             .then(text => JSON.parse(text))
             .then(zCnllPrestatairesSill.parse),
-    { "promise": true, "maxAge": 5 * 60 * 1000 },
+    { "promise": true, "maxAge": 5 * 60 * 1000 }
 );
 
 export type CnllPrestatairesSill = {
@@ -39,16 +39,11 @@ const zCnllPrestatairesSill = z.array(
             z.object({
                 "nom": z.string(),
                 "siren": z.string(),
-                "url": z.string(),
-            }),
+                "url": z.string()
+            })
         ),
-        "sill_id": z.number(),
-    }),
+        "sill_id": z.number()
+    })
 );
 
-assert<
-    Equals<
-        ReturnType<typeof zCnllPrestatairesSill["parse"]>,
-        CnllPrestatairesSill
-    >
->();
+assert<Equals<ReturnType<typeof zCnllPrestatairesSill["parse"]>, CnllPrestatairesSill>>();

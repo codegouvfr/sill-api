@@ -7,11 +7,7 @@ import type { CompiledData } from "../model/types";
 import { removeReferent } from "../model/types";
 import * as fs from "fs";
 import { assert } from "tsafe/assert";
-import {
-    compiledDataJsonRelativeFilePath,
-    buildBranch,
-    createGitDbApi,
-} from "../server/core/adapters/createGitDbApi";
+import { compiledDataJsonRelativeFilePath, buildBranch, createGitDbApi } from "../server/core/adapters/createGitDbApi";
 import { ErrorNoBranch } from "../tools/gitSsh";
 import { gitSsh } from "../tools/gitSsh";
 
@@ -21,31 +17,22 @@ async function main(params: {
     sshPrivateKey: string;
     isIncremental: boolean;
 }): Promise<void> {
-    const { dataRepoSshUrl, sshPrivateKeyName, sshPrivateKey, isIncremental } =
-        params;
+    const { dataRepoSshUrl, sshPrivateKeyName, sshPrivateKey, isIncremental } = params;
 
     const { fetchCompiledData, fetchDb } = createGitDbApi({
         dataRepoSshUrl,
         sshPrivateKey,
-        sshPrivateKeyName,
+        sshPrivateKeyName
     });
 
     const { compiledData } = await (async () => {
-        const {
-            softwareRows,
-            referentRows,
-            softwareReferentRows,
-            serviceRows,
-        } = await fetchDb();
+        const { softwareRows, referentRows, softwareReferentRows, serviceRows } = await fetchDb();
 
         const currentCatalog = isIncremental
             ? await fetchCompiledData().then(
                   ({ catalog }) => catalog,
                   error =>
-                      error instanceof ErrorNoBranch
-                          ? (console.log("There is no build branch yet"),
-                            undefined)
-                          : error,
+                      error instanceof ErrorNoBranch ? (console.log("There is no build branch yet"), undefined) : error
               )
             : undefined;
 
@@ -54,16 +41,16 @@ async function main(params: {
             referentRows,
             softwareReferentRows,
             currentCatalog,
-            "log": console.log,
+            "log": console.log
         });
 
         const { services } = await buildServices({
-            serviceRows,
+            serviceRows
         });
 
         const compiledData: CompiledData<"with referents"> = {
             catalog,
-            services,
+            services
         };
 
         return { compiledData };
@@ -71,7 +58,7 @@ async function main(params: {
 
     const compiledData_withoutReferents: CompiledData<"without referents"> = {
         ...compiledData,
-        "catalog": compiledData.catalog.map(removeReferent),
+        "catalog": compiledData.catalog.map(removeReferent)
     };
 
     gitSsh({
@@ -83,25 +70,22 @@ async function main(params: {
             for (const [relativeJsonFilePath, data] of [
                 [compiledDataJsonRelativeFilePath, compiledData],
                 [
-                    `${compiledDataJsonRelativeFilePath.replace(
-                        /\.json$/,
-                        "",
-                    )}_withoutReferents.json`,
-                    compiledData_withoutReferents,
-                ],
+                    `${compiledDataJsonRelativeFilePath.replace(/\.json$/, "")}_withoutReferents.json`,
+                    compiledData_withoutReferents
+                ]
             ] as const) {
                 fs.writeFileSync(
                     pathJoin(repoPath, relativeJsonFilePath),
-                    Buffer.from(JSON.stringify(data, null, 2), "utf8"),
+                    Buffer.from(JSON.stringify(data, null, 2), "utf8")
                 );
             }
 
             return Promise.resolve({
                 "doCommit": true,
                 "doAddAll": true,
-                "message": "Updating compiled data",
+                "message": "Updating compiled data"
             });
-        },
+        }
     });
 }
 
@@ -126,6 +110,6 @@ if (require.main === module) {
         dataRepoSshUrl,
         sshPrivateKeyName,
         sshPrivateKey,
-        "isIncremental": INCREMENTAL === "true",
+        "isIncremental": INCREMENTAL === "true"
     });
 }

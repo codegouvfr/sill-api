@@ -26,14 +26,14 @@ export function getCommitAheadFactory(params: { octokit: Octokit }) {
             owner,
             repo,
             "branch1": branchBehind,
-            "branch2": branchAhead,
+            "branch2": branchAhead
         });
 
         const commits = await listCommit({
             owner,
             repo,
             "branch": branchAhead,
-            sha,
+            sha
         });
 
         return { commits };

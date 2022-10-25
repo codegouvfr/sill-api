@@ -20,13 +20,13 @@ export async function getLatestSemVersionedTagFromSourceUrl(params: {
     const octokit = getOctokit(githubPersonalAccessToken);
 
     const { getLatestSemVersionedTag } = getLatestSemVersionedTagFactory({
-        octokit,
+        octokit
     });
 
     const tag = await getLatestSemVersionedTag({
         "owner": parsedGitHubRepoUrl.owner,
         "repo": parsedGitHubRepoUrl.repoName,
-        "doIgnoreBeta": true,
+        "doIgnoreBeta": true
     })
         .then(res => (res === undefined ? undefined : res.tag))
         .catch(error => (console.warn(error.message), undefined));
@@ -36,9 +36,5 @@ export async function getLatestSemVersionedTagFromSourceUrl(params: {
 
 const getOctokit = memoize(
     (githubPersonalAccessToken: string | undefined) =>
-        new Octokit(
-            githubPersonalAccessToken === undefined
-                ? undefined
-                : { "auth": githubPersonalAccessToken },
-        ),
+        new Octokit(githubPersonalAccessToken === undefined ? undefined : { "auth": githubPersonalAccessToken })
 );

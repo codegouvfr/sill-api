@@ -4,11 +4,7 @@ import memoize from "memoizee";
 import createKeycloakBacked from "keycloak-backend";
 import { assert } from "tsafe/assert";
 
-export function createValidateKeycloakSignature(params: {
-    url: string;
-    realm: string;
-    clientId: string;
-}) {
+export function createValidateKeycloakSignature(params: { url: string; realm: string; clientId: string }) {
     const { url, realm, clientId } = params;
 
     const getKeycloakBackendVerifyOffline = memoize(
@@ -18,53 +14,42 @@ export function createValidateKeycloakSignature(params: {
             const keycloakBackend = createKeycloakBacked({
                 realm,
                 "auth-server-url": url.replace("/auth", ""),
-                "client_id": clientId,
+                "client_id": clientId
             });
 
-            async function keycloakBackendVerifyOffline(params: {
-                keycloakOidcAccessToken: string;
-            }): Promise<void> {
+            async function keycloakBackendVerifyOffline(params: { keycloakOidcAccessToken: string }): Promise<void> {
                 const { keycloakOidcAccessToken } = params;
-                const o = await keycloakBackend.jwt.verifyOffline(
-                    keycloakOidcAccessToken,
-                    cert,
-                );
+                const o = await keycloakBackend.jwt.verifyOffline(keycloakOidcAccessToken, cert);
 
                 assert(!o.isExpired(), "Token is expired");
             }
 
             return { keycloakBackendVerifyOffline };
         },
-        { "promise": true },
+        { "promise": true }
     );
 
     async function validateKeycloakSignature(params: { jwtToken: string }) {
         const { jwtToken } = params;
 
-        const { keycloakBackendVerifyOffline } =
-            await getKeycloakBackendVerifyOffline();
+        const { keycloakBackendVerifyOffline } = await getKeycloakBackendVerifyOffline();
 
         await keycloakBackendVerifyOffline({
-            "keycloakOidcAccessToken": jwtToken,
+            "keycloakOidcAccessToken": jwtToken
         });
     }
 
     return { validateKeycloakSignature };
 }
 
-async function fetchKeycloakRealmPublicCert(params: {
-    url: string;
-    realm: string;
-}) {
+async function fetchKeycloakRealmPublicCert(params: { url: string; realm: string }) {
     const { url, realm } = params;
 
-    const obj = await fetch(
-        urlJoin(url, "realms", realm, "protocol/openid-connect/certs"),
-    ).then(res => res.json());
+    const obj = await fetch(urlJoin(url, "realms", realm, "protocol/openid-connect/certs")).then(res => res.json());
 
     return [
         "-----BEGIN CERTIFICATE-----",
         obj["keys"].find(({ use }: any) => use === "sig")["x5c"][0],
-        "-----END CERTIFICATE-----",
+        "-----END CERTIFICATE-----"
     ].join("\n");
 }

@@ -1,10 +1,4 @@
-import type {
-    CompiledData,
-    SoftwareRow,
-    ReferentRow,
-    SoftwareReferentRow,
-    WikidataData,
-} from "./types";
+import type { CompiledData, SoftwareRow, ReferentRow, SoftwareReferentRow, WikidataData } from "./types";
 import { assert } from "tsafe/assert";
 import { exclude } from "tsafe/exclude";
 import { fetchWikiDataData } from "./fetchWikiDataData";
@@ -25,35 +19,27 @@ export async function buildCatalog(params: {
         currentCatalog,
         log = () => {
             /*nothing*/
-        },
+        }
     } = params;
 
-    const [{ softwares: cdlSoftwares }, cnllPrestatairesSill] =
-        await Promise.all([
-            fetchComptoirDuLibre(),
-            fetchCnllPrestatairesSill(),
-        ]);
+    const [{ softwares: cdlSoftwares }, cnllPrestatairesSill] = await Promise.all([
+        fetchComptoirDuLibre(),
+        fetchCnllPrestatairesSill()
+    ]);
 
     const wikiDataDataById: Record<string, WikidataData | undefined> = {};
 
     {
-        const wikidataIds = softwareRows
-            .map(({ wikidataId }) => wikidataId)
-            .filter(exclude(undefined));
+        const wikidataIds = softwareRows.map(({ wikidataId }) => wikidataId).filter(exclude(undefined));
 
         for (let i = 0; i < wikidataIds.length; i++) {
             const wikidataId = wikidataIds[i];
 
-            log(
-                `Fetching WikiData entry ${wikidataId} (${i + 1}/${
-                    wikidataIds.length
-                })`,
-            );
+            log(`Fetching WikiData entry ${wikidataId} (${i + 1}/${wikidataIds.length})`);
 
             wikiDataDataById[wikidataId] =
-                currentCatalog?.find(
-                    software => software.wikidataData?.id === wikidataId,
-                )?.wikidataData ?? (await fetchWikiDataData({ wikidataId }));
+                currentCatalog?.find(software => software.wikidataData?.id === wikidataId)?.wikidataData ??
+                (await fetchWikiDataData({ wikidataId }));
         }
     }
 
@@ -62,61 +48,36 @@ export async function buildCatalog(params: {
             softwareRow,
             "referents": softwareReferentRows
                 .filter(({ softwareId }) => softwareId === softwareRow.id)
-                .map(
-                    ({
-                        referentEmail,
-                        isExpert,
-                        useCaseDescription,
-                        isPersonalUse,
-                    }) => ({
-                        "referent": referentRows.find(
-                            ({ email }) => email === referentEmail,
-                        ),
-                        isExpert,
-                        useCaseDescription,
-                        isPersonalUse,
-                    }),
-                )
-                .map(
-                    ({ referent, ...rest }) => (
-                        assert(referent !== undefined), { referent, ...rest }
-                    ),
-                )
-                .map(
-                    ({
-                        referent,
-                        isExpert,
-                        useCaseDescription,
-                        isPersonalUse,
-                    }) => ({
-                        ...referent,
-                        isExpert,
-                        useCaseDescription,
-                        isPersonalUse,
-                    }),
-                ),
+                .map(({ referentEmail, isExpert, useCaseDescription, isPersonalUse }) => ({
+                    "referent": referentRows.find(({ email }) => email === referentEmail),
+                    isExpert,
+                    useCaseDescription,
+                    isPersonalUse
+                }))
+                .map(({ referent, ...rest }) => (assert(referent !== undefined), { referent, ...rest }))
+                .map(({ referent, isExpert, useCaseDescription, isPersonalUse }) => ({
+                    ...referent,
+                    isExpert,
+                    useCaseDescription,
+                    isPersonalUse
+                }))
         }))
         .map(
             ({
                 softwareRow: { wikidataId, comptoirDuLibreId, ...rest },
-                referents,
+                referents
             }): CompiledData.Software<"with referents"> => ({
                 ...rest,
-                "wikidataData":
-                    wikidataId === undefined
-                        ? undefined
-                        : wikiDataDataById[wikidataId],
+                "wikidataData": wikidataId === undefined ? undefined : wikiDataDataById[wikidataId],
                 "comptoirDuLibreSoftware":
                     comptoirDuLibreId === undefined
                         ? undefined
                         : (() => {
-                              const cdlSoftware = cdlSoftwares.find(
-                                  ({ id }) => comptoirDuLibreId === id,
-                              );
+                              const cdlSoftware = cdlSoftwares.find(({ id }) => comptoirDuLibreId === id);
 
                               assert(
                                   cdlSoftware !== undefined,
-                                  `Comptoir du libre id: ${comptoirDuLibreId} does not match any software`,
+                                  `Comptoir du libre id: ${comptoirDuLibreId} does not match any software`
                               );
 
                               return cdlSoftware;
@@ -126,10 +87,10 @@ export async function buildCatalog(params: {
                     ?.prestataires.map(({ nom, siren, url }) => ({
                         "name": nom,
                         siren,
-                        url,
+                        url
                     })),
-                referents,
-            }),
+                referents
+            })
         );
 
     return { catalog };

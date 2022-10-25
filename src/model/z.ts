@@ -7,12 +7,12 @@ import type { Language, LocalizedString } from "./types";
 export const zSoftwareRef = z.union([
     z.object({
         "isKnown": z.literal(true),
-        "softwareId": z.number(),
+        "softwareId": z.number()
     }),
     z.object({
         "isKnown": z.literal(false),
-        "softwareName": z.string(),
-    }),
+        "softwareName": z.string()
+    })
 ]);
 
 {
@@ -31,7 +31,7 @@ export const zSoftwareRow = z.object({
         .object({
             "reason": z.string().optional(),
             "time": z.number(),
-            "lastRecommendedVersion": z.string().optional(),
+            "lastRecommendedVersion": z.string().optional()
         })
         .optional(),
     "isStillInObservation": z.boolean(),
@@ -44,24 +44,19 @@ export const zSoftwareRow = z.object({
     "license": z.string(),
     "contextOfUse": z.string().optional(),
     "catalogNumeriqueGouvFrId": z.string().optional(),
-    "mimGroup": z.union([
-        z.literal("MIMO"),
-        z.literal("MIMDEV"),
-        z.literal("MIMPROD"),
-        z.literal("MIMDEVOPS"),
-    ]),
+    "mimGroup": z.union([z.literal("MIMO"), z.literal("MIMDEV"), z.literal("MIMPROD"), z.literal("MIMDEVOPS")]),
     "versionMin": z.string(),
     "workshopUrls": z.array(z.string()),
     "testUrls": z.array(
         z.object({
             "description": z.string(),
-            "url": z.string(),
-        }),
+            "url": z.string()
+        })
     ),
     "useCaseUrls": z.array(z.string()),
     "agentWorkstation": z.boolean(),
     "tags": z.array(z.string()).optional(),
-    "generalInfoMd": z.string().optional(),
+    "generalInfoMd": z.string().optional()
 });
 
 {
@@ -80,10 +75,7 @@ const zLanguage = z.union([z.literal("en"), z.literal("fr")]);
     assert<Equals<Got, Expected>>();
 }
 
-export const zLocalizedString = z.union([
-    z.string(),
-    z.record(zLanguage, z.string()),
-]);
+export const zLocalizedString = z.union([z.string(), z.record(zLanguage, z.string())]);
 
 {
     type Got = ReturnType<typeof zLocalizedString["parse"]>;

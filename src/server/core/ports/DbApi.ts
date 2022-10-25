@@ -1,10 +1,4 @@
-import type {
-    CompiledData,
-    SoftwareRow,
-    ReferentRow,
-    SoftwareReferentRow,
-    ServiceRow,
-} from "../../../model/types";
+import type { CompiledData, SoftwareRow, ReferentRow, SoftwareReferentRow, ServiceRow } from "../../../model/types";
 
 export type Db = {
     softwareRows: SoftwareRow[];

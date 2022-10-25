@@ -9,9 +9,7 @@ import type { Octokit } from "@octokit/rest";
 */
 
 /** Alias for the non exported ReposListCommitsResponseData type alias */
-export type Commit = ReturnType<
-    Octokit["repos"]["listCommits"]
->["data"][number];
+export type Commit = ReturnType<Octokit["repos"]["listCommits"]>["data"][number];
 
 const per_page = 30;
 
@@ -19,11 +17,7 @@ const per_page = 30;
 export function getCommitAsyncIterableFactory(params: { octokit: Octokit }) {
     const { octokit } = params;
 
-    function getCommitAsyncIterable(params: {
-        owner: string;
-        repo: string;
-        branch: string;
-    }): AsyncIterable<Commit> {
+    function getCommitAsyncIterable(params: { owner: string; repo: string; branch: string }): AsyncIterable<Commit> {
         const { owner, repo, branch } = params;
 
         let commits: Commit[] = [];
@@ -39,7 +33,7 @@ export function getCommitAsyncIterableFactory(params: { octokit: Octokit }) {
                     repo,
                     per_page,
                     "page": params.page,
-                    "sha": branch,
+                    "sha": branch
                 })
                 .then(({ data }) => data);
         return {
@@ -54,7 +48,7 @@ export function getCommitAsyncIterableFactory(params: { octokit: Octokit }) {
                             page++;
 
                             commits = await getReposListCommitsResponseData({
-                                page,
+                                page
                             });
 
                             if (commits.length === 0) {
@@ -65,7 +59,7 @@ export function getCommitAsyncIterableFactory(params: { octokit: Octokit }) {
                                 commits.length !== per_page ||
                                 (
                                     await getReposListCommitsResponseData({
-                                        "page": page + 1,
+                                        "page": page + 1
                                     })
                                 ).length === 0;
                         }
@@ -76,11 +70,11 @@ export function getCommitAsyncIterableFactory(params: { octokit: Octokit }) {
 
                         return {
                             "value": commit,
-                            "done": false,
+                            "done": false
                         };
-                    },
+                    }
                 };
-            },
+            }
         };
     }
 

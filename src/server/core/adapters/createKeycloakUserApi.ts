@@ -15,7 +15,7 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
     const keycloakAdminApiClient = createKeycloakAdminApiClient({
         url,
         adminPassword,
-        realm,
+        realm
     });
 
     const groupRef = runExclusive.createGroupRef();
@@ -24,42 +24,34 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
         "updateUserEmail": runExclusive.build(groupRef, ({ userId, email }) =>
             keycloakAdminApiClient.updateUser({
                 userId,
-                "body": { email },
-            }),
+                "body": { email }
+            })
         ),
-        "updateUserAgencyName": runExclusive.build(
-            groupRef,
-            ({ userId, agencyName }) =>
-                keycloakAdminApiClient.updateUser({
-                    userId,
-                    "body": { "attributes": { agencyName } },
-                }),
+        "updateUserAgencyName": runExclusive.build(groupRef, ({ userId, agencyName }) =>
+            keycloakAdminApiClient.updateUser({
+                userId,
+                "body": { "attributes": { agencyName } }
+            })
         ),
         "getAllowedEmailRegexp": memoize(
             async () => {
-                const attributes =
-                    await keycloakAdminApiClient.getUserProfileAttributes();
+                const attributes = await keycloakAdminApiClient.getUserProfileAttributes();
 
                 let emailRegExpStr: string;
 
                 try {
-                    emailRegExpStr = (
-                        attributes.find(({ name }) => name === "email") as any
-                    ).validations.pattern.pattern;
+                    emailRegExpStr = (attributes.find(({ name }) => name === "email") as any).validations.pattern
+                        .pattern;
                 } catch {
-                    throw new Error(
-                        `Can't extract RegExp from ${JSON.stringify(
-                            attributes,
-                        )}`,
-                    );
+                    throw new Error(`Can't extract RegExp from ${JSON.stringify(attributes)}`);
                 }
 
                 return emailRegExpStr;
             },
             {
                 "promise": true,
-                "maxAge": 5 * 60 * 1000,
-            },
+                "maxAge": 5 * 60 * 1000
+            }
         ),
         "getAgencyNames": memoize(
             async () => {
@@ -73,15 +65,14 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
 
                     const users = await keycloakAdminApiClient.getUsers({
                         first,
-                        max,
+                        max
                     });
 
                     users.forEach(user => {
                         let agencyName: string;
 
                         try {
-                            agencyName =
-                                user.attributes["agencyName"][0].toLowerCase();
+                            agencyName = user.attributes["agencyName"][0].toLowerCase();
                         } catch {
                             console.log("Strange user: ", user);
 
@@ -102,8 +93,8 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
             },
             {
                 "promise": true,
-                "maxAge": 60 * 60 * 1000,
-            },
-        ),
+                "maxAge": 60 * 60 * 1000
+            }
+        )
     };
 }

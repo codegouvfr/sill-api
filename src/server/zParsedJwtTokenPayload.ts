@@ -7,7 +7,7 @@ export const zParsedJwtTokenPayload = z.object({
     "id": z.string(),
     "email": z.string(),
     "agencyName": z.string(),
-    "locale": z.string().optional(),
+    "locale": z.string().optional()
 });
 
 export type ParsedJwt = ReturnType<typeof zParsedJwtTokenPayload["parse"]>;

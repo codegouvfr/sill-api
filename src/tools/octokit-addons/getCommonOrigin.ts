@@ -6,7 +6,7 @@ export function getCommonOriginFactory(params: { octokit: Octokit }) {
     const { octokit } = params;
 
     const { getCommitAsyncIterable } = getCommitAsyncIterableFactory({
-        octokit,
+        octokit
     });
 
     async function getCommonOrigin(params: {
@@ -17,18 +17,17 @@ export function getCommonOriginFactory(params: { octokit: Octokit }) {
     }): Promise<{ sha: string }> {
         const { owner, repo, branch1, branch2 } = params;
 
-        const [commitAsyncIterable1, commitAsyncIterable2] = (
-            [branch1, branch2] as const
-        ).map(branch => getCommitAsyncIterable({ owner, repo, branch }));
+        const [commitAsyncIterable1, commitAsyncIterable2] = ([branch1, branch2] as const).map(branch =>
+            getCommitAsyncIterable({ owner, repo, branch })
+        );
         const shas1: string[] = [];
         const shas2: string[] = [];
 
         for (;;) {
             const [itRes1, itRes2] = await Promise.all(
-                ([commitAsyncIterable1, commitAsyncIterable2] as const).map(
-                    commitAsyncIterable =>
-                        commitAsyncIterable[Symbol.asyncIterator]().next(),
-                ),
+                ([commitAsyncIterable1, commitAsyncIterable2] as const).map(commitAsyncIterable =>
+                    commitAsyncIterable[Symbol.asyncIterator]().next()
+                )
             );
             let sha1: string | undefined = undefined;
 

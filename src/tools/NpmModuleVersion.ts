@@ -7,9 +7,7 @@ export type NpmModuleVersion = {
 
 export namespace NpmModuleVersion {
     export function parse(versionStr: string): NpmModuleVersion {
-        const match = versionStr.match(
-            /^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta.([0-9]+))?/,
-        );
+        const match = versionStr.match(/^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta.([0-9]+))?/);
 
         if (!match) {
             throw new Error(`${versionStr} is not a valid NPM version`);
@@ -21,17 +19,13 @@ export namespace NpmModuleVersion {
             "patch": parseInt(match[3]),
             ...(() => {
                 const str = match[4];
-                return str === undefined
-                    ? {}
-                    : { "betaPreRelease": parseInt(str) };
-            })(),
+                return str === undefined ? {} : { "betaPreRelease": parseInt(str) };
+            })()
         };
     }
 
     export function stringify(v: NpmModuleVersion) {
-        return `${v.major}.${v.minor}.${v.patch}${
-            v.betaPreRelease === undefined ? "" : `-beta.${v.betaPreRelease}`
-        }`;
+        return `${v.major}.${v.minor}.${v.patch}${v.betaPreRelease === undefined ? "" : `-beta.${v.betaPreRelease}`}`;
     }
 
     /**
@@ -41,20 +35,11 @@ export namespace NpmModuleVersion {
      * v1  >  v2  => 1
      *
      */
-    export function compare(
-        v1: NpmModuleVersion,
-        v2: NpmModuleVersion,
-    ): -1 | 0 | 1 {
-        const sign = (diff: number): -1 | 0 | 1 =>
-            diff === 0 ? 0 : diff < 0 ? -1 : 1;
+    export function compare(v1: NpmModuleVersion, v2: NpmModuleVersion): -1 | 0 | 1 {
+        const sign = (diff: number): -1 | 0 | 1 => (diff === 0 ? 0 : diff < 0 ? -1 : 1);
         const noUndefined = (n: number | undefined) => n ?? Infinity;
 
-        for (const level of [
-            "major",
-            "minor",
-            "patch",
-            "betaPreRelease",
-        ] as const) {
+        for (const level of ["major", "minor", "patch", "betaPreRelease"] as const) {
             if (noUndefined(v1[level]) !== noUndefined(v2[level])) {
                 return sign(noUndefined(v1[level]) - noUndefined(v2[level]));
             }
@@ -77,17 +62,10 @@ export namespace NpmModuleVersion {
         const versionBehind = parse(params.versionBehindStr);
 
         if (compare(versionBehind, versionAhead) === 1) {
-            throw new Error(
-                `Version regression ${versionBehind} -> ${versionAhead}`,
-            );
+            throw new Error(`Version regression ${versionBehind} -> ${versionAhead}`);
         }
 
-        for (const level of [
-            "major",
-            "minor",
-            "patch",
-            "betaPreRelease",
-        ] as const) {
+        for (const level of ["major", "minor", "patch", "betaPreRelease"] as const) {
             if (versionBehind[level] !== versionAhead[level]) {
                 return level;
             }

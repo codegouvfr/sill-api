@@ -8,12 +8,7 @@ export function parseJwtPayload<Z extends ZodObject<any>>(params: {
     const { zParsedJwtTokenPayload, jwtClaims, jwtPayload } = params;
 
     return zParsedJwtTokenPayload.parse(
-        Object.fromEntries(
-            Object.entries(jwtClaims).map(([key, claimName]) => [
-                key,
-                jwtPayload[claimName],
-            ]),
-        ),
+        Object.fromEntries(Object.entries(jwtClaims).map(([key, claimName]) => [key, jwtPayload[claimName]]))
     ) as any;
 }
 
