@@ -42,8 +42,6 @@ export async function createCore(params: CoreParams) {
 
 type Core = ReturnType<typeof createCore>;
 
-export type ThunksExtraArgument = Core["thunksExtraArgument"];
-
 export type State = ReturnType<Core["getState"]>;
 
 export type Thunks = GenericThunks<Core>;

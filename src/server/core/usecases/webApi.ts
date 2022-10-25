@@ -1,13 +1,12 @@
 import structuredClone from "@ungap/structured-clone";
 import type { Thunks } from "../setup";
-import type { ThunksExtraArgument } from "../setup";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { State } from "../setup";
 import { createSelector } from "@reduxjs/toolkit";
 import { Db } from "../ports/DbApi";
 import { CompiledData } from "../../../model/types";
-import { createObjectThatThrowsIfAccessed } from "redux-clean-architecture";
+import { createObjectThatThrowsIfAccessed, createUsecaseContext } from "redux-clean-architecture";
 import { Mutex } from "async-mutex";
 import { assert } from "tsafe/assert";
 import type {
@@ -118,6 +117,13 @@ export const { reducer, actions } = createSlice({
     },
 });
 
+type UsecaseContext = {
+    mutex: Mutex;
+    sillJsonBuffer: Buffer;
+};
+
+const { setUsecaseContext, getUsecaseContext } = createUsecaseContext<UsecaseContext>();
+
 export const privateThunks = {
     "initialize": () => async (...args) => {
 
@@ -130,12 +136,12 @@ export const privateThunks = {
             dbApi.fetchCompiledData()
         ]);
 
-        const sliceContext: SliceContext = {
+        const usecaseContext: UsecaseContext = {
             "mutex": new Mutex(),
             "sillJsonBuffer": createObjectThatThrowsIfAccessed<Buffer>()
         };
 
-        setSliceContext(extraArg, sliceContext);
+        setUsecaseContext(extraArg, usecaseContext);
 
         dispatch(actions.stateUpdated({
             db,
@@ -155,7 +161,7 @@ export const privateThunks = {
                         , "utf8"),
                 ],
             )
-            .attach(buff => sliceContext.sillJsonBuffer = buff);
+            .attach(buff => usecaseContext.sillJsonBuffer = buff);
 
     },
     "updateStateRemoteAndLocal": (params: { newDb: Db; commitMessage: string; }) => async (...args) => {
@@ -193,7 +199,7 @@ export const thunks = {
 
         const [dispatch, , extraArg] = args;
 
-        const { mutex } = getSliceContext(extraArg);
+        const { mutex } = getUsecaseContext(extraArg);
 
         await mutex.runExclusive(async () => {
 
@@ -219,7 +225,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getSliceContext(extraArg);
+        const { mutex } = getUsecaseContext(extraArg);
 
         const { referentRow, softwareId, isExpert, useCaseDescription, isPersonalUse } = params;
 
@@ -288,7 +294,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getSliceContext(extraArg);
+        const { mutex } = getUsecaseContext(extraArg);
 
         const { email, softwareId } = params;
 
@@ -357,7 +363,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getSliceContext(extraArg);
+        const { mutex } = getUsecaseContext(extraArg);
 
         const { isExpert, isPersonalUse, referentRow, softwareRowEditableByForm, useCaseDescription } = params;
 
@@ -439,7 +445,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getSliceContext(extraArg);
+        const { mutex } = getUsecaseContext(extraArg);
 
         const { email, softwareId, softwareRowEditableByForm } = params;
 
@@ -499,7 +505,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getSliceContext(extraArg);
+        const { mutex } = getUsecaseContext(extraArg);
 
         const { dereferencing, email, isDeletion, softwareId } = params;
 
@@ -569,7 +575,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getSliceContext(extraArg);
+        const { mutex } = getUsecaseContext(extraArg);
 
         const { email, newAgencyName } = params;
 
@@ -607,7 +613,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getSliceContext(extraArg);
+        const { mutex } = getUsecaseContext(extraArg);
 
         const { email, newEmail } = params;
 
@@ -650,7 +656,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getSliceContext(extraArg);
+        const { mutex } = getUsecaseContext(extraArg);
 
         const { email, reason, serviceId } = params;
 
@@ -687,7 +693,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getSliceContext(extraArg);
+        const { mutex } = getUsecaseContext(extraArg);
 
         const { email, serviceFormData } = params;
 
@@ -776,7 +782,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getSliceContext(extraArg);
+        const { mutex } = getUsecaseContext(extraArg);
 
         const { email, serviceFormData, serviceId } = params;
 
@@ -851,39 +857,12 @@ export const thunks = {
 
         const [,,extraArgs] = args;
 
-        const { sillJsonBuffer } = getSliceContext(extraArgs);
+        const { sillJsonBuffer } = getUsecaseContext(extraArgs);
 
         return sillJsonBuffer;
 
     }
 } satisfies Thunks;
-
-type SliceContext = {
-    mutex: Mutex;
-    sillJsonBuffer: Buffer;
-};
-
-const { getSliceContext, setSliceContext } = (() => {
-
-    const weakMap = new WeakMap<ThunksExtraArgument, SliceContext>();
-
-    function getSliceContext(extraArg: ThunksExtraArgument): SliceContext {
-        const sliceContext = weakMap.get(extraArg);
-
-        assert(sliceContext !== undefined, "Slice context not initialized");
-
-        return sliceContext;
-    }
-
-    function setSliceContext(
-        extraArg: ThunksExtraArgument,
-        sliceContext: SliceContext,
-    ): void {
-        weakMap.set(extraArg, sliceContext);
-    }
-
-    return { getSliceContext, setSliceContext };
-})();
 
 
 export const selectors = (() => {
