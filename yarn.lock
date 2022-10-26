@@ -1884,10 +1884,10 @@ react-markdown@^5.0.3:
     unist-util-visit "^2.0.0"
     xtend "^4.0.1"
 
-redux-clean-architecture@^2.6.1:
-  version "2.6.1"
-  resolved "https://registry.yarnpkg.com/redux-clean-architecture/-/redux-clean-architecture-2.6.1.tgz#948c0f1d38a72cd6aefb812c3575d5b441676c19"
-  integrity sha512-S256RidbmHH4gtPTOf1twPZ25+O9LpRtaMUrkStkl6G1Hy7owGuhXiAYEHoGKNfuhoF3aqsR6FI6fdee3r3vHA==
+redux-clean-architecture@^2.7.1:
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/redux-clean-architecture/-/redux-clean-architecture-2.7.1.tgz#59fb3ac2bf06b105b0230d9e456174c9683737cc"
+  integrity sha512-gau/dgkPqNnml2+Ilfb5SAwhpMwWGC2xQJQTcTQ0PrcxIQTE3fNQegrmGK/O/TeI0h7wjduD3Ylgm8KOadmkMw==
   dependencies:
     minimal-polyfills "^2.2.2"
     tsafe "^1.2.1"

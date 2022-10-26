@@ -6,7 +6,7 @@ import type { State } from "../setup";
 import { createSelector } from "@reduxjs/toolkit";
 import { Db } from "../ports/DbApi";
 import { CompiledData } from "../../../model/types";
-import { createObjectThatThrowsIfAccessed, createUsecaseContext } from "redux-clean-architecture";
+import { createObjectThatThrowsIfAccessed, createUsecaseContextApi } from "redux-clean-architecture";
 import { Mutex } from "async-mutex";
 import { assert } from "tsafe/assert";
 import type {
@@ -117,12 +117,11 @@ export const { reducer, actions } = createSlice({
     },
 });
 
-type UsecaseContext = {
-    mutex: Mutex;
-    sillJsonBuffer: Buffer;
-};
 
-const { setUsecaseContext, getUsecaseContext } = createUsecaseContext<UsecaseContext>();
+const { getContext } = createUsecaseContextApi(() => ({
+    "mutex": new Mutex(),
+    "sillJsonBuffer": createObjectThatThrowsIfAccessed<Buffer>()
+}));
 
 export const privateThunks = {
     "initialize": () => async (...args) => {
@@ -135,13 +134,6 @@ export const privateThunks = {
             dbApi.fetchDb(),
             dbApi.fetchCompiledData()
         ]);
-
-        const usecaseContext: UsecaseContext = {
-            "mutex": new Mutex(),
-            "sillJsonBuffer": createObjectThatThrowsIfAccessed<Buffer>()
-        };
-
-        setUsecaseContext(extraArg, usecaseContext);
 
         dispatch(actions.stateUpdated({
             db,
@@ -161,7 +153,7 @@ export const privateThunks = {
                         , "utf8"),
                 ],
             )
-            .attach(buff => usecaseContext.sillJsonBuffer = buff);
+            .attach(buff => getContext(extraArg).sillJsonBuffer = buff);
 
     },
     "updateStateRemoteAndLocal": (params: { newDb: Db; commitMessage: string; }) => async (...args) => {
@@ -199,7 +191,7 @@ export const thunks = {
 
         const [dispatch, , extraArg] = args;
 
-        const { mutex } = getUsecaseContext(extraArg);
+        const { mutex } = getContext(extraArg);
 
         await mutex.runExclusive(async () => {
 
@@ -225,7 +217,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getUsecaseContext(extraArg);
+        const { mutex } = getContext(extraArg);
 
         const { referentRow, softwareId, isExpert, useCaseDescription, isPersonalUse } = params;
 
@@ -294,7 +286,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getUsecaseContext(extraArg);
+        const { mutex } = getContext(extraArg);
 
         const { email, softwareId } = params;
 
@@ -363,7 +355,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getUsecaseContext(extraArg);
+        const { mutex } = getContext(extraArg);
 
         const { isExpert, isPersonalUse, referentRow, softwareRowEditableByForm, useCaseDescription } = params;
 
@@ -445,7 +437,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getUsecaseContext(extraArg);
+        const { mutex } = getContext(extraArg);
 
         const { email, softwareId, softwareRowEditableByForm } = params;
 
@@ -505,7 +497,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getUsecaseContext(extraArg);
+        const { mutex } = getContext(extraArg);
 
         const { dereferencing, email, isDeletion, softwareId } = params;
 
@@ -575,7 +567,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getUsecaseContext(extraArg);
+        const { mutex } = getContext(extraArg);
 
         const { email, newAgencyName } = params;
 
@@ -613,7 +605,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getUsecaseContext(extraArg);
+        const { mutex } = getContext(extraArg);
 
         const { email, newEmail } = params;
 
@@ -656,7 +648,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getUsecaseContext(extraArg);
+        const { mutex } = getContext(extraArg);
 
         const { email, reason, serviceId } = params;
 
@@ -693,7 +685,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getUsecaseContext(extraArg);
+        const { mutex } = getContext(extraArg);
 
         const { email, serviceFormData } = params;
 
@@ -782,7 +774,7 @@ export const thunks = {
 
         const [dispatch, getState, extraArg] = args;
 
-        const { mutex } = getUsecaseContext(extraArg);
+        const { mutex } = getContext(extraArg);
 
         const { email, serviceFormData, serviceId } = params;
 
@@ -855,9 +847,9 @@ export const thunks = {
     },
     "getSillJsonBuffer": () => (...args) => {
 
-        const [,,extraArgs] = args;
+        const [, , extraArgs] = args;
 
-        const { sillJsonBuffer } = getUsecaseContext(extraArgs);
+        const { sillJsonBuffer } = getContext(extraArgs);
 
         return sillJsonBuffer;
 
