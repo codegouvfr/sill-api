@@ -17,13 +17,13 @@ jobs:
     - uses: actions/setup-node@v2.1.3
     - uses: bahmutov/npm-install@v1
     # TODO: Uncomment once prettier support 'satisfies' from TS4.9
-    #- name: If this step fails run 'yarn format' then commit again.
-    #  run: |
-    #    PACKAGE_MANAGER=npm
-    #    if [ -f "./yarn.lock" ]; then
-    #        PACKAGE_MANAGER=yarn
-    #    fi
-    #    $PACKAGE_MANAGER run format:check
+    - name: If this step fails run 'yarn format' then commit again.
+      run: |
+        PACKAGE_MANAGER=npm
+        if [ -f "./yarn.lock" ]; then
+            PACKAGE_MANAGER=yarn
+        fi
+        $PACKAGE_MANAGER run format:check
   test:
     needs: test_lint
     runs-on: ubuntu-latest

@@ -56,7 +56,7 @@ const zServiceRow = z.intersection(
     ])
 );
 
-type Got = ReturnType<typeof zServiceRow["parse"]>;
+type Got = ReturnType<(typeof zServiceRow)["parse"]>;
 type Expected = ServiceRow;
 
 assert<Equals<Got, Expected>>();

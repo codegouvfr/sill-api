@@ -46,4 +46,4 @@ const zCnllPrestatairesSill = z.array(
     })
 );
 
-assert<Equals<ReturnType<typeof zCnllPrestatairesSill["parse"]>, CnllPrestatairesSill>>();
+assert<Equals<ReturnType<(typeof zCnllPrestatairesSill)["parse"]>, CnllPrestatairesSill>>();

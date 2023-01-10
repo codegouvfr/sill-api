@@ -242,7 +242,7 @@ function createGetClaimDataValue(params: { entity: Entity }) {
 
         return statementClaim
             .sort((a, b) => {
-                const getWeight = (rank: typeof a["rank"]) => (rank === "preferred" ? 1 : 0);
+                const getWeight = (rank: (typeof a)["rank"]) => (rank === "preferred" ? 1 : 0);
                 return getWeight(b.rank) - getWeight(a.rank);
             })
             .map(x => (x.mainsnak.datavalue as DataValue<Type>).value);

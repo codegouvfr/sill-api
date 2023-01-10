@@ -3,7 +3,7 @@ import type { PartialNoOptional } from "../tools/PartialNoOptional";
 
 export const languages = ["fr", "en"] as const;
 
-export type Language = typeof languages[number];
+export type Language = (typeof languages)[number];
 
 export type LocalizedString = LocalizedString_generic<Language>;
 
@@ -109,7 +109,7 @@ export namespace SoftwareRef {
 
 export const mimGroups = ["MIMO", "MIMDEV", "MIMPROD", "MIMDEVOPS"] as const;
 
-export type MimGroup = typeof mimGroups[number];
+export type MimGroup = (typeof mimGroups)[number];
 
 export type ComptoirDuLibre = {
     date_of_export: string;

@@ -25,7 +25,7 @@ const zSoftwareReferentRow = z.object({
     "isPersonalUse": z.boolean()
 });
 
-type Got = ReturnType<typeof zSoftwareReferentRow["parse"]>;
+type Got = ReturnType<(typeof zSoftwareReferentRow)["parse"]>;
 type Expected = SoftwareReferentRow;
 
 assert<Equals<Got, Expected>>();

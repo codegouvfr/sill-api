@@ -10,6 +10,6 @@ export const zParsedJwtTokenPayload = z.object({
     "locale": z.string().optional()
 });
 
-export type ParsedJwt = ReturnType<typeof zParsedJwtTokenPayload["parse"]>;
+export type ParsedJwt = ReturnType<(typeof zParsedJwtTokenPayload)["parse"]>;
 
 assert<Equals<keyof ParsedJwt, keyof Configuration["jwtClaims"]>>();
