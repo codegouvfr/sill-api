@@ -90,7 +90,13 @@ const createRouter = async (coreApi: ReturnType<typeof createCoreApi>) => {
             "resolve": (() => {
                 const { keycloakParams, jwtClaims } = configuration;
 
-                return () => ({ keycloakParams, jwtClaims });
+                return () => ({
+                    "keycloakParams": {
+                        ...keycloakParams,
+                        "adminPassword": "you wish..."
+                    },
+                    jwtClaims
+                });
             })()
         })
         .query("getCompiledData", {
