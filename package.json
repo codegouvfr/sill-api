@@ -11,7 +11,7 @@
     "scripts": {
         "build": "tsc && yarn grant-exec-perms",
         "dev": "./.env.local.sh node dist/server/main.js",
-        "_format": "prettier '**/*.{ts,tsx,json,md}'",
+        "_format": "prettier \"**/*.{ts,tsx,json,md}\"",
         "format": "npm run _format -- --write",
         "format:check": "npm run _format -- --list-different",
         "grant-exec-perms": "node dist/bin/tools/grant-exec-perms.js"
