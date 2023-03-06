@@ -3,10 +3,10 @@
 export CONFIGURATION=$(cat << EOF
 {
   "keycloakParams": {
-    "url": "https://sill-auth.etalab.gouv.fr/auth",
+    "url": "https://auth.code.gouv.fr/auth",
     "realm": "etalab",
     "clientId": "sill",
-    "termsOfServices": "https://sill.etalab.gouv.fr/tos_fr.md",
+    "termsOfServices": "https://sill.code.gouv.fr/tos_fr.md",
     "adminPassword": "$KEYCLOAK_ETALAB_ADMIN_PASSWORD" 
   },
     "jwtClaims": {
