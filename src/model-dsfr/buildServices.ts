@@ -1,7 +1,7 @@
-import type { CompiledData, ServiceRow } from "./types";
+import type { CompiledData, InstanceRow } from "./types";
 
 export async function buildServices(params: {
-    serviceRows: ServiceRow[];
+    serviceRows: InstanceRow[];
 }): Promise<{ services: CompiledData.Service[] }> {
     const { serviceRows } = params;
 

@@ -1,4 +1,4 @@
-import type { CompiledData, SoftwareRow, ReferentRow, SoftwareReferentRow, WikidataData } from "./types";
+import type { CompiledData, SoftwareRow, AgentRow, SoftwareUserRow, SoftwareReferentRow, WikidataData } from "./types";
 import { assert } from "tsafe/assert";
 import { exclude } from "tsafe/exclude";
 import { fetchWikiDataData } from "./fetchWikiDataData";
@@ -7,15 +7,17 @@ import { fetchCnllPrestatairesSill } from "./fetchCnllPrestatairesSill";
 
 export async function buildCatalog(params: {
     softwareRows: SoftwareRow[];
-    referentRows: ReferentRow[];
+    agentRows: AgentRow[];
     softwareReferentRows: SoftwareReferentRow[];
+    softwareUserRows: SoftwareUserRow[];
     log?: typeof console.log;
     currentCatalog: CompiledData.Software<"with referents">[] | undefined;
 }): Promise<{ catalog: CompiledData.Software<"with referents">[] }> {
     const {
         softwareRows,
-        referentRows,
+        agentRows,
         softwareReferentRows,
+        softwareUserRows,
         currentCatalog,
         log = () => {
             /*nothing*/
@@ -48,24 +50,36 @@ export async function buildCatalog(params: {
             softwareRow,
             "referents": softwareReferentRows
                 .filter(({ softwareId }) => softwareId === softwareRow.id)
-                .map(({ referentEmail, isExpert, useCaseDescription, isPersonalUse }) => ({
-                    "referent": referentRows.find(({ email }) => email === referentEmail),
-                    isExpert,
-                    useCaseDescription,
-                    isPersonalUse
-                }))
-                .map(({ referent, ...rest }) => (assert(referent !== undefined), { referent, ...rest }))
-                .map(({ referent, isExpert, useCaseDescription, isPersonalUse }) => ({
-                    ...referent,
-                    isExpert,
-                    useCaseDescription,
-                    isPersonalUse
+                .map(({ agentEmail, softwareId, ...rest }) => ({
+                    ...(() => {
+                        const agentRow = agentRows.find(({ email }) => email === agentEmail);
+
+                        assert(agentRow !== undefined);
+
+                        return agentRow;
+                    })(),
+                    ...rest
+                })),
+            "users": softwareUserRows
+                .filter(({ softwareId }) => softwareId === softwareRow.id)
+                .map(({ agentEmail, softwareId, ...rest }) => ({
+                    ...(() => {
+                        const agentRow = agentRows.find(({ email }) => email === agentEmail);
+
+                        assert(agentRow !== undefined);
+
+                        const { email, ...rest } = agentRow;
+
+                        return rest;
+                    })(),
+                    ...rest
                 }))
         }))
         .map(
             ({
                 softwareRow: { wikidataId, comptoirDuLibreId, ...rest },
-                referents
+                referents,
+                users
             }): CompiledData.Software<"with referents"> => ({
                 ...rest,
                 "wikidataData": wikidataId === undefined ? undefined : wikiDataDataById[wikidataId],
@@ -89,7 +103,8 @@ export async function buildCatalog(params: {
                         siren,
                         url
                     })),
-                referents
+                referents,
+                users
             })
         );
 
