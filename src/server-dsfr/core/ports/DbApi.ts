@@ -1,10 +1,18 @@
-import type { CompiledData, SoftwareRow, ReferentRow, SoftwareReferentRow, ServiceRow } from "../../../model/types";
+import type {
+    CompiledData,
+    SoftwareRow,
+    AgentRow,
+    SoftwareUserRow,
+    SoftwareReferentRow,
+    InstanceRow
+} from "../../../model-dsfr/types";
 
 export type Db = {
     softwareRows: SoftwareRow[];
-    referentRows: ReferentRow[];
-    softwareReferentRows: SoftwareReferentRow[];
-    serviceRows: ServiceRow[];
+    agentRows: AgentRow[];
+    referentRows: SoftwareReferentRow[];
+    userRows: SoftwareUserRow[];
+    instanceRows: InstanceRow[];
 };
 
 export type DbApi = {

@@ -1,16 +1,17 @@
-import { DbApi } from "../ports/DbApi";
+import type { DbApi, Db } from "../ports/DbApi";
 import { gitSsh } from "../../../tools/gitSsh";
 import { Deferred } from "evt/tools/Deferred";
-import type { CompiledData, SoftwareRow, ReferentRow, SoftwareReferentRow, ServiceRow } from "../../../model/types";
+import type { CompiledData } from "../../../model-dsfr/types";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 
 export const buildBranch = "build";
 export const compiledDataJsonRelativeFilePath = "compiledData.json";
 const softwareJsonRelativeFilePath = "software.json";
-const referentJsonRelativeFilePath = "referent.json";
+const agentJsonRelativeFilePath = "agent.json";
 const softwareReferentJsonRelativeFilePath = "softwareReferent.json";
-const serviceJsonRelativeFilePath = "service.json";
+const softwareUserJsonRelativeFilePath = "softwareUser.json";
+const instanceJsonRelativeFilePath = "instance.json";
 
 export type GitDbApiParams = {
     dataRepoSshUrl: string;
@@ -46,24 +47,20 @@ export function createGitDbApi(params: GitDbApiParams): DbApi {
             return dOut.pr;
         },
         "fetchDb": () => {
-            const dOut = new Deferred<{
-                softwareRows: SoftwareRow[];
-                referentRows: ReferentRow[];
-                softwareReferentRows: SoftwareReferentRow[];
-                serviceRows: ServiceRow[];
-            }>();
+            const dOut = new Deferred<Db>();
 
             gitSsh({
                 "sshUrl": dataRepoSshUrl,
                 sshPrivateKeyName,
                 sshPrivateKey,
                 "action": async ({ repoPath }) => {
-                    const [softwareRows, referentRows, softwareReferentRows, serviceRows] = await Promise.all(
+                    const [softwareRows, agentRows, referentRows, userRows, instanceRows] = await Promise.all(
                         [
                             softwareJsonRelativeFilePath,
-                            referentJsonRelativeFilePath,
+                            agentJsonRelativeFilePath,
                             softwareReferentJsonRelativeFilePath,
-                            serviceJsonRelativeFilePath
+                            softwareUserJsonRelativeFilePath,
+                            instanceJsonRelativeFilePath
                         ]
                             .map(relativeFilePath => pathJoin(repoPath, relativeFilePath))
                             .map(filePath => fs.promises.readFile(filePath))
@@ -71,9 +68,10 @@ export function createGitDbApi(params: GitDbApiParams): DbApi {
 
                     dOut.resolve({
                         softwareRows,
+                        agentRows,
                         referentRows,
-                        softwareReferentRows,
-                        serviceRows
+                        userRows,
+                        instanceRows
                     });
 
                     return { "doCommit": false };
@@ -92,9 +90,10 @@ export function createGitDbApi(params: GitDbApiParams): DbApi {
                         (
                             [
                                 [softwareJsonRelativeFilePath, newDb.softwareRows],
-                                [referentJsonRelativeFilePath, newDb.referentRows],
-                                [softwareReferentJsonRelativeFilePath, newDb.softwareReferentRows],
-                                [serviceJsonRelativeFilePath, newDb.serviceRows]
+                                [agentJsonRelativeFilePath, newDb.agentRows],
+                                [softwareReferentJsonRelativeFilePath, newDb.referentRows],
+                                [softwareUserJsonRelativeFilePath, newDb.userRows],
+                                [instanceJsonRelativeFilePath, newDb.instanceRows]
                             ] as const
                         )
                             .map(
