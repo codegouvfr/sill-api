@@ -3,9 +3,9 @@ import memoize from "memoizee";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import * as JSONC from "comment-json";
-import type { LocalizedString } from "../model/types";
+import type { LocalizedString } from "../model-dsfr/types";
 import { z } from "zod";
-import { zLocalizedString } from "../model/z";
+import { zLocalizedString } from "../model-dsfr/z";
 
 export type Configuration = {
     keycloakParams?: {

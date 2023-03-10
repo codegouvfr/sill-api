@@ -1,11 +1,4 @@
-import type { CompiledData, SoftwareRow, ReferentRow, SoftwareReferentRow, ServiceRow } from "../../../model/types";
-
-export type Db = {
-    softwareRows: SoftwareRow[];
-    referentRows: ReferentRow[];
-    softwareReferentRows: SoftwareReferentRow[];
-    serviceRows: ServiceRow[];
-};
+import type { CompiledData, Db } from "../../../model-dsfr/types";
 
 export type DbApi = {
     fetchCompiledData: () => Promise<CompiledData<"with referents">>;

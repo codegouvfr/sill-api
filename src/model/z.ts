@@ -1,23 +1,50 @@
 import { z } from "zod";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
-import type { SoftwareRow, SoftwareRef } from "./types";
-import type { Language, LocalizedString } from "./types";
+import type { SoftwareRow, Language, LocalizedString, WikidataEntry, Os, SoftwareType } from "./types";
 
-export const zSoftwareRef = z.union([
+export const zWikidataEntry = z.object({
+    "wikidataLabel": z.string(),
+    "wikidataDescription": z.string(),
+    "wikidataId": z.string()
+});
+
+{
+    type Got = ReturnType<(typeof zWikidataEntry)["parse"]>;
+    type Expected = WikidataEntry;
+
+    assert<Equals<Got, Expected>>();
+}
+
+export const zOs = z.enum(["windows", "linux", "mac"]);
+
+{
+    type Got = ReturnType<(typeof zOs)["parse"]>;
+    type Expected = Os;
+
+    assert<Equals<Got, Expected>>();
+}
+
+export const zSoftwareType = z.union([
     z.object({
-        "isKnown": z.literal(true),
-        "softwareId": z.number()
+        "type": z.literal("desktop"),
+        "os": z.object({
+            "windows": z.boolean(),
+            "linux": z.boolean(),
+            "mac": z.boolean()
+        })
     }),
     z.object({
-        "isKnown": z.literal(false),
-        "softwareName": z.string()
+        "type": z.literal("cloud")
+    }),
+    z.object({
+        "type": z.literal("stack")
     })
 ]);
 
 {
-    type Got = ReturnType<(typeof zSoftwareRef)["parse"]>;
-    type Expected = SoftwareRef;
+    type Got = ReturnType<(typeof zSoftwareType)["parse"]>;
+    type Expected = SoftwareType;
 
     assert<Equals<Got, Expected>>();
 }
@@ -35,16 +62,15 @@ export const zSoftwareRow = z.object({
         })
         .optional(),
     "isStillInObservation": z.boolean(),
-    "parentSoftware": zSoftwareRef.optional(),
+    "parentSoftware": zWikidataEntry.optional(),
     "isFromFrenchPublicService": z.boolean(),
     "isPresentInSupportContract": z.boolean(),
-    "alikeSoftwares": z.array(zSoftwareRef).optional(),
+    "similarSoftwares": z.array(zWikidataEntry),
     "wikidataId": z.string().optional(),
     "comptoirDuLibreId": z.number().optional(),
     "license": z.string(),
-    "contextOfUse": z.string().optional(),
+    "softwareType": zSoftwareType,
     "catalogNumeriqueGouvFrId": z.string().optional(),
-    "mimGroup": z.union([z.literal("MIMO"), z.literal("MIMDEV"), z.literal("MIMPROD"), z.literal("MIMDEVOPS")]),
     "versionMin": z.string(),
     "workshopUrls": z.array(z.string()),
     "testUrls": z.array(
@@ -53,9 +79,8 @@ export const zSoftwareRow = z.object({
             "url": z.string()
         })
     ),
-    "useCaseUrls": z.array(z.string()),
     "agentWorkstation": z.boolean(),
-    "tags": z.array(z.string()).optional(),
+    "categories": z.array(z.string()),
     "generalInfoMd": z.string().optional()
 });
 

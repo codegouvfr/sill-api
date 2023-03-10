@@ -1,5 +1,5 @@
 {
-    "name": "sill-api",
+    "name": "@codegouvfr/sill",
     "version": "0.29.3",
     "description": "The backend of sill.etalab.gouv.fr",
     "repository": {

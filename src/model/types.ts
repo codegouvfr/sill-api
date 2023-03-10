@@ -7,23 +7,43 @@ export type Language = (typeof languages)[number];
 
 export type LocalizedString = LocalizedString_generic<Language>;
 
+export type Os = "windows" | "linux" | "mac";
+
+export type SoftwareType = SoftwareType.Desktop | SoftwareType.CloudNative | SoftwareType.Stack;
+
+export namespace SoftwareType {
+    export type Desktop = {
+        type: "desktop";
+        os: Record<Os, boolean>;
+    };
+
+    export type CloudNative = {
+        type: "cloud";
+    };
+
+    export type Stack = {
+        type: "stack";
+    };
+}
+
 // https://git.sr.ht/~etalab/sill
 export type SoftwareRow = {
     id: number;
     name: string;
     function: string;
     referencedSinceTime: number;
+    updateTime: number;
     dereferencing?: {
         reason?: string;
         time: number;
         lastRecommendedVersion?: string;
     };
     isStillInObservation: boolean;
-    parentSoftware?: SoftwareRef;
+    parentSoftware?: WikidataEntry;
+    doRespectRgaa: boolean;
     isFromFrenchPublicService: boolean;
     isPresentInSupportContract: boolean;
-    alikeSoftwares?: SoftwareRef[];
-    //Should not be optional
+    similarSoftwares: WikidataEntry[];
     wikidataId?: string;
     //Example https://comptoir-du-libre.org/en/softwares/461 -> 461
     /* cspell: disable-next-line */
@@ -31,85 +51,61 @@ export type SoftwareRow = {
     // https://spdx.org/licenses/
     // https://www.data.gouv.fr/fr/pages/legal/licences/
     license: string;
-    contextOfUse?: string;
+    softwareType: SoftwareType;
     //Lien vers catalogue.numerique.gouv.fr
     /* cspell: disable-next-line */
     catalogNumeriqueGouvFrId?: string;
-    mimGroup: MimGroup;
     versionMin: string;
     workshopUrls: string[];
     testUrls: {
         description: string;
         url: string;
     }[];
-    useCaseUrls: string[];
-    agentWorkstation: boolean;
-    tags?: string[];
+    categories: string[];
     generalInfoMd?: string;
+    addedByAgentEmail: string;
 };
 
-export type ReferentRow = {
+export type AgentRow = {
     email: string;
-    familyName: string;
-    firstName: string;
-    agencyName: string;
+    organization: string;
 };
 
 export type SoftwareReferentRow = {
     softwareId: number;
-    referentEmail: string;
+    agentEmail: string;
     isExpert: boolean;
     useCaseDescription: string;
-    isPersonalUse: boolean;
+    /** NOTE: Can be not undefined only if cloud */
+    serviceUrl: string | undefined;
 };
 
-export type ServiceRow = ServiceRow.KnownSoftware | ServiceRow.UnknownSoftware;
+export type SoftwareUserRow = {
+    softwareId: number;
+    agentEmail: string;
+    useCaseDescription: string;
+    os: Os | undefined;
+    version: string;
+    /** NOTE: Can be not undefined only if cloud */
+    serviceUrl: string | undefined;
+};
 
-export namespace ServiceRow {
-    export type Common = {
-        id: number;
-        agencyName: string;
-        publicSector: string;
-        agencyUrl: string;
-        serviceName: string;
-        serviceUrl: string;
-        description: string;
-        //"2018" | "2019" | "2020" | "2021" | "2022";
-        publicationDate: string;
-        lastUpdateDate: string;
-        signupScope: string;
-        usageScope: string;
-        signupValidationMethod: string;
-        contentModerationMethod: string;
-    };
+export type InstanceRow = {
+    instanceId: number;
+    mainSoftwareSillId: number;
+    organization: string;
+    targetAudience: string;
+    publicUrl: string;
+    otherSoftwares: WikidataEntry[];
+};
 
-    export type KnownSoftware = Common & {
-        softwareSillId: number;
-    };
-
-    export type UnknownSoftware = Common & {
-        softwareSillId?: undefined;
-        softwareName: string;
-        comptoirDuLibreId?: number;
-    };
-}
-
-export type SoftwareRef = SoftwareRef.Known | SoftwareRef.Unknown;
-export namespace SoftwareRef {
-    export type Known = {
-        isKnown: true;
-        softwareId: number;
-    };
-
-    export type Unknown = {
-        isKnown: false;
-        softwareName: string;
-    };
-}
-
-export const mimGroups = ["MIMO", "MIMDEV", "MIMPROD", "MIMDEVOPS"] as const;
-
-export type MimGroup = (typeof mimGroups)[number];
+export type Db = {
+    softwareRows: SoftwareRow[];
+    agentRows: AgentRow[];
+    softwareReferentRows: SoftwareReferentRow[];
+    softwareUserRows: SoftwareUserRow[];
+    instanceRows: InstanceRow[];
+};
 
 export type ComptoirDuLibre = {
     date_of_export: string;
@@ -170,6 +166,12 @@ export type WikidataData = {
     license: string;
 }>;
 
+export type WikidataEntry = {
+    wikidataLabel: string;
+    wikidataDescription: string;
+    wikidataId: string;
+};
+
 export type CompiledData<T extends "with referents" | "without referents" = "without referents"> = {
     catalog: CompiledData.Software<T>[];
     services: CompiledData.Service[];
@@ -192,29 +194,39 @@ export namespace CompiledData {
         };
 
         export type WithoutReferent = Common & {
-            referentCount: number;
+            userAndReferentCountByOrganization: Record<string, { userCount: number; referentCount: number }>;
             hasExpertReferent: boolean;
         };
 
         export type WithReferent = Common & {
-            referents: (ReferentRow & {
-                isExpert: boolean;
-                useCaseDescription: string;
-                isPersonalUse: boolean;
-            })[];
+            users: (Omit<AgentRow, "email"> & Omit<SoftwareUserRow, "softwareId" | "agentEmail">)[];
+            referents: (AgentRow & Omit<SoftwareReferentRow, "softwareId" | "agentEmail">)[];
         };
     }
 
-    export type Service = ServiceRow;
+    export type Service = InstanceRow;
 }
 
 export function removeReferent(
     software: CompiledData.Software<"with referents">
 ): CompiledData.Software<"without referents"> {
-    const { referents, ...rest } = software;
+    const { referents, users, ...rest } = software;
     return {
         ...rest,
         "hasExpertReferent": referents.find(({ isExpert }) => isExpert) !== undefined,
-        "referentCount": referents.length
+        "userAndReferentCountByOrganization": (() => {
+            const out: CompiledData.Software.WithoutReferent["userAndReferentCountByOrganization"] = {};
+
+            referents.forEach(referent => {
+                const entry = (out[referent.organization] ??= { "referentCount": 0, "userCount": 0 });
+                entry.referentCount++;
+            });
+            users.forEach(user => {
+                const entry = (out[user.organization] ??= { "referentCount": 0, "userCount": 0 });
+                entry.userCount++;
+            });
+
+            return out;
+        })()
     };
 }
