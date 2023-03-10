@@ -1,24 +1,23 @@
-import type { CompiledData, SoftwareRow, AgentRow, SoftwareUserRow, SoftwareReferentRow, WikidataData } from "./types";
 import { assert } from "tsafe/assert";
 import { exclude } from "tsafe/exclude";
 import { fetchWikiDataData } from "./fetchWikiDataData";
 import { fetchComptoirDuLibre } from "./fetchComptoirDuLibre";
 import { fetchCnllPrestatairesSill } from "./fetchCnllPrestatairesSill";
+import type { Db, CompiledData, WikidataData } from "./types";
 
-export async function buildCatalog(params: {
-    softwareRows: SoftwareRow[];
-    agentRows: AgentRow[];
-    softwareReferentRows: SoftwareReferentRow[];
-    softwareUserRows: SoftwareUserRow[];
+export async function compileData(params: {
+    db: Db;
+    //NOTE: CompiledData["catalog"] is assignable to this
+    wikidataCacheCache:
+        | {
+              wikidataData?: WikidataData;
+          }[]
+        | undefined;
     log?: typeof console.log;
-    currentCatalog: CompiledData.Software<"with referents">[] | undefined;
-}): Promise<{ catalog: CompiledData.Software<"with referents">[] }> {
+}): Promise<CompiledData<"with referents">> {
     const {
-        softwareRows,
-        agentRows,
-        softwareReferentRows,
-        softwareUserRows,
-        currentCatalog,
+        db: { softwareRows, agentRows, softwareReferentRows, softwareUserRows, instanceRows },
+        wikidataCacheCache,
         log = () => {
             /*nothing*/
         }
@@ -40,7 +39,7 @@ export async function buildCatalog(params: {
             log(`Fetching WikiData entry ${wikidataId} (${i + 1}/${wikidataIds.length})`);
 
             wikiDataDataById[wikidataId] =
-                currentCatalog?.find(software => software.wikidataData?.id === wikidataId)?.wikidataData ??
+                wikidataCacheCache?.find(({ wikidataData }) => wikidataData?.id === wikidataId)?.wikidataData ??
                 (await fetchWikiDataData({ wikidataId }));
         }
     }
@@ -108,5 +107,8 @@ export async function buildCatalog(params: {
             })
         );
 
-    return { catalog };
+    return {
+        catalog,
+        "services": instanceRows
+    };
 }

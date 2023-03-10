@@ -32,6 +32,7 @@ export type SoftwareRow = {
     name: string;
     function: string;
     referencedSinceTime: number;
+    updateTime: number;
     dereferencing?: {
         reason?: string;
         time: number;
@@ -39,6 +40,7 @@ export type SoftwareRow = {
     };
     isStillInObservation: boolean;
     parentSoftware?: WikidataEntry;
+    doRespectRgaa: boolean;
     isFromFrenchPublicService: boolean;
     isPresentInSupportContract: boolean;
     similarSoftwares: WikidataEntry[];
@@ -59,9 +61,9 @@ export type SoftwareRow = {
         description: string;
         url: string;
     }[];
-    agentWorkstation: boolean;
     categories: string[];
     generalInfoMd?: string;
+    addedByAgentEmail: string;
 };
 
 export type AgentRow = {
@@ -95,6 +97,14 @@ export type InstanceRow = {
     targetAudience: string;
     publicUrl: string;
     otherSoftwares: WikidataEntry[];
+};
+
+export type Db = {
+    softwareRows: SoftwareRow[];
+    agentRows: AgentRow[];
+    softwareReferentRows: SoftwareReferentRow[];
+    softwareUserRows: SoftwareUserRow[];
+    instanceRows: InstanceRow[];
 };
 
 export type ComptoirDuLibre = {
