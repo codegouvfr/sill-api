@@ -1,7 +1,4 @@
 import fetch from "node-fetch";
-import type { Entity, DataValue, LocalizedString as WikiDataLocalizedString } from "../tools/WikidataEntity";
-import type { WikidataData, LocalizedString } from "./types";
-import { languages } from "./types";
 import * as cheerio from "cheerio";
 import { assert } from "tsafe/assert";
 import memoize from "memoizee";
@@ -10,18 +7,22 @@ import { allEquals } from "evt/tools/reducers/allEquals";
 import { exclude } from "tsafe/exclude";
 import { removeDuplicatesFactory } from "evt/tools/reducers/removeDuplicates";
 import { same } from "evt/tools/inDepth/same";
-import type { Language } from "../model/types";
 import { createResolveLocalizedString } from "i18nifty/LocalizedString";
 import { id } from "tsafe/id";
+import {
+    languages,
+    type Language,
+    type GetWikidataSoftware,
+    type WikidataSoftware,
+    type LocalizedString
+} from "../ports/GetWikidataSoftware";
+import type { Entity, DataValue, LocalizedString as WikiDataLocalizedString } from "../../tools/WikidataEntity";
 const { resolveLocalizedString } = createResolveLocalizedString({
     "currentLanguage": id<Language>("en"),
     "fallbackLanguage": "en"
 });
 
-// https://git.sr.ht/~etalab/sill-consolidate-data/tree/master/item/src/core.clj#L225-252
-export async function fetchWikidataData(params: { wikidataId: string }): Promise<WikidataData | undefined> {
-    const { wikidataId } = params;
-
+export const getWikidataSoftware: GetWikidataSoftware = async ({ wikidataId }) => {
     const { entity } =
         (await fetchEntity(wikidataId).catch(error => {
             if (error instanceof WikidataFetchError) {
@@ -122,19 +123,19 @@ export async function fetchWikidataData(params: { wikidataId: string }): Promise
                 const { entity } = await fetchEntity(id);
 
                 /*
-                    const { getClaimDataValue } = createGetClaimDataValue({
-                        entity,
-                    });
-
-                    const isHuman =
-                        getClaimDataValue<"wikibase-entityid">("P31").find(
-                            ({ id }) => id === "Q5",
-                        ) !== undefined;
-
-                    if (!isHuman) {
-                        return undefined;
-                    }
-                    */
+					const { getClaimDataValue } = createGetClaimDataValue({
+						entity,
+					});
+	
+					const isHuman =
+						getClaimDataValue<"wikibase-entityid">("P31").find(
+							({ id }) => id === "Q5",
+						) !== undefined;
+	
+					if (!isHuman) {
+						return undefined;
+					}
+					*/
 
                 const name = (() => {
                     const { shortName } = (() => {
@@ -176,12 +177,12 @@ export async function fetchWikidataData(params: { wikidataId: string }): Promise
                         "areEquals": same
                     });
 
-                    return removeDuplicates<WikidataData["developers"][number]>();
+                    return removeDuplicates<WikidataSoftware["developers"][number]>();
                 })()
             )
         )
     };
-}
+};
 
 function wikidataSingleLocalizedStringToLocalizedString(
     wikidataSingleLocalizedString: WikiDataLocalizedString.Single
@@ -251,4 +252,4 @@ function createGetClaimDataValue(params: { entity: Entity }) {
     return { getClaimDataValue };
 }
 
-//fetchWikiDataData({ "wikidataId": "Q112074632" }).then(console.log)
+//createWikidataApi().getWikidataSoftware({ "wikidataId": "Q112074632" }).then(console.log)

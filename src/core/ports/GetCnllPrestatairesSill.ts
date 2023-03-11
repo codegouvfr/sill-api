@@ -1,22 +1,11 @@
-import fetch from "node-fetch";
-import memoize from "memoizee";
 import { z } from "zod";
 import { assert } from "tsafe";
 import type { Equals } from "tsafe";
-import * as https from "https";
 
-const url = "https://annuaire.cnll.fr/api/prestataires-sill.json";
-
-export const fetchCnllPrestatairesSill = memoize(
-    () =>
-        fetch(url, {
-            "agent": new https.Agent({ "rejectUnauthorized": false })
-        })
-            .then(res => res.text())
-            .then(text => JSON.parse(text))
-            .then(zCnllPrestatairesSill.parse),
-    { "promise": true, "maxAge": 5 * 60 * 1000 }
-);
+export type GetCnllPrestatairesSill = {
+    (): Promise<CnllPrestatairesSill>;
+    clear: () => void;
+};
 
 export type CnllPrestatairesSill = {
     nom: string;
@@ -32,7 +21,7 @@ export namespace CnllPrestatairesSill {
     };
 }
 
-const zCnllPrestatairesSill = z.array(
+export const zCnllPrestatairesSill = z.array(
     z.object({
         "nom": z.string(),
         "prestataires": z.array(

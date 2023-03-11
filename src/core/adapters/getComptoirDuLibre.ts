@@ -1,10 +1,10 @@
 import fetch from "node-fetch";
-import type { ComptoirDuLibre } from "./types";
+import type { GetComptoirDuLibre, ComptoirDuLibre } from "../ports/GetComptoirDuLibre";
 import memoize from "memoizee";
 
 const url = "https://comptoir-du-libre.org/public/export/comptoir-du-libre_export_v1.json";
 
-export const fetchComptoirDuLibre = memoize(
+export const getComptoirDuLibre: GetComptoirDuLibre = memoize(
     () =>
         fetch(url)
             .then(res => res.text())
