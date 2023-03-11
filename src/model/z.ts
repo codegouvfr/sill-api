@@ -3,6 +3,8 @@ import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import type { SoftwareRow, Language, LocalizedString, WikidataEntry, Os, SoftwareType } from "./types";
 
+//TODO: See if we really need this file, probably not
+
 export const zWikidataEntry = z.object({
     "wikidataLabel": z.string(),
     "wikidataDescription": z.string(),

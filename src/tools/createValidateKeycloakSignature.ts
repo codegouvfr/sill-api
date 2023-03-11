@@ -4,7 +4,13 @@ import memoize from "memoizee";
 import createKeycloakBacked from "keycloak-backend";
 import { assert } from "tsafe/assert";
 
-export function createValidateKeycloakSignature(params: { url: string; realm: string; clientId: string }) {
+export type KeycloakParams = {
+    url: string;
+    realm: string;
+    clientId: string;
+};
+
+export function createValidateKeycloakSignature(params: KeycloakParams) {
     const { url, realm, clientId } = params;
 
     const getKeycloakBackendVerifyOffline = memoize(

@@ -19,7 +19,7 @@ const { resolveLocalizedString } = createResolveLocalizedString({
 });
 
 // https://git.sr.ht/~etalab/sill-consolidate-data/tree/master/item/src/core.clj#L225-252
-export async function fetchWikiDataData(params: { wikidataId: string }): Promise<WikidataData | undefined> {
+export async function fetchWikidataData(params: { wikidataId: string }): Promise<WikidataData | undefined> {
     const { wikidataId } = params;
 
     const { entity } =

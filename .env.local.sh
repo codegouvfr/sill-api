@@ -7,9 +7,10 @@ export CONFIGURATION=$(cat << EOF
     "realm": "etalab",
     "clientId": "sill",
     "termsOfServices": "https://sill.code.gouv.fr/tos_fr.md",
-    "adminPassword": "$KEYCLOAK_ETALAB_ADMIN_PASSWORD" 
+    "adminPassword": "$KEYCLOAK_ETALAB_ADMIN_PASSWORD",
+    "agencyNameAttributeName:": "agencyName"
   },
-    "jwtClaims": {
+  "jwtClaimByUserKey": {
     "id": "sub",
     "email": "email",
     "agencyName": "agency_name",

@@ -1,7 +1,7 @@
-import type { DbApi, Db } from "../ports/DbApi";
+import type { DbApi } from "../ports/DbApi";
 import { gitSsh } from "../../../tools/gitSsh";
 import { Deferred } from "evt/tools/Deferred";
-import type { CompiledData } from "../../../model-dsfr/types";
+import type { CompiledData } from "../../../model/types";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 

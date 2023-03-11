@@ -7,10 +7,11 @@ export type KeycloakUserApiParams = {
     url: string;
     adminPassword: string;
     realm: string;
+    agencyNameAttributeName: string;
 };
 
 export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
-    const { url, adminPassword, realm } = params;
+    const { url, adminPassword, realm, agencyNameAttributeName } = params;
 
     const keycloakAdminApiClient = createKeycloakAdminApiClient({
         url,
@@ -30,7 +31,7 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
         "updateUserAgencyName": runExclusive.build(groupRef, ({ userId, agencyName }) =>
             keycloakAdminApiClient.updateUser({
                 userId,
-                "body": { "attributes": { agencyName } }
+                "body": { "attributes": { [agencyNameAttributeName]: agencyName } }
             })
         ),
         "getAllowedEmailRegexp": memoize(

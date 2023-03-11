@@ -5,12 +5,14 @@ using react.
 If we where to change our UI framework we would only update this file to
 export an API more adapted to our new front. (But we don't plan to leave React)
 */
-import { createReactApi } from "redux-clean-architecture/react";
-import { createCore } from "./setup";
+import { createCoreApiFactory } from "redux-clean-architecture/vanilla";
+import { createCore } from "./core";
 import { usecases } from "./usecases";
+import type { ReturnType } from "tsafe";
 
-export const { createCoreProvider, selectors, useCoreEvts, useCoreExtras, useCoreFunctions, useCoreState } =
-    createReactApi({
-        createCore,
-        usecases
-    });
+export const { createCoreApi } = createCoreApiFactory({
+    createCore,
+    usecases
+});
+
+export type CoreApi = ReturnType<typeof createCoreApi>;

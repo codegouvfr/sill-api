@@ -1,18 +1,15 @@
 import structuredClone from "@ungap/structured-clone";
-import type { Thunks } from "../setup";
+import type { Thunks } from "../core";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "../setup";
+import type { RootState } from "../core";
 import { createSelector } from "@reduxjs/toolkit";
 import { createObjectThatThrowsIfAccessed, createUsecaseContextApi } from "redux-clean-architecture";
 import { Mutex } from "async-mutex";
 import { assert } from "tsafe/assert";
-import { compileData } from "../../../model-dsfr/compileData";
-import type { Db, CompiledData, AgentRow } from "../../../model-dsfr/types";
-import { zSoftwareRow } from "../../../model-dsfr/z";
-import type { Equals } from "tsafe";
-import { removeReferent } from "../../../model-dsfr/types";
-import { id } from "tsafe/id";
+import { compileData } from "../../../model/compileData";
+import type { Db, CompiledData, AgentRow } from "../../../model/types";
+import { removeReferent } from "../../../model/types";
 
 export type Software = {
     logoUrl: string | undefined;
@@ -93,8 +90,8 @@ export type Os = "windows" | "linux" | "mac";
 
 export type SoftwareFormData = {
     softwareType: SoftwareType;
-    wikidataId: string | undefined;
-    comptoirDuLibreId: number | undefined;
+    wikidataId?: string;
+    comptoirDuLibreId?: number;
     softwareName: string;
     softwareDescription: string;
     softwareLicense: string;
@@ -125,14 +122,6 @@ export namespace DeclarationFormData {
         serviceUrl: string | undefined;
     };
 }
-
-type CreateInstanceParam = {
-    mainSoftwareSillId: number;
-    organization: string;
-    targetAudience: string;
-    publicUrl: string | undefined;
-    otherSoftwares: WikidataEntry[];
-};
 
 type State = {
     db: Db;
