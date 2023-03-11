@@ -1,17 +1,17 @@
 import express from "express";
 import * as trpcExpress from "@trpc/server/adapters/express";
 import cors from "cors";
-import { createValidateGitHubWebhookSignature } from "../../tools/validateGithubWebhookSignature";
+import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWebhookSignature";
 import compression from "compression";
 import { createCoreApi } from "../core";
 import { buildBranch } from "../core/adapters/createGitDbApi";
-import type { LocalizedString } from "../../model/types";
+import type { LocalizedString } from "../model/types";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { createContextFactory, type User } from "./context";
 import { createRouter } from "./router";
 
-export async function main(params: {
+export async function startRpcService(params: {
     keycloakParams?: {
         url: string;
         realm: string;

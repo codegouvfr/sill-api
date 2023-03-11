@@ -2,8 +2,8 @@ import { symToStr } from "tsafe/symToStr";
 import { assert } from "tsafe/assert";
 import * as JSONC from "comment-json";
 import { z } from "zod";
-import { zLocalizedString } from "../model/z";
-import { main } from "./rpc";
+import { zLocalizedString } from "./model/z";
+import { startRpcService } from "./rpc";
 import { is } from "tsafe/is";
 
 const zParsedCONFIGURATION = z.object({
@@ -65,7 +65,7 @@ const { parsedCONFIGURATION } = (() => {
     return { parsedCONFIGURATION };
 })();
 
-main({
+startRpcService({
     ...parsedCONFIGURATION,
     "port": parsedCONFIGURATION.port ?? 8080
 });
