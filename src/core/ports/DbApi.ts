@@ -1,3 +1,5 @@
+import type { CompiledData } from "./CompileData";
+
 export type DbApi = {
     fetchCompiledData: () => Promise<CompiledData<"with referents">>;
     fetchDb: () => Promise<Db>;

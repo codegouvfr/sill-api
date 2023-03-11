@@ -1,7 +1,7 @@
-import type { DbApi } from "../ports/DbApi";
-import { gitSsh } from "../../../tools/gitSsh";
+import type { DbApi, Db } from "../ports/DbApi";
+import { gitSsh } from "../../tools/gitSsh";
 import { Deferred } from "evt/tools/Deferred";
-import type { CompiledData } from "../../../model/types";
+import type { CompiledData } from "../ports/CompileData";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 
@@ -54,23 +54,24 @@ export function createGitDbApi(params: GitDbApiParams): DbApi {
                 sshPrivateKeyName,
                 sshPrivateKey,
                 "action": async ({ repoPath }) => {
-                    const [softwareRows, agentRows, referentRows, userRows, instanceRows] = await Promise.all(
-                        [
-                            softwareJsonRelativeFilePath,
-                            agentJsonRelativeFilePath,
-                            softwareReferentJsonRelativeFilePath,
-                            softwareUserJsonRelativeFilePath,
-                            instanceJsonRelativeFilePath
-                        ]
-                            .map(relativeFilePath => pathJoin(repoPath, relativeFilePath))
-                            .map(filePath => fs.promises.readFile(filePath))
-                    ).then(buffers => buffers.map(buffer => JSON.parse(buffer.toString("utf8"))));
+                    const [softwareRows, agentRows, softwareReferentRows, softwareUserRows, instanceRows] =
+                        await Promise.all(
+                            [
+                                softwareJsonRelativeFilePath,
+                                agentJsonRelativeFilePath,
+                                softwareReferentJsonRelativeFilePath,
+                                softwareUserJsonRelativeFilePath,
+                                instanceJsonRelativeFilePath
+                            ]
+                                .map(relativeFilePath => pathJoin(repoPath, relativeFilePath))
+                                .map(filePath => fs.promises.readFile(filePath))
+                        ).then(buffers => buffers.map(buffer => JSON.parse(buffer.toString("utf8"))));
 
                     dOut.resolve({
                         softwareRows,
                         agentRows,
-                        referentRows,
-                        userRows,
+                        softwareReferentRows,
+                        softwareUserRows,
                         instanceRows
                     });
 
@@ -91,8 +92,8 @@ export function createGitDbApi(params: GitDbApiParams): DbApi {
                             [
                                 [softwareJsonRelativeFilePath, newDb.softwareRows],
                                 [agentJsonRelativeFilePath, newDb.agentRows],
-                                [softwareReferentJsonRelativeFilePath, newDb.referentRows],
-                                [softwareUserJsonRelativeFilePath, newDb.userRows],
+                                [softwareReferentJsonRelativeFilePath, newDb.softwareReferentRows],
+                                [softwareUserJsonRelativeFilePath, newDb.softwareUserRows],
                                 [instanceJsonRelativeFilePath, newDb.instanceRows]
                             ] as const
                         )

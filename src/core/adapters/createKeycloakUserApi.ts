@@ -1,4 +1,4 @@
-import { createKeycloakAdminApiClient } from "../../../tools/keycloakAdminApiClient";
+import { createKeycloakAdminApiClient } from "../../tools/keycloakAdminApiClient";
 import * as runExclusive from "run-exclusive";
 import memoize from "memoizee";
 import { UserApi } from "../ports/UserApi";

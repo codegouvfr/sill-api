@@ -5,7 +5,7 @@ import { zCnllPrestatairesSill, type GetCnllPrestatairesSill } from "../ports/Ge
 
 const url = "https://annuaire.cnll.fr/api/prestataires-sill.json";
 
-export const fetchCnllPrestatairesSill: GetCnllPrestatairesSill = memoize(
+export const getCnllPrestatairesSill: GetCnllPrestatairesSill = memoize(
     () =>
         fetch(url, {
             "agent": new https.Agent({ "rejectUnauthorized": false })

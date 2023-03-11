@@ -7,9 +7,8 @@ import { createSelector } from "@reduxjs/toolkit";
 import { createObjectThatThrowsIfAccessed, createUsecaseContextApi } from "redux-clean-architecture";
 import { Mutex } from "async-mutex";
 import { assert } from "tsafe/assert";
-import { compileData } from "../../../model/compileData";
-import type { Db, CompiledData, AgentRow } from "../../../model/types";
-import { removeReferent } from "../../../model/types";
+import type { Db } from "../ports/DbApi";
+import { type CompiledData, removeReferent } from "../ports/CompileData";
 
 export type Software = {
     logoUrl: string | undefined;
@@ -208,7 +207,7 @@ export const thunks = {
             return sillJsonBuffer;
         },
     "createSoftware":
-        (params: { formData: SoftwareFormData; agentRow: AgentRow }) =>
+        (params: { formData: SoftwareFormData; agent: Db.AgentRow }) =>
         async (...args) => {
             const [dispatch, getState, extraArg] = args;
 
@@ -216,7 +215,7 @@ export const thunks = {
 
             const { formData } = params;
 
-            const agentRow = { ...params.agentRow };
+            const agentRow = { ...params.agent };
 
             agentRow.email = agentRow.email.toLowerCase();
 
@@ -315,7 +314,7 @@ const internalThunks = {
         async (...args) => {
             const { newDb, commitMessage } = params;
 
-            const [dispatch, getState, { dbApi }] = args;
+            const [dispatch, getState, { dbApi, compileData }] = args;
 
             //NOTE: It's important to call buildCatalog first as it may crash
             //and if it does it mean that if we have committed we'll end up with

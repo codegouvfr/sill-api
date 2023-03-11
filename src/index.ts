@@ -24,4 +24,4 @@ export const tools = {
     parsedJwtPayloadToUser
 };
 
-export { type Language, type LocalizedString } from "./core/ports/GetWikidataSoftware";
+export { type Language, type LocalizedString, languages } from "./core/ports/GetWikidataSoftware";

@@ -92,21 +92,3 @@ export const zSoftwareRow = z.object({
 
     assert<Equals<Got, Expected>>();
 }
-
-const zLanguage = z.union([z.literal("en"), z.literal("fr")]);
-
-{
-    type Got = ReturnType<(typeof zLanguage)["parse"]>;
-    type Expected = Language;
-
-    assert<Equals<Got, Expected>>();
-}
-
-export const zLocalizedString = z.union([z.string(), z.record(zLanguage, z.string())]);
-
-{
-    type Got = ReturnType<(typeof zLocalizedString)["parse"]>;
-    type Expected = LocalizedString;
-
-    assert<Equals<Got, Expected>>();
-}

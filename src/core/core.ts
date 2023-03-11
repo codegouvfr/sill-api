@@ -8,6 +8,10 @@ import { createGitDbApi } from "./adapters/createGitDbApi";
 import type { KeycloakUserApiParams } from "./adapters/createKeycloakUserApi";
 import { createKeycloakUserApi } from "./adapters/createKeycloakUserApi";
 import { createObjectThatThrowsIfAccessed } from "redux-clean-architecture";
+import { createCompileData } from "./adapters/compileData";
+import { getWikidataSoftware } from "./adapters/getWikidataSoftware";
+import { getCnllPrestatairesSill } from "./adapters/getCnllPrestatairesSill";
+import { getComptoirDuLibre } from "./adapters/getComptoirDuLibre";
 
 export async function createCore(params: {
     gitDbApiParams: GitDbApiParams;
@@ -25,7 +29,12 @@ export async function createCore(params: {
                     ? createObjectThatThrowsIfAccessed<UserApi>({
                           "debugMessage": "No Keycloak server"
                       })
-                    : createKeycloakUserApi(keycloakUserApiParams)
+                    : createKeycloakUserApi(keycloakUserApiParams),
+            "compileData": createCompileData({
+                getWikidataSoftware,
+                getCnllPrestatairesSill,
+                getComptoirDuLibre
+            })
         }
     });
 
