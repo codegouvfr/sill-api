@@ -3,9 +3,7 @@ import type { ReturnType } from "tsafe";
 import { TRPCError } from "@trpc/server";
 import { assert } from "tsafe/assert";
 import { z } from "zod";
-import { fetchWikidataData } from "../model/fetchWikiDataData";
 import { getLatestSemVersionedTagFromSourceUrl } from "../tools/getLatestSemVersionedTagFromSourceUrl";
-import { fetchComptoirDuLibre } from "../model/fetchComptoirDuLibre";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { getProjectRoot } from "../tools/getProjectRoot";
@@ -81,16 +79,16 @@ export function createRouter(params: {
 
                 coreApi.functions.readWriteSillData.createSoftware({
                     formData,
-                    "agentRow": {
+                    "agent": {
                         "email": ctx.user.email,
                         "organization": ctx.user.agencyName
                     }
                 });
             }
         })
-        .mutation("updateAgencyName", {
+        .mutation("changeAgentOrganization", {
             "input": z.object({
-                "newAgencyName": z.string()
+                "newOrganization": z.string()
             }),
             "resolve": async ({ ctx, input }) => {
                 if (ctx === null) {
@@ -99,16 +97,12 @@ export function createRouter(params: {
 
                 assert(keycloakParams !== undefined);
 
-                const { newAgencyName } = input;
+                const { newOrganization } = input;
 
-                await coreApi.extras.userApi.updateUserAgencyName({
-                    "userId": ctx.user.id,
-                    "agencyName": newAgencyName
-                });
-
-                await readWriteSillData.changeUserAgencyName({
-                    "email": ctx.parsedJwt.email,
-                    newAgencyName
+                await coreApi.functions.readWriteSillData.changeAgentOrganization({
+                    "email": ctx.user.email,
+                    newOrganization,
+                    "userId": ctx.user.id
                 });
             }
         })
@@ -123,17 +117,11 @@ export function createRouter(params: {
 
                 const { newEmail } = input;
 
-                const { keycloakParams } = configuration;
-
                 assert(keycloakParams !== undefined);
 
-                await userApi.updateUserEmail({
-                    "userId": ctx.parsedJwt.id,
-                    "email": newEmail
-                });
-
-                await readWriteSillData.updateUserEmail({
-                    "email": ctx.parsedJwt.email,
+                await coreApi.functions.readWriteSillData.updateUserEmail({
+                    "userId": ctx.user.id,
+                    "email": ctx.user.email,
                     newEmail
                 });
             }

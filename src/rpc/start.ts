@@ -5,7 +5,7 @@ import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWeb
 import compression from "compression";
 import { createCoreApi } from "../core";
 import { buildBranch } from "../core/adapters/createGitDbApi";
-import type { LocalizedString } from "../model/types";
+import type { LocalizedString } from "../core/ports/GetWikidataSoftware";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { createContextFactory, type User } from "./context";

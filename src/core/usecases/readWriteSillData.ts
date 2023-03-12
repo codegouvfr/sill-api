@@ -274,6 +274,86 @@ export const thunks = {
                     })
                 );
             });
+        },
+    "changeAgentOrganization":
+        (params: { userId: string; email: string; newOrganization: string }) =>
+        async (...args) => {
+            const [dispatch, getState, extraArg] = args;
+
+            const { userApi } = extraArg;
+
+            const { mutex } = getContext(extraArg);
+
+            const { userId, email, newOrganization } = params;
+
+            await userApi.updateUserAgencyName({
+                "agencyName": newOrganization,
+                userId
+            });
+
+            await mutex.runExclusive(async () => {
+                const newDb = structuredClone(getState()[name].db);
+
+                const { agentRows } = newDb;
+
+                const agentRow = agentRows.find(row => row.email === email);
+
+                if (agentRow === undefined) {
+                    return;
+                }
+
+                const { organization: oldOrganization } = agentRow;
+
+                agentRow.organization = newOrganization;
+
+                await dispatch(
+                    internalThunks.update({
+                        newDb,
+                        "commitMessage": `Update ${email} organization from ${oldOrganization} to ${newOrganization}`
+                    })
+                );
+            });
+        },
+    "updateUserEmail":
+        (params: { userId: string; email: string; newEmail: string }) =>
+        async (...args) => {
+            const [dispatch, getState, extraArg] = args;
+
+            const { userApi } = extraArg;
+
+            const { mutex } = getContext(extraArg);
+
+            const { userId, email, newEmail } = params;
+
+            userApi.updateUserEmail({
+                "email": newEmail,
+                userId
+            });
+
+            await mutex.runExclusive(async () => {
+                const newDb = structuredClone(getState()[name].db);
+
+                const { agentRows, softwareReferentRows } = newDb;
+
+                const referent = agentRows.find(row => row.email === email);
+
+                if (referent === undefined) {
+                    return;
+                }
+
+                referent.email = newEmail;
+
+                softwareReferentRows
+                    .filter(({ agentEmail }) => agentEmail === email)
+                    .forEach(softwareReferentRow => (softwareReferentRow.agentEmail = newEmail));
+
+                await dispatch(
+                    internalThunks.update({
+                        newDb,
+                        "commitMessage": `Updating referent email from ${email} to ${newEmail}`
+                    })
+                );
+            });
         }
     /*
     "updateSoftware": (params: {
