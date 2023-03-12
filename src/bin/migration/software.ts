@@ -96,90 +96,88 @@ const zSoftwareRow = z.object({
     assert<Equals<Got, Expected>>();
 }
 
-if (require.main === module) {
-    const softwareFilePath = pathJoin(process.cwd(), "software.json");
+const softwareFilePath = pathJoin(process.cwd(), "software.json");
 
-    fs.writeFileSync(
-        softwareFilePath,
-        Buffer.from(
-            JSON.stringify(
-                JSON.parse(fs.readFileSync(softwareFilePath).toString("utf8")).map((softwareRow: Db.SoftwareRow) => {
-                    try {
-                        zSoftwareRow.parse(softwareRow);
-                    } catch (exception) {
-                        console.log(softwareRow);
+fs.writeFileSync(
+    softwareFilePath,
+    Buffer.from(
+        JSON.stringify(
+            JSON.parse(fs.readFileSync(softwareFilePath).toString("utf8")).map((softwareRow: Db.SoftwareRow) => {
+                try {
+                    zSoftwareRow.parse(softwareRow);
+                } catch (exception) {
+                    console.log(softwareRow);
 
-                        throw exception;
-                    }
+                    throw exception;
+                }
 
-                    const {
-                        id,
-                        name,
-                        "function": fun,
-                        referencedSinceTime,
-                        dereferencing,
-                        isStillInObservation,
-                        parentSoftware,
-                        isFromFrenchPublicService,
-                        isPresentInSupportContract,
-                        wikidataId,
-                        comptoirDuLibreId,
-                        license,
-                        catalogNumeriqueGouvFrId,
-                        versionMin,
-                        workshopUrls,
-                        testUrls,
-                        generalInfoMd,
-                        updateTime,
-                        doRespectRgaa,
-                        similarSoftwares,
-                        softwareType,
-                        categories,
-                        addedByAgentEmail,
-                        ...rest
-                    } = softwareRow;
+                const {
+                    id,
+                    name,
+                    "function": fun,
+                    referencedSinceTime,
+                    dereferencing,
+                    isStillInObservation,
+                    parentSoftware,
+                    isFromFrenchPublicService,
+                    isPresentInSupportContract,
+                    wikidataId,
+                    comptoirDuLibreId,
+                    license,
+                    catalogNumeriqueGouvFrId,
+                    versionMin,
+                    workshopUrls,
+                    testUrls,
+                    generalInfoMd,
+                    updateTime,
+                    doRespectRgaa,
+                    similarSoftwares,
+                    softwareType,
+                    categories,
+                    addedByAgentEmail,
+                    ...rest
+                } = softwareRow;
 
-                    // eslint-disable-next-line @typescript-eslint/ban-types
-                    assert<Equals<typeof rest, {}>>();
+                // eslint-disable-next-line @typescript-eslint/ban-types
+                assert<Equals<typeof rest, {}>>();
 
-                    try {
-                        assert(Object.keys(rest).length === 0);
-                    } catch (error) {
-                        console.log(rest);
+                try {
+                    assert(Object.keys(rest).length === 0);
+                } catch (error) {
+                    console.log(rest);
 
-                        throw error;
-                    }
+                    throw error;
+                }
 
-                    return tsafeId<Db.SoftwareRow>({
-                        id,
-                        name,
-                        "function": fun,
-                        referencedSinceTime,
-                        dereferencing,
-                        isStillInObservation,
-                        parentSoftware,
-                        isFromFrenchPublicService,
-                        isPresentInSupportContract,
-                        wikidataId,
-                        comptoirDuLibreId,
-                        license,
-                        catalogNumeriqueGouvFrId,
-                        versionMin,
-                        workshopUrls,
-                        testUrls,
-                        generalInfoMd,
-                        updateTime,
-                        doRespectRgaa,
-                        similarSoftwares,
-                        softwareType,
-                        categories,
-                        addedByAgentEmail
-                    });
-                }),
-                null,
-                2
-            ),
-            "utf8"
-        )
-    );
-}
+                return tsafeId<Db.SoftwareRow>({
+                    id,
+                    name,
+                    "function": fun,
+                    referencedSinceTime,
+                    dereferencing,
+                    isStillInObservation,
+                    parentSoftware,
+                    isFromFrenchPublicService,
+                    isPresentInSupportContract,
+                    wikidataId,
+                    comptoirDuLibreId,
+                    license,
+                    catalogNumeriqueGouvFrId,
+                    versionMin,
+                    workshopUrls,
+                    testUrls,
+                    generalInfoMd,
+                    updateTime,
+                    doRespectRgaa,
+                    similarSoftwares,
+                    softwareType,
+                    categories,
+                    addedByAgentEmail
+                });
+            }),
+            null,
+            2
+        ),
+        "utf8"
+    )
+);

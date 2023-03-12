@@ -4,7 +4,7 @@ import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
-import { zWikidataEntry } from "./software";
+import { zWikidataEntry } from "../../rpc/router";
 import { id as tsafeId } from "tsafe/id";
 
 const instanceFilePath = pathJoin(process.cwd(), "instance.json");

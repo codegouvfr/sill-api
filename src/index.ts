@@ -1,8 +1,4 @@
-/*
-export { languages } from "./model/types";
-export type { TrpcRouter } from "./server/rpc/rpc";
-export { zParsedJwtTokenPayload } from "./server/zParsedJwtTokenPayload";
-export type { ParsedJwt } from "./server/zParsedJwtTokenPayload";
+export { type TrpcRouter } from "./rpc/router";
 export type { inferProcedureOutput, inferProcedureInput } from "@trpc/server";
 export type {
     Agent,
@@ -14,8 +10,7 @@ export type {
     SoftwareFormData,
     SoftwareType,
     WikidataEntry
-} from "./server/core/usecases/readWriteSillData";
-*/
+} from "./core/usecases/readWriteSillData";
 
 export { type User, zUser } from "./rpc/context";
 import { parsedJwtPayloadToUser } from "./tools/parsedJwtPayloadToUser";
