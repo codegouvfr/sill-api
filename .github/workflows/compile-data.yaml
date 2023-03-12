@@ -1,12 +1,12 @@
 on:
   repository_dispatch:
-    types: build-data
+    types: trigger-compile-data
 
 jobs:
   build-data:
     runs-on: ubuntu-latest
     steps:
-    - run: npx -y -p sill-api@latest build-data
+    - run: npx -y -p @codegouvfr/sill compile-data
       env:
         DATA_REPO_SSH_URL: ${{github.event.client_payload.dataRepoSshUrl}}
         SSH_PRIVATE_KEY_NAME: ${{secrets.SSH_PRIVATE_KEY_NAME}}

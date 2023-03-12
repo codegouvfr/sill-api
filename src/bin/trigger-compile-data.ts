@@ -13,9 +13,9 @@ const octokit = new Octokit({
 
 octokit.rest.repos
     .createDispatchEvent({
-        "owner": "etalab",
+        "owner": "codegouvfr",
         "repo": "sill-api",
-        "event_type": "build-data",
+        "event_type": "trigger-compile-data",
         "client_payload": {
             "dataRepoSshUrl": "git@github.com:etalab/sill-data.git",
             "incremental": false

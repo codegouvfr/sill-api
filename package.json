@@ -17,7 +17,7 @@
         "grant-exec-perms": "node dist/bin/tools/grant-exec-perms.js"
     },
     "bin": {
-        "build-data": "dist/bin/build-data.js"
+        "compile-data": "dist/bin/compile-data.js"
     },
     "lint-staged": {
         "*.{ts,tsx,json,md}": [

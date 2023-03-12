@@ -1,9 +1,10 @@
-import type { SoftwareReferentRow } from "../model/types";
+import type { Db } from "../../core/ports/DbApi";
 import { z } from "zod";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
+import { id } from "tsafe/id";
 
 /*
 
@@ -19,14 +20,14 @@ const softwareReferentFilePath = pathJoin(process.cwd(), "softwareReferent.json"
 
 const zSoftwareReferentRow = z.object({
     "softwareId": z.number(),
-    "referentEmail": z.string(),
+    "agentEmail": z.string(),
     "isExpert": z.boolean(),
     "useCaseDescription": z.string(),
-    "isPersonalUse": z.boolean()
+    "serviceUrl": z.string().optional()
 });
 
 type Got = ReturnType<(typeof zSoftwareReferentRow)["parse"]>;
-type Expected = SoftwareReferentRow;
+type Expected = Db.SoftwareReferentRow;
 
 assert<Equals<Got, Expected>>();
 
@@ -35,18 +36,16 @@ fs.writeFileSync(
     Buffer.from(
         JSON.stringify(
             JSON.parse(fs.readFileSync(softwareReferentFilePath).toString("utf8")).map(
-                (softwareReferentRow: SoftwareReferentRow) => {
-                    /*
-                try {
-                    zSoftwareReferentRow.parse(softwareReferentRow);
-                } catch (exception) {
-                    console.log(softwareReferentRow);
+                (softwareReferentRow: Db.SoftwareReferentRow) => {
+                    try {
+                        zSoftwareReferentRow.parse(softwareReferentRow);
+                    } catch (exception) {
+                        console.log(softwareReferentRow);
 
-                    throw exception;
-                }
-                */
+                        throw exception;
+                    }
 
-                    const { softwareId, referentEmail, isExpert, useCaseDescription, isPersonalUse, ...rest } =
+                    const { softwareId, agentEmail, isExpert, useCaseDescription, serviceUrl, ...rest } =
                         softwareReferentRow;
 
                     try {
@@ -57,13 +56,12 @@ fs.writeFileSync(
                         throw error;
                     }
 
-                    return {
+                    return id<Db.SoftwareReferentRow>({
                         softwareId,
-                        referentEmail,
+                        agentEmail,
                         isExpert,
-                        useCaseDescription,
-                        "isPersonalUse": false
-                    };
+                        useCaseDescription
+                    });
                 }
             ),
             null,

@@ -36,8 +36,8 @@ export namespace Db {
         //Example https://comptoir-du-libre.org/en/softwares/461 -> 461
         /* cspell: disable-next-line */
         comptoirDuLibreId?: number;
-        // https://spdx.org/licenses/
-        // https://www.data.gouv.fr/fr/pages/legal/licences/
+        //// https://spdx.org/licenses/
+        //// https://www.data.gouv.fr/fr/pages/legal/licences/
         license: string;
         softwareType: SoftwareType;
         //Lien vers catalogue.numerique.gouv.fr
@@ -65,7 +65,7 @@ export namespace Db {
         isExpert: boolean;
         useCaseDescription: string;
         /** NOTE: Can be not undefined only if cloud */
-        serviceUrl: string | undefined;
+        serviceUrl?: string;
     };
 
     export type SoftwareUserRow = {
@@ -79,7 +79,7 @@ export namespace Db {
     };
 
     export type InstanceRow = {
-        instanceId: number;
+        id: number;
         mainSoftwareSillId: number;
         organization: string;
         targetAudience: string;
