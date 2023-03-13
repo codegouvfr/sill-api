@@ -3,7 +3,7 @@ on:
     types: trigger-compile-data
 
 jobs:
-  build-data:
+  compile-data:
     runs-on: ubuntu-latest
     steps:
     - run: npx -y -p @codegouvfr/sill compile-data

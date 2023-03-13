@@ -396,7 +396,7 @@ const internalThunks = {
 
             const [dispatch, getState, { dbApi, compileData }] = args;
 
-            //NOTE: It's important to call buildCatalog first as it may crash
+            //NOTE: It's important to call compileData first as it may crash
             //and if it does it mean that if we have committed we'll end up with
             //inconsistent state.
             const newCompiledData = await compileData({

@@ -4,7 +4,7 @@ import cors from "cors";
 import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWebhookSignature";
 import compression from "compression";
 import { createCoreApi } from "../core";
-import { buildBranch } from "../core/adapters/createGitDbApi";
+import { compiledDataBranch } from "../core/adapters/createGitDbApi";
 import type { LocalizedString } from "../core/ports/GetWikidataSoftware";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
@@ -111,8 +111,8 @@ export async function startRpcService(params: {
                     console.log("Webhook signature OK");
                     const reqBody = await validateGitHubWebhookSignature(req, res);
 
-                    if (reqBody.ref !== `refs/heads/${buildBranch}`) {
-                        console.log(`Not a push on the ${buildBranch} branch, doing nothing`);
+                    if (reqBody.ref !== `refs/heads/${compiledDataBranch}`) {
+                        console.log(`Not a push on the ${compiledDataBranch} branch, doing nothing`);
                         res.sendStatus(200);
                         return;
                     }

@@ -5,7 +5,7 @@ import type { CompiledData } from "../ports/CompileData";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 
-export const buildBranch = "build";
+export const compiledDataBranch = "compiled-data";
 export const compiledDataJsonRelativeFilePath = "compiledData.json";
 const softwareJsonRelativeFilePath = "software.json";
 const agentJsonRelativeFilePath = "agent.json";
@@ -28,7 +28,7 @@ export function createGitDbApi(params: GitDbApiParams): DbApi {
 
             gitSsh({
                 "sshUrl": dataRepoSshUrl,
-                "shaish": buildBranch,
+                "shaish": compiledDataBranch,
                 sshPrivateKeyName,
                 sshPrivateKey,
                 "action": async ({ repoPath }) => {

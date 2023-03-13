@@ -5,7 +5,7 @@ import { type CompiledData, removeReferent } from "../core/ports/CompileData";
 import { getCnllPrestatairesSill } from "../core/adapters/getCnllPrestatairesSill";
 import { getComptoirDuLibre } from "../core/adapters/getComptoirDuLibre";
 import { getWikidataSoftware } from "../core/adapters/getWikidataSoftware";
-import { buildBranch, compiledDataJsonRelativeFilePath, createGitDbApi } from "../core/adapters/createGitDbApi";
+import { compiledDataBranch, compiledDataJsonRelativeFilePath, createGitDbApi } from "../core/adapters/createGitDbApi";
 import { join as pathJoin } from "path";
 import * as fs from "fs";
 import { assert } from "tsafe/assert";
@@ -39,7 +39,9 @@ async function main(params: {
             ? await fetchCompiledData().then(
                   ({ catalog }) => catalog,
                   (error: Error) =>
-                      error instanceof ErrorNoBranch ? (console.log("There is no build branch yet"), undefined) : error
+                      error instanceof ErrorNoBranch
+                          ? (console.log(`There is no ${compiledDataBranch} branch yet`), undefined)
+                          : error
               )
             : undefined;
 
@@ -65,7 +67,7 @@ async function main(params: {
         "sshUrl": dataRepoSshUrl,
         sshPrivateKeyName,
         sshPrivateKey,
-        "shaish": buildBranch,
+        "shaish": compiledDataBranch,
         "action": ({ repoPath }) => {
             for (const [relativeJsonFilePath, data] of [
                 [compiledDataJsonRelativeFilePath, compiledData],

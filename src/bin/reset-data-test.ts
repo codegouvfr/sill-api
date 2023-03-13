@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import { buildBranch } from "../core/adapters/createGitDbApi";
+import { compiledDataBranch } from "../core/adapters/createGitDbApi";
 
 // Script to run that will make codegouvfr/sill-data-test is the same as codegouvfr/sill-data
 
@@ -12,7 +12,7 @@ execSync(
         `cd ${tmpDirBasename}`,
         `git remote set-url origin https://github.com/codegouvfr/sill-data-test`,
         `git push -f`,
-        `git checkout ${buildBranch}`,
+        `git checkout ${compiledDataBranch}`,
         `git push -f`,
         `cd ..`,
         `rm -rf ${tmpDirBasename}`
