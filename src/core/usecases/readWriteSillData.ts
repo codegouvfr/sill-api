@@ -8,7 +8,7 @@ import { createObjectThatThrowsIfAccessed, createUsecaseContextApi } from "redux
 import { Mutex } from "async-mutex";
 import { assert } from "tsafe/assert";
 import type { Db } from "../ports/DbApi";
-import { type CompiledData, removeReferent } from "../ports/CompileData";
+import { type CompiledData, removeAgentsPersonalInfos } from "../ports/CompileData";
 
 export type Software = {
     logoUrl: string | undefined;
@@ -124,7 +124,7 @@ export namespace DeclarationFormData {
 
 type State = {
     db: Db;
-    compiledData: CompiledData<"with referents">;
+    compiledData: CompiledData<"private">;
 };
 
 export const name = "readWriteSillData";
@@ -165,9 +165,9 @@ export const privateThunks = {
                 .attach(() => {
                     const { compiledData } = getState()[name];
 
-                    const compiledDataWithoutReferent: CompiledData<"without referents"> = {
+                    const compiledDataWithoutReferent: CompiledData<"public"> = {
                         ...compiledData,
-                        "catalog": compiledData.catalog.map(removeReferent)
+                        "catalog": compiledData.catalog.map(removeAgentsPersonalInfos)
                     };
 
                     getContext(extraArg).sillJsonBuffer = Buffer.from(

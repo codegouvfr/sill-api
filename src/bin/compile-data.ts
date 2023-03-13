@@ -1,16 +1,27 @@
 #!/usr/bin/env node
 
 import { createCompileData } from "../core/adapters/compileData";
-import { type CompiledData, removeReferent } from "../core/ports/CompileData";
+import { type CompiledData, removeAgentsPersonalInfos } from "../core/ports/CompileData";
 import { getCnllPrestatairesSill } from "../core/adapters/getCnllPrestatairesSill";
 import { getComptoirDuLibre } from "../core/adapters/getComptoirDuLibre";
 import { getWikidataSoftware } from "../core/adapters/getWikidataSoftware";
-import { compiledDataBranch, compiledDataJsonRelativeFilePath, createGitDbApi } from "../core/adapters/createGitDbApi";
+import {
+    compiledDataBranch,
+    compiledDataPrivateJsonRelativeFilePath,
+    createGitDbApi
+} from "../core/adapters/createGitDbApi";
 import { join as pathJoin } from "path";
 import * as fs from "fs";
 import { assert } from "tsafe/assert";
 import { ErrorNoBranch } from "../tools/gitSsh";
 import { gitSsh } from "../tools/gitSsh";
+
+assert<typeof compiledDataPrivateJsonRelativeFilePath extends `${string}_private.json` ? true : false>();
+
+const compiledDataPublicJsonRelativeFilePath = compiledDataPrivateJsonRelativeFilePath.replace(
+    /_private.json$/,
+    "_public.json"
+);
 
 const compileData = createCompileData({
     getCnllPrestatairesSill,
@@ -58,9 +69,9 @@ async function main(params: {
         return { compiledData };
     })();
 
-    const compiledData_withoutReferents: CompiledData<"without referents"> = {
+    const compiledData_withoutReferents: CompiledData<"public"> = {
         ...compiledData,
-        "catalog": compiledData.catalog.map(removeReferent)
+        "catalog": compiledData.catalog.map(removeAgentsPersonalInfos)
     };
 
     gitSsh({
@@ -70,11 +81,8 @@ async function main(params: {
         "shaish": compiledDataBranch,
         "action": ({ repoPath }) => {
             for (const [relativeJsonFilePath, data] of [
-                [compiledDataJsonRelativeFilePath, compiledData],
-                [
-                    `${compiledDataJsonRelativeFilePath.replace(/\.json$/, "")}_withoutReferents.json`,
-                    compiledData_withoutReferents
-                ]
+                [compiledDataPrivateJsonRelativeFilePath, compiledData],
+                [compiledDataPublicJsonRelativeFilePath, compiledData_withoutReferents]
             ] as const) {
                 fs.writeFileSync(
                     pathJoin(repoPath, relativeJsonFilePath),

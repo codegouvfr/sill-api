@@ -1,7 +1,7 @@
 import type { CompiledData } from "./CompileData";
 
 export type DbApi = {
-    fetchCompiledData: () => Promise<CompiledData<"with referents">>;
+    fetchCompiledData: () => Promise<CompiledData<"private">>;
     fetchDb: () => Promise<Db>;
     updateDb: (params: { newDb: Db; commitMessage: string }) => Promise<void>;
 };

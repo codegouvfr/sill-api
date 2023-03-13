@@ -77,7 +77,7 @@ export function createCompileData(params: {
                     softwareRow: { wikidataId, comptoirDuLibreId, ...rest },
                     referents,
                     users
-                }): CompiledData.Software<"with referents"> => ({
+                }): CompiledData.Software<"private"> => ({
                     ...rest,
                     "wikidataData": wikidataId === undefined ? undefined : wikidataSoftwareById[wikidataId],
                     "comptoirDuLibreSoftware":

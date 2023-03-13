@@ -6,7 +6,7 @@ import * as fs from "fs";
 import { join as pathJoin } from "path";
 
 export const compiledDataBranch = "compiled-data";
-export const compiledDataJsonRelativeFilePath = "compiledData.json";
+export const compiledDataPrivateJsonRelativeFilePath = "compiledData_private.json";
 const softwareJsonRelativeFilePath = "software.json";
 const agentJsonRelativeFilePath = "agent.json";
 const softwareReferentJsonRelativeFilePath = "softwareReferent.json";
@@ -24,7 +24,7 @@ export function createGitDbApi(params: GitDbApiParams): DbApi {
 
     return {
         "fetchCompiledData": () => {
-            const dOut = new Deferred<CompiledData<"with referents">>();
+            const dOut = new Deferred<CompiledData<"private">>();
 
             gitSsh({
                 "sshUrl": dataRepoSshUrl,
@@ -34,9 +34,9 @@ export function createGitDbApi(params: GitDbApiParams): DbApi {
                 "action": async ({ repoPath }) => {
                     dOut.resolve(
                         JSON.parse(
-                            (await fs.promises.readFile(pathJoin(repoPath, compiledDataJsonRelativeFilePath))).toString(
-                                "utf8"
-                            )
+                            (
+                                await fs.promises.readFile(pathJoin(repoPath, compiledDataPrivateJsonRelativeFilePath))
+                            ).toString("utf8")
                         )
                     );
 

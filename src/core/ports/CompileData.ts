@@ -11,16 +11,17 @@ export type CompileData = (params: {
           }[]
         | undefined;
     log?: typeof console.log;
-}) => Promise<CompiledData<"with referents">>;
+}) => Promise<CompiledData<"private">>;
 
-export type CompiledData<T extends "with referents" | "without referents" = "without referents"> = {
+export type CompiledData<T extends "private" | "public" = "public"> = {
     catalog: CompiledData.Software<T>[];
     services: CompiledData.Service[];
 };
 
 export namespace CompiledData {
-    export type Software<T extends "with referents" | "without referents" = "without referents"> =
-        T extends "with referents" ? Software.WithReferent : Software.WithoutReferent;
+    export type Software<T extends "private" | "public" = "public"> = T extends "private"
+        ? Software.WithReferent
+        : Software.WithoutReferent;
     export namespace Software {
         export type Common = Omit<Db.SoftwareRow, "wikidataId" | "comptoirDuLibreId"> & {
             wikidataData?: WikidataSoftware;
@@ -48,9 +49,7 @@ export namespace CompiledData {
     export type Service = Db.InstanceRow;
 }
 
-export function removeReferent(
-    software: CompiledData.Software<"with referents">
-): CompiledData.Software<"without referents"> {
+export function removeAgentsPersonalInfos(software: CompiledData.Software<"private">): CompiledData.Software<"public"> {
     const { referents, users, ...rest } = software;
     return {
         ...rest,
