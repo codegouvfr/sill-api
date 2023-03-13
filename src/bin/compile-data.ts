@@ -1,15 +1,22 @@
 #!/usr/bin/env node
 
-import { buildCatalog } from "../model/buildCatalog";
-import { buildServices } from "../model/buildServices";
+import { createCompileData } from "../core/adapters/compileData";
+import { type CompiledData, removeReferent } from "../core/ports/CompileData";
+import { getCnllPrestatairesSill } from "../core/adapters/getCnllPrestatairesSill";
+import { getComptoirDuLibre } from "../core/adapters/getComptoirDuLibre";
+import { getWikidataSoftware } from "../core/adapters/getWikidataSoftware";
+import { buildBranch, compiledDataJsonRelativeFilePath, createGitDbApi } from "../core/adapters/createGitDbApi";
 import { join as pathJoin } from "path";
-import type { CompiledData } from "../model/types";
-import { removeReferent } from "../model/types";
 import * as fs from "fs";
 import { assert } from "tsafe/assert";
-import { compiledDataJsonRelativeFilePath, buildBranch, createGitDbApi } from "../server/core/adapters/createGitDbApi";
 import { ErrorNoBranch } from "../tools/gitSsh";
 import { gitSsh } from "../tools/gitSsh";
+
+const compileData = createCompileData({
+    getCnllPrestatairesSill,
+    getComptoirDuLibre,
+    getWikidataSoftware
+});
 
 async function main(params: {
     dataRepoSshUrl: string;
@@ -26,32 +33,25 @@ async function main(params: {
     });
 
     const { compiledData } = await (async () => {
-        const { softwareRows, referentRows, softwareReferentRows, serviceRows } = await fetchDb();
+        const db = await fetchDb();
 
-        const currentCatalog = isIncremental
+        const currentCompiledData = isIncremental
             ? await fetchCompiledData().then(
                   ({ catalog }) => catalog,
-                  error =>
+                  (error: Error) =>
                       error instanceof ErrorNoBranch ? (console.log("There is no build branch yet"), undefined) : error
               )
             : undefined;
 
-        const { catalog } = await buildCatalog({
-            softwareRows,
-            referentRows,
-            softwareReferentRows,
-            currentCatalog,
+        if (currentCompiledData instanceof Error) {
+            throw currentCompiledData;
+        }
+
+        const compiledData = await compileData({
+            db,
+            "wikidataCacheCache": currentCompiledData,
             "log": console.log
         });
-
-        const { services } = await buildServices({
-            serviceRows
-        });
-
-        const compiledData: CompiledData<"with referents"> = {
-            catalog,
-            services
-        };
 
         return { compiledData };
     })();
