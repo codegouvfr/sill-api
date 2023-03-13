@@ -111,5 +111,5 @@ export function createCompileData(params: {
         };
     };
 
-    return compileData;
+    return { compileData };
 }

@@ -3,10 +3,10 @@ import { createCoreFromUsecases } from "redux-clean-architecture";
 import { usecases } from "./usecases";
 import type { GenericCreateEvt, GenericThunks } from "redux-clean-architecture";
 import type { UserApi } from "./ports/UserApi";
-import type { GitDbApiParams } from "./adapters/createGitDbApi";
-import { createGitDbApi } from "./adapters/createGitDbApi";
-import type { KeycloakUserApiParams } from "./adapters/createKeycloakUserApi";
-import { createKeycloakUserApi } from "./adapters/createKeycloakUserApi";
+import type { GitDbApiParams } from "./adapters/dbApi";
+import { createGitDbApi } from "./adapters/dbApi";
+import type { KeycloakUserApiParams } from "./adapters/userApi";
+import { createKeycloakUserApi } from "./adapters/userApi";
 import { createObjectThatThrowsIfAccessed } from "redux-clean-architecture";
 import { createCompileData } from "./adapters/compileData";
 import { getWikidataSoftware } from "./adapters/getWikidataSoftware";
@@ -19,6 +19,12 @@ export async function createCore(params: {
 }) {
     const { gitDbApiParams, keycloakUserApiParams } = params;
 
+    const { compileData } = createCompileData({
+        getWikidataSoftware,
+        getCnllPrestatairesSill,
+        getComptoirDuLibre
+    });
+
     const core = createCoreFromUsecases({
         usecases,
         "thunksExtraArgument": {
@@ -30,11 +36,7 @@ export async function createCore(params: {
                           "debugMessage": "No Keycloak server"
                       })
                     : createKeycloakUserApi(keycloakUserApiParams),
-            "compileData": createCompileData({
-                getWikidataSoftware,
-                getCnllPrestatairesSill,
-                getComptoirDuLibre
-            })
+            compileData
         }
     });
 

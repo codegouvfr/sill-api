@@ -16,9 +16,6 @@
         "format:check": "npm run _format -- --list-different",
         "grant-exec-perms": "node dist/bin/tools/grant-exec-perms.js"
     },
-    "bin": {
-        "compile-data": "dist/bin/compile-data.js"
-    },
     "lint-staged": {
         "*.{ts,tsx,json,md}": [
             "prettier --write"

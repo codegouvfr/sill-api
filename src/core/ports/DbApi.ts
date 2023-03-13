@@ -4,6 +4,7 @@ export type DbApi = {
     fetchCompiledData: () => Promise<CompiledData<"private">>;
     fetchDb: () => Promise<Db>;
     updateDb: (params: { newDb: Db; commitMessage: string }) => Promise<void>;
+    updateCompiledData: (params: { newCompiledData: CompiledData<"private">; commitMessage: string }) => Promise<void>;
 };
 
 export type Db = {

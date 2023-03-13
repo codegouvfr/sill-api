@@ -8,7 +8,8 @@ import { createObjectThatThrowsIfAccessed, createUsecaseContextApi } from "redux
 import { Mutex } from "async-mutex";
 import { assert } from "tsafe/assert";
 import type { Db } from "../ports/DbApi";
-import { type CompiledData, removeAgentsPersonalInfos } from "../ports/CompileData";
+import { type CompiledData, compiledDataPrivateToPublic } from "../ports/CompileData";
+import { same } from "evt/tools/inDepth/same";
 
 export type Software = {
     logoUrl: string | undefined;
@@ -51,14 +52,7 @@ export type Agent = {
     declarations: (DeclarationFormData & { softwareName: string })[];
 };
 
-export type Instance = {
-    instanceId: number;
-    mainSoftwareSillId: number;
-    organization: string;
-    targetAudience: string;
-    publicUrl: string;
-    otherSoftwares: WikidataEntry[];
-};
+export type Instance = Db.InstanceRow;
 
 export type SoftwareType = SoftwareType.Desktop | SoftwareType.CloudNative | SoftwareType.Stack;
 
@@ -138,17 +132,16 @@ export const { reducer, actions } = createSlice({
 });
 
 const { getContext } = createUsecaseContextApi(() => ({
-    "mutex": new Mutex(),
-    "sillJsonBuffer": createObjectThatThrowsIfAccessed<Buffer>()
+    "mutex": new Mutex()
 }));
 
 export const privateThunks = {
     "initialize":
         () =>
         async (...args) => {
-            const [dispatch, getState, extraArg] = args;
+            const [dispatch, , extraArg] = args;
 
-            const { dbApi, evtAction } = extraArg;
+            const { dbApi } = extraArg;
 
             const [db, compiledData] = await Promise.all([dbApi.fetchDb(), dbApi.fetchCompiledData()]);
 
@@ -159,52 +152,66 @@ export const privateThunks = {
                 })
             );
 
-            evtAction
-                .pipe(action => (action.sliceName === name && action.actionName === "updated" ? [undefined] : null))
-                .toStateful()
-                .attach(() => {
-                    const { compiledData } = getState()[name];
-
-                    const compiledDataWithoutReferent: CompiledData<"public"> = {
-                        ...compiledData,
-                        "catalog": compiledData.catalog.map(removeAgentsPersonalInfos)
-                    };
-
-                    getContext(extraArg).sillJsonBuffer = Buffer.from(
-                        JSON.stringify(compiledDataWithoutReferent, null, 2),
-                        "utf8"
-                    );
-                });
+            setInterval(
+                () => dispatch(thunks.triggerPeriodicalNonIncrementalCompilation()),
+                4 * 3600 * 1000 //4 hour
+            );
         }
 } satisfies Thunks;
 
 export const thunks = {
-    "notifyNeedForSyncLocalStateAndDatabase":
+    "triggerPeriodicalNonIncrementalCompilation":
         () =>
         async (...args) => {
-            const [dispatch, , extraArg] = args;
+            const [dispatch, getState, extraArg] = args;
+
+            const { dbApi, compileData } = extraArg;
 
             const { mutex } = getContext(extraArg);
 
-            await mutex.runExclusive(async () => {
-                const { dbApi } = extraArg;
+            const dbBefore = structuredClone(getState()[name].db);
 
-                dispatch(
-                    actions.updated({
-                        "db": await dbApi.fetchDb(),
-                        "compiledData": await dbApi.fetchCompiledData()
-                    })
-                );
+            const newCompiledData = await compileData({
+                "db": dbBefore,
+                "wikidataCacheCache": undefined
             });
+
+            const wasCanceled = await mutex.runExclusive(async (): Promise<boolean> => {
+                if (!same(dbBefore, getState()[name].db)) {
+                    return true;
+                }
+
+                await dbApi.updateCompiledData({
+                    newCompiledData,
+                    "commitMessage": "Some Wikidata or other 3rd party source data have changed"
+                });
+
+                return false;
+            });
+
+            if (wasCanceled) {
+                await dispatch(thunks.triggerPeriodicalNonIncrementalCompilation());
+            }
         },
-    "getSillJsonBuffer":
-        () =>
-        (...args) => {
-            const [, , extraArgs] = args;
+    "notifyPushOnMainBranch":
+        (params: { commitMessage: string }) =>
+        async (...args) => {
+            const { commitMessage } = params;
 
-            const { sillJsonBuffer } = getContext(extraArgs);
+            const [dispatch, , extraArg] = args;
 
-            return sillJsonBuffer;
+            const { dbApi } = extraArg;
+
+            const { mutex } = getContext(extraArg);
+
+            await mutex.runExclusive(async () =>
+                dispatch(
+                    localThunks.submitMutation({
+                        "newDb": await dbApi.fetchDb(),
+                        commitMessage
+                    })
+                )
+            );
         },
     "createSoftware":
         (params: { formData: SoftwareFormData; agent: Db.AgentRow }) =>
@@ -268,7 +275,7 @@ export const thunks = {
                 }
 
                 await dispatch(
-                    internalThunks.update({
+                    localThunks.submitMutation({
                         newDb,
                         "commitMessage": `Add software: ${formData.softwareName}`
                     })
@@ -307,7 +314,7 @@ export const thunks = {
                 agentRow.organization = newOrganization;
 
                 await dispatch(
-                    internalThunks.update({
+                    localThunks.submitMutation({
                         newDb,
                         "commitMessage": `Update ${email} organization from ${oldOrganization} to ${newOrganization}`
                     })
@@ -348,7 +355,7 @@ export const thunks = {
                     .forEach(softwareReferentRow => (softwareReferentRow.agentEmail = newEmail));
 
                 await dispatch(
-                    internalThunks.update({
+                    localThunks.submitMutation({
                         newDb,
                         "commitMessage": `Updating referent email from ${email} to ${newEmail}`
                     })
@@ -388,23 +395,32 @@ export const thunks = {
     */
 } satisfies Thunks;
 
-const internalThunks = {
-    "update":
+const localThunks = {
+    "submitMutation":
         (params: { newDb: Db; commitMessage: string }) =>
         async (...args) => {
             const { newDb, commitMessage } = params;
 
             const [dispatch, getState, { dbApi, compileData }] = args;
 
+            const state = getState()[name];
+
+            if (same(newDb, state.db)) {
+                return;
+            }
+
             //NOTE: It's important to call compileData first as it may crash
             //and if it does it mean that if we have committed we'll end up with
             //inconsistent state.
             const newCompiledData = await compileData({
                 "db": newDb,
-                "wikidataCacheCache": getState()[name].compiledData.catalog
+                "wikidataCacheCache": state.compiledData.catalog
             });
 
-            await dbApi.updateDb({ newDb, commitMessage });
+            await Promise.all([
+                dbApi.updateDb({ newDb, commitMessage }),
+                dbApi.updateCompiledData({ newCompiledData, commitMessage })
+            ]);
 
             dispatch(
                 actions.updated({
@@ -475,8 +491,15 @@ export const selectors = (() => {
 
     const instances = createSelector(services, services => services.map((service): Instance => service));
 
+    const compiledDataPublicJson = createSelector(sliceState, state => {
+        const { compiledData } = state;
+
+        return JSON.stringify(compiledDataPrivateToPublic(compiledData), null, 2);
+    });
+
     return {
         softwares,
-        instances
+        instances,
+        compiledDataPublicJson
     };
 })();

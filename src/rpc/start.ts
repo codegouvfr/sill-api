@@ -4,7 +4,7 @@ import cors from "cors";
 import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWebhookSignature";
 import compression from "compression";
 import { createCoreApi } from "../core";
-import { compiledDataBranch } from "../core/adapters/createGitDbApi";
+import { compiledDataBranch } from "../core/adapters/dbApi";
 import type { LocalizedString } from "../core/ports/GetWikidataSoftware";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
@@ -95,11 +95,6 @@ export async function startRpcService(params: {
             `/${exposedSubpath}/ondataupdated`,
             (() => {
                 if (githubWebhookSecret === undefined) {
-                    setInterval(() => {
-                        console.log("Checking if data refreshed");
-                        coreApi.functions.readWriteSillData.notifyNeedForSyncLocalStateAndDatabase();
-                    }, 3600 * 1000);
-
                     return async (...[, res]) => res.sendStatus(410);
                 }
 
@@ -108,8 +103,9 @@ export async function startRpcService(params: {
                 });
 
                 return async (req, res) => {
-                    console.log("Webhook signature OK");
                     const reqBody = await validateGitHubWebhookSignature(req, res);
+
+                    console.log("Webhook signature OK");
 
                     if (reqBody.ref !== `refs/heads/${compiledDataBranch}`) {
                         console.log(`Not a push on the ${compiledDataBranch} branch, doing nothing`);
@@ -117,19 +113,23 @@ export async function startRpcService(params: {
                         return;
                     }
 
-                    console.log("Refreshing data");
+                    console.log("Push on main branch of data repo");
 
-                    coreApi.functions.readWriteSillData.notifyNeedForSyncLocalStateAndDatabase();
+                    coreApi.functions.readWriteSillData.notifyPushOnMainBranch({
+                        "commitMessage": reqBody.head_commit.message
+                    });
 
                     res.sendStatus(200);
                 };
             })()
         )
-        .get(`/${exposedSubpath}/sill.json`, (...[, res]) =>
-            res
-                .setHeader("Content-Type", "application/json")
-                .send(coreApi.functions.readWriteSillData.getSillJsonBuffer())
-        )
+        .get(`/${exposedSubpath}/sill.json`, (...[, res]) => {
+            const { compiledDataPublicJson } = coreApi.selectors.readWriteSillData.compiledDataPublicJson(
+                coreApi.getState()
+            );
+
+            res.setHeader("Content-Type", "application/json").send(Buffer.from(compiledDataPublicJson, "utf8"));
+        })
         .use(
             `/${exposedSubpath}`,
             trpcExpress.createExpressMiddleware({

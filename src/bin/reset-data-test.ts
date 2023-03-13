@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import { compiledDataBranch } from "../core/adapters/createGitDbApi";
+import { compiledDataBranch } from "../core/adapters/dbApi";
 
 // Script to run that will make codegouvfr/sill-data-test is the same as codegouvfr/sill-data
 

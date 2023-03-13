@@ -1,12 +1,17 @@
 import type { DbApi, Db } from "../ports/DbApi";
 import { gitSsh } from "../../tools/gitSsh";
 import { Deferred } from "evt/tools/Deferred";
-import type { CompiledData } from "../ports/CompileData";
+import { type CompiledData, compiledDataPrivateToPublic } from "../ports/CompileData";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
+import type { ReturnType } from "tsafe";
 
 export const compiledDataBranch = "compiled-data";
-export const compiledDataPrivateJsonRelativeFilePath = "compiledData_private.json";
+const compiledDataPrivateJsonRelativeFilePath = "compiledData_private.json";
+const compiledDataPublicJsonRelativeFilePath = compiledDataPrivateJsonRelativeFilePath.replace(
+    /_private.json$/,
+    "_public.json"
+);
 const softwareJsonRelativeFilePath = "software.json";
 const agentJsonRelativeFilePath = "agent.json";
 const softwareReferentJsonRelativeFilePath = "softwareReferent.json";
@@ -24,7 +29,7 @@ export function createGitDbApi(params: GitDbApiParams): DbApi {
 
     return {
         "fetchCompiledData": () => {
-            const dOut = new Deferred<CompiledData<"private">>();
+            const dOut = new Deferred<ReturnType<DbApi["fetchCompiledData"]>>();
 
             gitSsh({
                 "sshUrl": dataRepoSshUrl,
@@ -32,13 +37,13 @@ export function createGitDbApi(params: GitDbApiParams): DbApi {
                 sshPrivateKeyName,
                 sshPrivateKey,
                 "action": async ({ repoPath }) => {
-                    dOut.resolve(
-                        JSON.parse(
-                            (
-                                await fs.promises.readFile(pathJoin(repoPath, compiledDataPrivateJsonRelativeFilePath))
-                            ).toString("utf8")
-                        )
+                    const compiledData: CompiledData<"private"> = JSON.parse(
+                        (
+                            await fs.promises.readFile(pathJoin(repoPath, compiledDataPrivateJsonRelativeFilePath))
+                        ).toString("utf8")
                     );
+
+                    dOut.resolve(compiledData);
 
                     return { "doCommit": false };
                 }
@@ -110,6 +115,31 @@ export function createGitDbApi(params: GitDbApiParams): DbApi {
                         "doAddAll": false,
                         "message": commitMessage
                     };
+                }
+            });
+        },
+        "updateCompiledData": async ({ newCompiledData, commitMessage }) => {
+            await gitSsh({
+                "sshUrl": dataRepoSshUrl,
+                sshPrivateKeyName,
+                sshPrivateKey,
+                "shaish": compiledDataBranch,
+                "action": ({ repoPath }) => {
+                    for (const [relativeJsonFilePath, data] of [
+                        [compiledDataPrivateJsonRelativeFilePath, newCompiledData],
+                        [compiledDataPublicJsonRelativeFilePath, compiledDataPrivateToPublic(newCompiledData)]
+                    ] as const) {
+                        fs.writeFileSync(
+                            pathJoin(repoPath, relativeJsonFilePath),
+                            Buffer.from(JSON.stringify(data, null, 2), "utf8")
+                        );
+                    }
+
+                    return Promise.resolve({
+                        "doCommit": true,
+                        "doAddAll": true,
+                        "message": commitMessage
+                    });
                 }
             });
         }

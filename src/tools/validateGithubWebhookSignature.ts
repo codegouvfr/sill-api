@@ -8,6 +8,9 @@ export type GitHubWebhookReqBody = {
     repository: {
         url: string;
     };
+    head_commit: {
+        message: string;
+    };
 };
 
 export function createValidateGitHubWebhookSignature(params: { githubWebhookSecret: string }) {

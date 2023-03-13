@@ -49,24 +49,29 @@ export namespace CompiledData {
     export type Service = Db.InstanceRow;
 }
 
-export function removeAgentsPersonalInfos(software: CompiledData.Software<"private">): CompiledData.Software<"public"> {
-    const { referents, users, ...rest } = software;
+export function compiledDataPrivateToPublic(compiledData: CompiledData<"private">): CompiledData<"public"> {
     return {
-        ...rest,
-        "hasExpertReferent": referents.find(({ isExpert }) => isExpert) !== undefined,
-        "userAndReferentCountByOrganization": (() => {
-            const out: CompiledData.Software.WithoutReferent["userAndReferentCountByOrganization"] = {};
+        ...compiledData,
+        "catalog": compiledData.catalog.map((software): CompiledData.Software<"public"> => {
+            const { referents, users, ...rest } = software;
+            return {
+                ...rest,
+                "hasExpertReferent": referents.find(({ isExpert }) => isExpert) !== undefined,
+                "userAndReferentCountByOrganization": (() => {
+                    const out: CompiledData.Software.WithoutReferent["userAndReferentCountByOrganization"] = {};
 
-            referents.forEach(referent => {
-                const entry = (out[referent.organization] ??= { "referentCount": 0, "userCount": 0 });
-                entry.referentCount++;
-            });
-            users.forEach(user => {
-                const entry = (out[user.organization] ??= { "referentCount": 0, "userCount": 0 });
-                entry.userCount++;
-            });
+                    referents.forEach(referent => {
+                        const entry = (out[referent.organization] ??= { "referentCount": 0, "userCount": 0 });
+                        entry.referentCount++;
+                    });
+                    users.forEach(user => {
+                        const entry = (out[user.organization] ??= { "referentCount": 0, "userCount": 0 });
+                        entry.userCount++;
+                    });
 
-            return out;
-        })()
+                    return out;
+                })()
+            };
+        })
     };
 }
