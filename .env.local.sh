@@ -19,7 +19,8 @@ export CONFIGURATION=$(cat << EOF
   "dataRepoSshUrl": "git@github.com:codegouv/sill-data-test.git",
   "sshPrivateKeyForGitName": "$SSH_PRIVATE_KEY_FOR_GIT_NAME",
   "sshPrivateKeyForGit": "$SSH_PRIVATE_KEY_FOR_GIT",
-  "githubPersonalAccessToken": "$GITHUB_TOKEN"
+  "githubPersonalAccessToken": "$GITHUB_TOKEN",
+  "port": 8080
 }
 EOF
 ) 
