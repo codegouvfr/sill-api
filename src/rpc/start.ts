@@ -25,7 +25,7 @@ export async function startRpcService(params: {
     sshPrivateKeyForGitName: string;
     sshPrivateKeyForGit: string;
     githubWebhookSecret?: string;
-    githubPersonalAccessToken?: string;
+    githubPersonalAccessToken: string;
     port: number;
 }) {
     const {

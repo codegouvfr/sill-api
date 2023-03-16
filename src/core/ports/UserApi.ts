@@ -9,4 +9,8 @@ export type UserApi = {
         (): Promise<string[]>;
         clear: () => void;
     };
+    getUserCount: {
+        (): Promise<number>;
+        clear: () => void;
+    };
 };

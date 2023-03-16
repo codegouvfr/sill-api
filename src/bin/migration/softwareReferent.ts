@@ -5,6 +5,7 @@ import { join as pathJoin } from "path";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { id } from "tsafe/id";
+import { OptionalIfCanBeUndefined } from "../../tools/OptionalIfCanBeUndefined";
 
 /*
 
@@ -26,10 +27,12 @@ const zSoftwareReferentRow = z.object({
     "serviceUrl": z.string().optional()
 });
 
-type Got = ReturnType<(typeof zSoftwareReferentRow)["parse"]>;
-type Expected = Db.SoftwareReferentRow;
+{
+    type Got = ReturnType<(typeof zSoftwareReferentRow)["parse"]>;
+    type Expected = OptionalIfCanBeUndefined<Db.SoftwareReferentRow>;
 
-assert<Equals<Got, Expected>>();
+    assert<Equals<Got, Expected>>();
+}
 
 fs.writeFileSync(
     softwareReferentFilePath,
@@ -60,7 +63,8 @@ fs.writeFileSync(
                         softwareId,
                         agentEmail,
                         isExpert,
-                        useCaseDescription
+                        useCaseDescription,
+                        serviceUrl
                     });
                 }
             ),

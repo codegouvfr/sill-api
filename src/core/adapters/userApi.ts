@@ -96,6 +96,37 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
                 "promise": true,
                 "maxAge": 60 * 60 * 1000
             }
+        ),
+        "getUserCount": memoize(
+            async () => {
+                let count = 0;
+
+                let first = 0;
+
+                // eslint-disable-next-line no-constant-condition
+                while (true) {
+                    const max = 100;
+
+                    const users = await keycloakAdminApiClient.getUsers({
+                        first,
+                        max
+                    });
+
+                    count += users.length;
+
+                    if (users.length < max) {
+                        break;
+                    }
+
+                    first += max;
+                }
+
+                return count;
+            },
+            {
+                "promise": true,
+                "maxAge": 60 * 60 * 1000
+            }
         )
     };
 }

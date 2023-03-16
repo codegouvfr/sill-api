@@ -1,10 +1,10 @@
 import type { ReturnType } from "tsafe";
-import { createValidateKeycloakSignature, type KeycloakParams } from "../../tools/createValidateKeycloakSignature";
+import { createValidateKeycloakSignature, type KeycloakParams } from "../tools/createValidateKeycloakSignature";
 import * as jwtSimple from "jwt-simple";
 import { assert } from "tsafe/assert";
 import { z } from "zod";
 import type { Equals } from "tsafe";
-import { parsedJwtPayloadToUser } from "../../tools/parsedJwtPayloadToUser";
+import { parsedJwtPayloadToUser } from "../tools/parsedJwtPayloadToUser";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 
 export type User = {
@@ -59,6 +59,8 @@ export function createContextFactory(params: {
             jwtClaimByUserKey,
             "parsedJwtPayload": jwtSimple.decode(jwtToken, "", true)
         });
+
+        user.email = user.email.toLowerCase();
 
         return { user };
     }

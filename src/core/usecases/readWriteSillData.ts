@@ -1,8 +1,7 @@
 import structuredClone from "@ungap/structured-clone";
-import type { Thunks } from "../core";
+import type { Thunks, RootState } from "../core";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "../core";
 import { createSelector } from "@reduxjs/toolkit";
 import { createObjectThatThrowsIfAccessed, createUsecaseContextApi } from "redux-clean-architecture";
 import { Mutex } from "async-mutex";
@@ -10,6 +9,7 @@ import { assert } from "tsafe/assert";
 import type { Db } from "../ports/DbApi";
 import { type CompiledData, compiledDataPrivateToPublic } from "../ports/CompileData";
 import { same } from "evt/tools/inDepth/same";
+import { removeDuplicates } from "evt/tools/reducers/removeDuplicates";
 
 export type Software = {
     logoUrl: string | undefined;
@@ -83,8 +83,8 @@ export type Os = "windows" | "linux" | "mac";
 
 export type SoftwareFormData = {
     softwareType: SoftwareType;
-    wikidataId?: string;
-    comptoirDuLibreId?: number;
+    wikidataId: string | undefined;
+    comptoirDuLibreId: number | undefined;
     softwareName: string;
     softwareDescription: string;
     softwareLicense: string;
@@ -115,6 +115,14 @@ export namespace DeclarationFormData {
         serviceUrl: string | undefined;
     };
 }
+
+export type InstanceFormData = {
+    mainSoftwareSillId: number;
+    organization: string;
+    targetAudience: string;
+    publicUrl: string | undefined;
+    otherSoftwares: WikidataEntry[];
+};
 
 type State = {
     db: Db;
@@ -214,7 +222,7 @@ export const thunks = {
             );
         },
     "createSoftware":
-        (params: { formData: SoftwareFormData; agent: Db.AgentRow }) =>
+        (params: { formData: SoftwareFormData; agent: { email: string; organization: string } }) =>
         async (...args) => {
             const [dispatch, getState, extraArg] = args;
 
@@ -223,8 +231,6 @@ export const thunks = {
             const { formData } = params;
 
             const agentRow = { ...params.agent };
-
-            agentRow.email = agentRow.email.toLowerCase();
 
             await mutex.runExclusive(async () => {
                 const newDb = structuredClone(getState()[name].db);
@@ -282,6 +288,23 @@ export const thunks = {
                 );
             });
         },
+    "updateSoftware":
+        (params: {
+            softwareSillId: number;
+            formData: SoftwareFormData;
+            agent: { email: string; organization: string };
+        }) =>
+        async (...args) => {},
+    "createUserOrReferent":
+        (params: { formData: DeclarationFormData; agent: { email: string; organization: string } }) =>
+        async (...args) => {},
+    "createInstance":
+        (params: { formData: InstanceFormData; agent: { email: string; organization: string } }) =>
+        async (...args) => {},
+    "updateInstance":
+        (params: { instanceId: number; formData: InstanceFormData }) =>
+        async (...args) => {},
+
     "changeAgentOrganization":
         (params: { userId: string; email: string; newOrganization: string }) =>
         async (...args) => {
@@ -362,37 +385,6 @@ export const thunks = {
                 );
             });
         }
-    /*
-    "updateSoftware": (params: {
-        softwareSillId: number;
-        formData: SoftwareFormData;
-    }) =>
-        async (...args) => {
-
-
-
-        },
-    "createUserOrReferent": (params: {
-        formData: DeclarationFormData;
-    }) =>
-        async (...args) => {
-
-
-
-        },
-    "createInstance": (params: CreateInstanceParam) =>
-        async (...args) => {
-
-
-
-        },
-    "updateInstance": (params: CreateInstanceParam & { instanceId: number; }) =>
-        async (...args) => {
-
-
-
-        }
-    */
 } satisfies Thunks;
 
 const localThunks = {
@@ -491,6 +483,28 @@ export const selectors = (() => {
 
     const instances = createSelector(services, services => services.map((service): Instance => service));
 
+    const agents = createSelector(sliceState, state =>
+        state.db.agentRows.map(
+            (agentRow): Agent => ({
+                "email": agentRow.email,
+                "declarations": null,
+                "organization": agentRow.organization
+            })
+        )
+    );
+
+    const referentCount = createSelector(
+        agents,
+        agents =>
+            agents
+                .filter(
+                    agent =>
+                        agent.declarations.find(declaration => declaration.declarationType === "referent") !== undefined
+                )
+                .map(agent => agent.email)
+                .reduce(...removeDuplicates()).length
+    );
+
     const compiledDataPublicJson = createSelector(sliceState, state => {
         const { compiledData } = state;
 
@@ -500,6 +514,8 @@ export const selectors = (() => {
     return {
         softwares,
         instances,
+        agents,
+        referentCount,
         compiledDataPublicJson
     };
 })();

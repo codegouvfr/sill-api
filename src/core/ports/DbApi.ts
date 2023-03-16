@@ -28,7 +28,7 @@ export namespace Db {
             lastRecommendedVersion?: string;
         };
         isStillInObservation: boolean;
-        parentSoftware?: WikidataEntry;
+        parentSoftware: WikidataEntry | undefined;
         doRespectRgaa: boolean;
         isFromFrenchPublicService: boolean;
         isPresentInSupportContract: boolean;
@@ -36,14 +36,14 @@ export namespace Db {
         wikidataId?: string;
         //Example https://comptoir-du-libre.org/en/softwares/461 -> 461
         /* cspell: disable-next-line */
-        comptoirDuLibreId?: number;
+        comptoirDuLibreId: number | undefined;
         //// https://spdx.org/licenses/
         //// https://www.data.gouv.fr/fr/pages/legal/licences/
         license: string;
         softwareType: SoftwareType;
         //Lien vers catalogue.numerique.gouv.fr
         /* cspell: disable-next-line */
-        catalogNumeriqueGouvFrId?: string;
+        catalogNumeriqueGouvFrId: string | undefined;
         versionMin: string;
         workshopUrls: string[];
         testUrls: {
@@ -51,7 +51,7 @@ export namespace Db {
             url: string;
         }[];
         categories: string[];
-        generalInfoMd?: string;
+        generalInfoMd: string | undefined;
         addedByAgentEmail: string;
     };
 
@@ -66,7 +66,7 @@ export namespace Db {
         isExpert: boolean;
         useCaseDescription: string;
         /** NOTE: Can be not undefined only if cloud */
-        serviceUrl?: string;
+        serviceUrl: string | undefined;
     };
 
     export type SoftwareUserRow = {
@@ -86,6 +86,7 @@ export namespace Db {
         targetAudience: string;
         publicUrl: string;
         otherSoftwares: WikidataEntry[];
+        addedByAgentEmail: string;
     };
 }
 

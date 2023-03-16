@@ -5,6 +5,7 @@ import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { z } from "zod";
 import { id as tsafeId } from "tsafe/id";
+import type { OptionalIfCanBeUndefined } from "../../tools/OptionalIfCanBeUndefined";
 
 export const zWikidataEntry = z.object({
     "wikidataLabel": z.string(),
@@ -91,7 +92,7 @@ const zSoftwareRow = z.object({
 
 {
     type Got = ReturnType<(typeof zSoftwareRow)["parse"]>;
-    type Expected = Db.SoftwareRow;
+    type Expected = OptionalIfCanBeUndefined<Db.SoftwareRow>;
 
     assert<Equals<Got, Expected>>();
 }

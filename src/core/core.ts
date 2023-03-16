@@ -12,17 +12,24 @@ import { createCompileData } from "./adapters/compileData";
 import { getWikidataSoftware } from "./adapters/getWikidataSoftware";
 import { getCnllPrestatairesSill } from "./adapters/getCnllPrestatairesSill";
 import { getComptoirDuLibre } from "./adapters/getComptoirDuLibre";
+import { getWikidataOptions } from "./adapters/getWikidataSoftwareOptions";
+import { createGetSoftwareLatestVersion } from "./adapters/getSoftwareLatestVersion";
 
 export async function createCore(params: {
     gitDbApiParams: GitDbApiParams;
     keycloakUserApiParams: KeycloakUserApiParams | undefined;
+    githubPersonalAccessToken: string;
 }) {
-    const { gitDbApiParams, keycloakUserApiParams } = params;
+    const { gitDbApiParams, keycloakUserApiParams, githubPersonalAccessToken } = params;
 
     const { compileData } = createCompileData({
         getWikidataSoftware,
         getCnllPrestatairesSill,
         getComptoirDuLibre
+    });
+
+    const { getSoftwareLatestVersion } = createGetSoftwareLatestVersion({
+        githubPersonalAccessToken
     });
 
     const core = createCoreFromUsecases({
@@ -36,7 +43,11 @@ export async function createCore(params: {
                           "debugMessage": "No Keycloak server"
                       })
                     : createKeycloakUserApi(keycloakUserApiParams),
-            compileData
+            compileData,
+            getWikidataOptions,
+            getSoftwareLatestVersion,
+            getComptoirDuLibre,
+            getWikidataSoftware
         }
     });
 

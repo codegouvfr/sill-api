@@ -32,7 +32,7 @@ const zParsedCONFIGURATION = z.object({
     "githubWebhookSecret": z.string().optional(),
     // Only for increasing the rate limit on GitHub API
     // we use the GitHub API for pre filling the version when adding a software
-    "githubPersonalAccessToken": z.string().optional(),
+    "githubPersonalAccessToken": z.string(),
     //Port we listen to, default 8080
     "port": z.number().optional()
 });
