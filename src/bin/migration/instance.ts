@@ -15,7 +15,8 @@ const zInstanceRow = z.object({
     "organization": z.string(),
     "targetAudience": z.string(),
     "publicUrl": z.string(),
-    "otherSoftwares": z.array(zWikidataEntry)
+    "otherSoftwares": z.array(zWikidataEntry),
+    "addedByAgentEmail": z.string()
 });
 
 type Got = ReturnType<(typeof zInstanceRow)["parse"]>;
@@ -36,8 +37,16 @@ fs.writeFileSync(
                     throw exception;
                 }
 
-                const { id, mainSoftwareSillId, organization, otherSoftwares, publicUrl, targetAudience, ...rest } =
-                    instanceRow;
+                const {
+                    id,
+                    mainSoftwareSillId,
+                    organization,
+                    otherSoftwares,
+                    publicUrl,
+                    targetAudience,
+                    addedByAgentEmail,
+                    ...rest
+                } = instanceRow;
 
                 assert<Equals<typeof rest, {}>>();
 
@@ -47,7 +56,8 @@ fs.writeFileSync(
                     organization,
                     otherSoftwares,
                     publicUrl,
-                    targetAudience
+                    targetAudience,
+                    addedByAgentEmail
                 });
             }),
             null,

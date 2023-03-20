@@ -15,7 +15,7 @@ export function createCompileData(params: {
     const compileData: CompileData = async params => {
         const {
             db: { softwareRows, agentRows, softwareReferentRows, softwareUserRows, instanceRows },
-            wikidataCacheCache,
+            cache_wikidataSoftwares,
             log = () => {
                 /*nothing*/
             }
@@ -37,12 +37,12 @@ export function createCompileData(params: {
                 log(`Fetching WikiData entry ${wikidataId} (${i + 1}/${wikidataIds.length})`);
 
                 wikidataSoftwareById[wikidataId] =
-                    wikidataCacheCache?.find(({ wikidataData }) => wikidataData?.id === wikidataId)?.wikidataData ??
+                    cache_wikidataSoftwares.find(wikidataSoftware => wikidataSoftware.id === wikidataId) ??
                     (await getWikidataSoftware({ wikidataId }));
             }
         }
 
-        const catalog = softwareRows
+        return softwareRows
             .map(softwareRow => ({
                 softwareRow,
                 "referents": softwareReferentRows
@@ -74,12 +74,13 @@ export function createCompileData(params: {
             }))
             .map(
                 ({
-                    softwareRow: { wikidataId, comptoirDuLibreId, ...rest },
+                    softwareRow: { wikidataId, comptoirDuLibreId, id, ...rest },
                     referents,
                     users
                 }): CompiledData.Software<"private"> => ({
                     ...rest,
-                    "wikidataData": wikidataId === undefined ? undefined : wikidataSoftwareById[wikidataId],
+                    id,
+                    "wikidataSoftware": wikidataId === undefined ? undefined : wikidataSoftwareById[wikidataId],
                     "comptoirDuLibreSoftware":
                         comptoirDuLibreId === undefined
                             ? undefined
@@ -94,21 +95,19 @@ export function createCompileData(params: {
                                   return cdlSoftware;
                               })(),
                     "annuaireCnllServiceProviders": cnllPrestatairesSill
-                        .find(({ sill_id }) => sill_id === rest.id)
+                        .find(({ sill_id }) => sill_id === id)
                         ?.prestataires.map(({ nom, siren, url }) => ({
                             "name": nom,
                             siren,
                             url
                         })),
                     referents,
-                    users
+                    users,
+                    "instances": instanceRows
+                        .filter(row => row.mainSoftwareSillId === id)
+                        .map(({ mainSoftwareSillId, ...rest }) => rest)
                 })
             );
-
-        return {
-            catalog,
-            "services": instanceRows
-        };
     };
 
     return { compileData };

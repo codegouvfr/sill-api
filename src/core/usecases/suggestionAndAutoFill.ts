@@ -108,7 +108,7 @@ const privateSelector = (() => {
     const compiledData = (state: RootState) => state.readWriteSillData.compiledData;
 
     const sillWikidataIds = createSelector(compiledData, compiledData =>
-        compiledData.catalog.map(software => software.wikidataData?.id).filter(exclude(undefined))
+        compiledData.map(software => software.wikidataSoftware?.id).filter(exclude(undefined))
     );
 
     return { sillWikidataIds };

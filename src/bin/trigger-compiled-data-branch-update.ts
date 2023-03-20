@@ -13,10 +13,12 @@ assert(sshPrivateKey !== undefined);
     const coreApi = await createCoreApi({
         "keycloakUserApiParams": undefined,
         "gitDbApiParams": {
-            "dataRepoSshUrl": "git@github.com:codegouv/sill-data.git",
+            "dataRepoSshUrl": "git@github.com:codegouvfr/sill-data.git",
             sshPrivateKey,
             sshPrivateKeyName
-        }
+        },
+        // It's just for API rate limit.
+        "githubPersonalAccessTokenForApiRateLimit": ""
     });
 
     await coreApi.functions.readWriteSillData.triggerPeriodicalNonIncrementalCompilation();

@@ -19,7 +19,7 @@ export namespace Db {
     export type SoftwareRow = {
         id: number;
         name: string;
-        function: string;
+        description: string;
         referencedSinceTime: number;
         updateTime: number;
         dereferencing?: {

@@ -10,6 +10,7 @@ import type { Db } from "../ports/DbApi";
 import { type CompiledData, compiledDataPrivateToPublic } from "../ports/CompileData";
 import { same } from "evt/tools/inDepth/same";
 import { removeDuplicates } from "evt/tools/reducers/removeDuplicates";
+import { exclude } from "tsafe/exclude";
 
 export type Software = {
     logoUrl: string | undefined;
@@ -52,7 +53,14 @@ export type Agent = {
     declarations: (DeclarationFormData & { softwareName: string })[];
 };
 
-export type Instance = Db.InstanceRow;
+export type Instance = {
+    id: number;
+    mainSoftwareSillId: number;
+    organization: string;
+    targetAudience: string;
+    publicUrl: string;
+    otherSoftwares: WikidataEntry[];
+};
 
 export type SoftwareType = SoftwareType.Desktop | SoftwareType.CloudNative | SoftwareType.Stack;
 
@@ -181,7 +189,7 @@ export const thunks = {
 
             const newCompiledData = await compileData({
                 "db": dbBefore,
-                "wikidataCacheCache": undefined
+                "cache_wikidataSoftwares": []
             });
 
             const wasCanceled = await mutex.runExclusive(async (): Promise<boolean> => {
@@ -253,7 +261,7 @@ export const thunks = {
                 softwareRows.push({
                     "id": softwareId,
                     "name": formData.softwareName,
-                    "function": formData.softwareDescription,
+                    "description": formData.softwareDescription,
                     "referencedSinceTime": now,
                     "updateTime": now,
                     "dereferencing": undefined,
@@ -406,7 +414,9 @@ const localThunks = {
             //inconsistent state.
             const newCompiledData = await compileData({
                 "db": newDb,
-                "wikidataCacheCache": state.compiledData.catalog
+                "cache_wikidataSoftwares": state.compiledData
+                    .map(software => software.wikidataSoftware)
+                    .filter(exclude(undefined))
             });
 
             await Promise.all([
@@ -426,17 +436,15 @@ const localThunks = {
 export const selectors = (() => {
     const sliceState = (state: RootState) => state[name];
 
-    const catalog = createSelector(sliceState, state => state.compiledData.catalog);
+    const compiledData = createSelector(sliceState, state => state.compiledData);
 
-    const services = createSelector(sliceState, state => state.compiledData.services);
-
-    const softwares = createSelector(catalog, catalog =>
-        catalog.map(
+    const softwares = createSelector(compiledData, compiledData =>
+        compiledData.map(
             (o): Software => ({
-                "logoUrl": o.wikidataData?.logoUrl,
+                "logoUrl": o.wikidataSoftware?.logoUrl,
                 "softwareId": o.id,
                 "softwareName": o.name,
-                "softwareDescription": o.function,
+                "softwareDescription": o.description,
                 //TODO: Collect last version
                 "lastVersion": undefined,
                 "parentSoftware": o.parentSoftware,
@@ -464,33 +472,84 @@ export const selectors = (() => {
                     return out;
                 })(),
                 "authors":
-                    o.wikidataData?.developers.map(developer => ({
+                    o.wikidataSoftware?.developers.map(developer => ({
                         "authorName": developer.name,
                         "authorUrl": `https://www.wikidata.org/wiki/${developer.id}`
                     })) ?? [],
-                "officialWebsiteUrl": o.wikidataData?.websiteUrl,
-                "codeRepositoryUrl": o.wikidataData?.sourceUrl,
+                "officialWebsiteUrl": o.wikidataSoftware?.websiteUrl,
+                "codeRepositoryUrl": o.wikidataSoftware?.sourceUrl,
                 "versionMin": o.versionMin,
                 "license": o.license,
                 "serviceProviderCount": o.comptoirDuLibreSoftware?.providers.length ?? 0,
                 "compotoirDuLibreId": o.comptoirDuLibreSoftware?.id,
-                "wikidataId": o.wikidataData?.id,
+                "wikidataId": o.wikidataSoftware?.id,
                 "softwareType": o.softwareType,
                 "similarSoftwares": o.similarSoftwares
             })
         )
     );
 
-    const instances = createSelector(services, services => services.map((service): Instance => service));
+    const instances = createSelector(compiledData, (compiledData): Instance[] =>
+        compiledData
+            .map(software => software.instances.map(instance => ({ ...instance, "mainSoftwareSillId": software.id })))
+            .flat()
+            .map(
+                ({
+                    id,
+                    organization,
+                    targetAudience,
+                    publicUrl,
+                    otherSoftwares,
+                    addedByAgentEmail,
+                    mainSoftwareSillId
+                }) => ({
+                    id,
+                    mainSoftwareSillId,
+                    organization,
+                    targetAudience,
+                    publicUrl,
+                    otherSoftwares,
+                    addedByAgentEmail
+                })
+            )
+    );
 
     const agents = createSelector(sliceState, state =>
-        state.db.agentRows.map(
-            (agentRow): Agent => ({
+        state.db.agentRows.map((agentRow): Agent => {
+            const getSoftwareName = (softwareId: number) => {
+                const row = state.db.softwareRows.find(row => row.id === softwareId);
+
+                assert(row !== undefined);
+
+                return row.name;
+            };
+
+            return {
                 "email": agentRow.email,
-                "declarations": null,
+                "declarations": [
+                    ...state.db.softwareUserRows
+                        .filter(row => row.agentEmail === agentRow.email)
+                        .map((row): DeclarationFormData.User & { softwareName: string } => ({
+                            "declarationType": "user",
+                            "usecaseDescription": row.useCaseDescription,
+                            "os": row.os,
+                            "version": row.version,
+                            "serviceUrl": row.serviceUrl,
+                            "softwareName": getSoftwareName(row.softwareId)
+                        })),
+                    ...state.db.softwareReferentRows
+                        .filter(row => row.agentEmail === agentRow.email)
+                        .map((row): DeclarationFormData.Referent & { softwareName: string } => ({
+                            "declarationType": "referent",
+                            "isTechnicalExpert": row.isExpert,
+                            "usecaseDescription": row.useCaseDescription,
+                            "serviceUrl": row.serviceUrl,
+                            "softwareName": getSoftwareName(row.softwareId)
+                        }))
+                ],
                 "organization": agentRow.organization
-            })
-        )
+            };
+        })
     );
 
     const referentCount = createSelector(

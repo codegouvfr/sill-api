@@ -1,30 +1,20 @@
-import type { Db } from "./DbApi";
+import type { Db, WikidataEntry } from "./DbApi";
 import type { WikidataSoftware } from "./GetWikidataSoftware";
 import type { ComptoirDuLibre } from "./GetComptoirDuLibre";
 
 export type CompileData = (params: {
     db: Db;
-    //NOTE: CompiledData["catalog"] is assignable to this
-    wikidataCacheCache:
-        | {
-              wikidataData?: WikidataSoftware;
-          }[]
-        | undefined;
+    cache_wikidataSoftwares: WikidataSoftware[];
     log?: typeof console.log;
 }) => Promise<CompiledData<"private">>;
 
-export type CompiledData<T extends "private" | "public" = "public"> = {
-    catalog: CompiledData.Software<T>[];
-    services: CompiledData.Service[];
-};
+export type CompiledData<T extends "private" | "public"> = CompiledData.Software<T>[];
 
 export namespace CompiledData {
-    export type Software<T extends "private" | "public" = "public"> = T extends "private"
-        ? Software.WithReferent
-        : Software.WithoutReferent;
+    export type Software<T extends "private" | "public"> = T extends "private" ? Software.Private : Software.Public;
     export namespace Software {
         export type Common = Omit<Db.SoftwareRow, "wikidataId" | "comptoirDuLibreId"> & {
-            wikidataData?: WikidataSoftware;
+            wikidataSoftware: WikidataSoftware | undefined;
             comptoirDuLibreSoftware: ComptoirDuLibre.Software | undefined;
             annuaireCnllServiceProviders:
                 | {
@@ -35,43 +25,50 @@ export namespace CompiledData {
                 | undefined;
         };
 
-        export type WithoutReferent = Common & {
+        export type Public = Common & {
             userAndReferentCountByOrganization: Record<string, { userCount: number; referentCount: number }>;
             hasExpertReferent: boolean;
+            instances: Instance[];
         };
 
-        export type WithReferent = Common & {
+        export type Private = Common & {
             users: (Omit<Db.AgentRow, "email"> & Omit<Db.SoftwareUserRow, "softwareId" | "agentEmail">)[];
             referents: (Db.AgentRow & Omit<Db.SoftwareReferentRow, "softwareId" | "agentEmail">)[];
+            instances: (Instance & { addedByAgentEmail: string })[];
         };
     }
 
-    export type Service = Db.InstanceRow;
+    export type Instance = {
+        id: number;
+        organization: string;
+        targetAudience: string;
+        publicUrl: string;
+        otherSoftwares: WikidataEntry[];
+    };
 }
 
 export function compiledDataPrivateToPublic(compiledData: CompiledData<"private">): CompiledData<"public"> {
-    return {
-        ...compiledData,
-        "catalog": compiledData.catalog.map((software): CompiledData.Software<"public"> => {
-            const { referents, users, ...rest } = software;
-            return {
-                ...rest,
-                "hasExpertReferent": referents.find(({ isExpert }) => isExpert) !== undefined,
-                "userAndReferentCountByOrganization": (() => {
-                    const out: CompiledData.Software.WithoutReferent["userAndReferentCountByOrganization"] = {};
+    return compiledData.map((software): CompiledData.Software<"public"> => {
+        const { referents, users, instances, ...rest } = software;
 
-                    referents.forEach(referent => {
-                        const entry = (out[referent.organization] ??= { "referentCount": 0, "userCount": 0 });
-                        entry.referentCount++;
-                    });
-                    users.forEach(user => {
-                        const entry = (out[user.organization] ??= { "referentCount": 0, "userCount": 0 });
-                        entry.userCount++;
-                    });
+        return {
+            ...rest,
+            "hasExpertReferent": referents.find(({ isExpert }) => isExpert) !== undefined,
+            "userAndReferentCountByOrganization": (() => {
+                const out: CompiledData.Software.Public["userAndReferentCountByOrganization"] = {};
 
-                    return out;
-                })()
-            };
-        })
-    };
+                referents.forEach(referent => {
+                    const entry = (out[referent.organization] ??= { "referentCount": 0, "userCount": 0 });
+                    entry.referentCount++;
+                });
+                users.forEach(user => {
+                    const entry = (out[user.organization] ??= { "referentCount": 0, "userCount": 0 });
+                    entry.userCount++;
+                });
+
+                return out;
+            })(),
+            "instances": instances.map(({ addedByAgentEmail, ...rest }) => rest)
+        };
+    });
 }

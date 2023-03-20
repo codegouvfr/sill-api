@@ -5,9 +5,9 @@ import { getLatestSemVersionedTagFactory } from "./octokit-addons/getLatestSemVe
 
 export async function getLatestSemVersionedTagFromSourceUrl(params: {
     sourceUrl: string;
-    githubPersonalAccessToken: string | undefined;
+    githubPersonalAccessTokenForApiRateLimit: string | undefined;
 }) {
-    const { sourceUrl, githubPersonalAccessToken } = params;
+    const { sourceUrl, githubPersonalAccessTokenForApiRateLimit } = params;
 
     let parsedGitHubRepoUrl: ReturnType<typeof parseGitHubRepoUrl>;
 
@@ -17,7 +17,7 @@ export async function getLatestSemVersionedTagFromSourceUrl(params: {
         return undefined;
     }
 
-    const octokit = getOctokit(githubPersonalAccessToken);
+    const octokit = getOctokit(githubPersonalAccessTokenForApiRateLimit);
 
     const { getLatestSemVersionedTag } = getLatestSemVersionedTagFactory({
         octokit
@@ -35,6 +35,10 @@ export async function getLatestSemVersionedTagFromSourceUrl(params: {
 }
 
 const getOctokit = memoize(
-    (githubPersonalAccessToken: string | undefined) =>
-        new Octokit(githubPersonalAccessToken === undefined ? undefined : { "auth": githubPersonalAccessToken })
+    (githubPersonalAccessTokenForApiRateLimit: string | undefined) =>
+        new Octokit(
+            githubPersonalAccessTokenForApiRateLimit === undefined
+                ? undefined
+                : { "auth": githubPersonalAccessTokenForApiRateLimit }
+        )
 );

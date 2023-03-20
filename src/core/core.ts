@@ -18,9 +18,9 @@ import { createGetSoftwareLatestVersion } from "./adapters/getSoftwareLatestVers
 export async function createCore(params: {
     gitDbApiParams: GitDbApiParams;
     keycloakUserApiParams: KeycloakUserApiParams | undefined;
-    githubPersonalAccessToken: string;
+    githubPersonalAccessTokenForApiRateLimit: string;
 }) {
-    const { gitDbApiParams, keycloakUserApiParams, githubPersonalAccessToken } = params;
+    const { gitDbApiParams, keycloakUserApiParams, githubPersonalAccessTokenForApiRateLimit } = params;
 
     const { compileData } = createCompileData({
         getWikidataSoftware,
@@ -29,7 +29,7 @@ export async function createCore(params: {
     });
 
     const { getSoftwareLatestVersion } = createGetSoftwareLatestVersion({
-        githubPersonalAccessToken
+        githubPersonalAccessTokenForApiRateLimit
     });
 
     const core = createCoreFromUsecases({

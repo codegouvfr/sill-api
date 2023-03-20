@@ -56,7 +56,7 @@ const zSoftwareType = z.union([
 const zSoftwareRow = z.object({
     "id": z.number(),
     "name": z.string(),
-    "function": z.string(),
+    "description": z.string(),
     "referencedSinceTime": z.number(),
     "updateTime": z.number(),
     "dereferencing": z
@@ -115,7 +115,7 @@ fs.writeFileSync(
                 const {
                     id,
                     name,
-                    "function": fun,
+                    description,
                     referencedSinceTime,
                     dereferencing,
                     isStillInObservation,
@@ -153,7 +153,7 @@ fs.writeFileSync(
                 return tsafeId<Db.SoftwareRow>({
                     id,
                     name,
-                    "function": fun,
+                    description,
                     referencedSinceTime,
                     dereferencing,
                     isStillInObservation,

@@ -25,7 +25,7 @@ export async function startRpcService(params: {
     sshPrivateKeyForGitName: string;
     sshPrivateKeyForGit: string;
     githubWebhookSecret?: string;
-    githubPersonalAccessToken: string;
+    githubPersonalAccessTokenForApiRateLimit: string;
     port: number;
 }) {
     const {
@@ -36,7 +36,7 @@ export async function startRpcService(params: {
         jwtClaimByUserKey,
         githubWebhookSecret,
         port,
-        githubPersonalAccessToken,
+        githubPersonalAccessTokenForApiRateLimit,
         ...rest
     } = params;
 
@@ -56,7 +56,8 @@ export async function startRpcService(params: {
                       "realm": keycloakParams.realm,
                       "adminPassword": keycloakParams.adminPassword,
                       "agencyNameAttributeName": keycloakParams.agencyNameAttributeName
-                  }
+                  },
+        githubPersonalAccessTokenForApiRateLimit
     });
 
     const { createContext } = createContextFactory({
