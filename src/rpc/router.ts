@@ -8,7 +8,7 @@ import { getProjectRoot } from "../tools/getProjectRoot";
 import fetch from "node-fetch";
 import type { CoreApi } from "../core";
 import type { Context } from "./context";
-import type { User } from "./User";
+import type { User } from "./user";
 import type { KeycloakParams } from "../tools/createValidateKeycloakSignature";
 import type {
     SoftwareType,

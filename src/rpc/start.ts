@@ -9,7 +9,7 @@ import type { LocalizedString } from "../core/ports/GetWikidataSoftware";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { createContextFactory } from "./context";
-import type { User } from "./User";
+import type { User } from "./user";
 import { createRouter } from "./router";
 
 export async function startRpcService(params: {
