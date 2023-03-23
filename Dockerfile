@@ -8,7 +8,7 @@ RUN yarn build
 RUN rm -r src
 RUN mv dist src
 RUN npm install -g @vercel/ncc@0.36.1
-RUN npx ncc build src/server/main.js
+RUN npx ncc build src/main.js
 
 # production environment
 FROM node:14.19.3-alpine
