@@ -1,5 +1,9 @@
 export { type TrpcRouter } from "./rpc/router";
-export type { inferProcedureOutput, inferProcedureInput } from "@trpc/server";
+
+import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
+export type TrpcRouterInput = inferRouterInputs<TrpcRouter>;
+export type TrpcRouterOutput = inferRouterOutputs<TrpcRouter>;
+
 export type {
     Agent,
     DeclarationFormData,
@@ -12,11 +16,7 @@ export type {
     WikidataEntry
 } from "./core/usecases/readWriteSillData";
 
-export { type User, zUser } from "./rpc/context";
-import { parsedJwtPayloadToUser } from "./tools/parsedJwtPayloadToUser";
-
-export const tools = {
-    parsedJwtPayloadToUser
-};
+export { type User, createAccessTokenToUser } from "./rpc/user";
+import { TrpcRouter } from "./rpc/router";
 
 export { type Language, type LocalizedString, languages } from "./core/ports/GetWikidataSoftware";

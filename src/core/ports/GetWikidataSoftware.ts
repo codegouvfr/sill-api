@@ -1,8 +1,7 @@
 import { z } from "zod";
 import type { LocalizedString as LocalizedString_generic } from "i18nifty/LocalizedString";
 import type { PartialNoOptional } from "../../tools/PartialNoOptional";
-import { assert } from "tsafe/assert";
-import type { Equals } from "tsafe";
+import { assert, type Equals } from "tsafe/assert";
 
 export type GetWikidataSoftware = (params: { wikidataId: string }) => Promise<WikidataSoftware | undefined>;
 

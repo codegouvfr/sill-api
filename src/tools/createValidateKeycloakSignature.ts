@@ -35,13 +35,13 @@ export function createValidateKeycloakSignature(params: KeycloakParams) {
         { "promise": true }
     );
 
-    async function validateKeycloakSignature(params: { jwtToken: string }) {
-        const { jwtToken } = params;
+    async function validateKeycloakSignature(params: { accessToken: string }) {
+        const { accessToken } = params;
 
         const { keycloakBackendVerifyOffline } = await getKeycloakBackendVerifyOffline();
 
         await keycloakBackendVerifyOffline({
-            "keycloakOidcAccessToken": jwtToken
+            "keycloakOidcAccessToken": accessToken
         });
     }
 

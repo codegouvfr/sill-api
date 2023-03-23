@@ -8,7 +8,8 @@ import { compiledDataBranch } from "../core/adapters/dbApi";
 import type { LocalizedString } from "../core/ports/GetWikidataSoftware";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
-import { createContextFactory, type User } from "./context";
+import { createContextFactory } from "./context";
+import type { User } from "./User";
 import { createRouter } from "./router";
 
 export async function startRpcService(params: {

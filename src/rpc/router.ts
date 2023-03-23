@@ -1,4 +1,3 @@
-import * as trpc from "@trpc/server";
 import type { ReturnType } from "tsafe";
 import { TRPCError } from "@trpc/server";
 import { assert } from "tsafe/assert";
@@ -8,7 +7,8 @@ import { join as pathJoin } from "path";
 import { getProjectRoot } from "../tools/getProjectRoot";
 import fetch from "node-fetch";
 import type { CoreApi } from "../core";
-import type { Context, User } from "./context";
+import type { Context } from "./context";
+import type { User } from "./User";
 import type { KeycloakParams } from "../tools/createValidateKeycloakSignature";
 import type {
     SoftwareType,
@@ -20,6 +20,9 @@ import type {
 } from "../core/usecases/readWriteSillData";
 import type { Equals } from "tsafe";
 import type { OptionalIfCanBeUndefined } from "../tools/OptionalIfCanBeUndefined";
+import { initTRPC } from "@trpc/server";
+import superjson from "superjson";
+import { ZodError } from "zod";
 
 export function createRouter(params: {
     coreApi: CoreApi;
@@ -28,19 +31,30 @@ export function createRouter(params: {
 }) {
     const { coreApi, keycloakParams, jwtClaimByUserKey } = params;
 
-    const router = trpc
-        .router<Context>()
-        .query("getApiVersion", {
-            "resolve": (() => {
+    const t = initTRPC.context<Context>().create({
+        "transformer": superjson,
+        "errorFormatter": ({ shape, error }) => ({
+            ...shape,
+            "data": {
+                ...shape.data,
+                "zodError":
+                    error.code === "BAD_REQUEST" && error.cause instanceof ZodError ? error.cause.flatten() : null
+            }
+        })
+    });
+
+    const router = t.router({
+        "getApiVersion": t.procedure.query(
+            (() => {
                 const out: string = JSON.parse(
                     fs.readFileSync(pathJoin(getProjectRoot(), "package.json")).toString("utf8")
                 )["version"];
 
                 return () => out;
             })()
-        })
-        .query("getOidcParams", {
-            "resolve": (() => {
+        ),
+        "getOidcParams": t.procedure.query(
+            (() => {
                 if (keycloakParams === undefined) {
                     throw new TRPCError({ "code": "FORBIDDEN", "message": "Authentication disabled" });
                 }
@@ -54,25 +68,23 @@ export function createRouter(params: {
 
                 return () => out;
             })()
-        })
-        .query("getSoftwares", {
-            "resolve": () => {
-                const { softwares } = coreApi.selectors.readWriteSillData.softwares(coreApi.getState());
-                return softwares;
-            }
-        })
-        .query("getInstances", {
-            "resolve": () => {
-                const { instances } = coreApi.selectors.readWriteSillData.instances(coreApi.getState());
-                return instances;
-            }
-        })
-        .query("getWikidataOptions", {
-            "input": z.object({
-                "queryString": z.string()
-            }),
-            "resolve": ({ ctx, input }) => {
-                if (ctx === null) {
+        ),
+        "getSoftwares": t.procedure.query(() => {
+            const { softwares } = coreApi.selectors.readWriteSillData.softwares(coreApi.getState());
+            return softwares;
+        }),
+        "getInstances": t.procedure.query(() => {
+            const { instances } = coreApi.selectors.readWriteSillData.instances(coreApi.getState());
+            return instances;
+        }),
+        "getWikidataOptions": t.procedure
+            .input(
+                z.object({
+                    "queryString": z.string()
+                })
+            )
+            .query(({ ctx: { user }, input }) => {
+                if (user === undefined) {
                     //To prevent abuse.
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -82,14 +94,15 @@ export function createRouter(params: {
                 return coreApi.functions.suggestionAndAutoFill.getWikidataOptionsWithPresenceInSill({
                     queryString
                 });
-            }
-        })
-        .query("getSoftwareFormAutoFillDataFromWikidataAndOtherSources", {
-            "input": z.object({
-                "wikidataId": z.string()
             }),
-            "resolve": async ({ ctx, input }) => {
-                if (ctx === null) {
+        "getSoftwareFormAutoFillDataFromWikidataAndOtherSources": t.procedure
+            .input(
+                z.object({
+                    "wikidataId": z.string()
+                })
+            )
+            .query(async ({ ctx: { user }, input }) => {
+                if (user === undefined) {
                     //To prevent abuse.
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -99,20 +112,19 @@ export function createRouter(params: {
                 return coreApi.functions.suggestionAndAutoFill.getSoftwareFormAutoFillDataFromWikidataAndOtherSources({
                     wikidataId
                 });
-            }
-        })
-        .mutation("createSoftware", {
-            "input": z.object({
-                "formData": zSoftwareFormData
             }),
-            "resolve": async ({ ctx, input }) => {
-                if (ctx === null) {
+        "createSoftware": t.procedure
+            .input(
+                z.object({
+                    "formData": zSoftwareFormData
+                })
+            )
+            .mutation(async ({ ctx: { user }, input }) => {
+                if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
                 const { formData } = input;
-
-                const { user } = ctx;
 
                 await coreApi.functions.readWriteSillData.createSoftware({
                     formData,
@@ -121,21 +133,20 @@ export function createRouter(params: {
                         "organization": user.agencyName
                     }
                 });
-            }
-        })
-        .mutation("updateSoftware", {
-            "input": z.object({
-                "softwareSillId": z.number(),
-                "formData": zSoftwareFormData
             }),
-            "resolve": async ({ ctx, input }) => {
-                if (ctx === null) {
+        "updateSoftware": t.procedure
+            .input(
+                z.object({
+                    "softwareSillId": z.number(),
+                    "formData": zSoftwareFormData
+                })
+            )
+            .mutation(async ({ ctx: { user }, input }) => {
+                if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
                 const { softwareSillId, formData } = input;
-
-                const { user } = ctx;
 
                 await coreApi.functions.readWriteSillData.updateSoftware({
                     softwareSillId,
@@ -145,20 +156,19 @@ export function createRouter(params: {
                         "organization": user.agencyName
                     }
                 });
-            }
-        })
-        .mutation("createUserOrReferent", {
-            "input": z.object({
-                "formData": zDeclarationFormData
             }),
-            "resolve": async ({ ctx, input }) => {
-                if (ctx === null) {
+        "createUserOrReferent": t.procedure
+            .input(
+                z.object({
+                    "formData": zDeclarationFormData
+                })
+            )
+            .mutation(async ({ ctx: { user }, input }) => {
+                if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
                 const { formData } = input;
-
-                const { user } = ctx;
 
                 await coreApi.functions.readWriteSillData.createUserOrReferent({
                     formData,
@@ -167,20 +177,19 @@ export function createRouter(params: {
                         "organization": user.agencyName
                     }
                 });
-            }
-        })
-        .mutation("createInstance", {
-            "input": z.object({
-                "formData": zInstanceFormData
             }),
-            "resolve": async ({ ctx, input }) => {
-                if (ctx === null) {
+        "createInstance": t.procedure
+            .input(
+                z.object({
+                    "formData": zInstanceFormData
+                })
+            )
+            .mutation(async ({ ctx: { user }, input }) => {
+                if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
                 const { formData } = input;
-
-                const { user } = ctx;
 
                 await coreApi.functions.readWriteSillData.createInstance({
                     formData,
@@ -189,15 +198,16 @@ export function createRouter(params: {
                         "organization": user.agencyName
                     }
                 });
-            }
-        })
-        .mutation("updateInstance", {
-            "input": z.object({
-                "instanceId": z.number(),
-                "formData": zInstanceFormData
             }),
-            "resolve": async ({ ctx, input }) => {
-                if (ctx === null) {
+        "updateInstance": t.procedure
+            .input(
+                z.object({
+                    "instanceId": z.number(),
+                    "formData": zInstanceFormData
+                })
+            )
+            .mutation(async ({ ctx: { user }, input }) => {
+                if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
@@ -207,49 +217,24 @@ export function createRouter(params: {
                     instanceId,
                     formData
                 });
-            }
-        })
-        .query("getAgents", {
-            "resolve": async ({ ctx }) => {
-                if (ctx === null) {
-                    throw new TRPCError({ "code": "UNAUTHORIZED" });
-                }
-
-                return coreApi.selectors.readWriteSillData.agents(coreApi.getState());
-            }
-        })
-        .query("getAllowedEmailRegexp", {
-            "resolve": coreApi.extras.userApi.getAllowedEmailRegexp
-        })
-        .query("getAgencyNames", {
-            "resolve": coreApi.extras.userApi.getAgencyNames
-        })
-        .query("createSoftware", {
-            "input": z.object({
-                "formData": zSoftwareFormData
             }),
-            "resolve": async ({ ctx, input }) => {
-                if (ctx === null) {
-                    throw new TRPCError({ "code": "UNAUTHORIZED" });
-                }
-
-                const { formData } = input;
-
-                coreApi.functions.readWriteSillData.createSoftware({
-                    formData,
-                    "agent": {
-                        "email": ctx.user.email,
-                        "organization": ctx.user.agencyName
-                    }
-                });
+        "getAgents": t.procedure.query(async ({ ctx: { user } }) => {
+            if (user === undefined) {
+                throw new TRPCError({ "code": "UNAUTHORIZED" });
             }
-        })
-        .mutation("changeAgentOrganization", {
-            "input": z.object({
-                "newOrganization": z.string()
-            }),
-            "resolve": async ({ ctx, input }) => {
-                if (ctx === null) {
+
+            return coreApi.selectors.readWriteSillData.agents(coreApi.getState());
+        }),
+        "getAllowedEmailRegexp": t.procedure.query(coreApi.extras.userApi.getAllowedEmailRegexp),
+        "getAgencyNames": t.procedure.query(coreApi.extras.userApi.getAgencyNames),
+        "changeAgentOrganization": t.procedure
+            .input(
+                z.object({
+                    "newOrganization": z.string()
+                })
+            )
+            .mutation(async ({ ctx: { user }, input }) => {
+                if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
@@ -258,18 +243,19 @@ export function createRouter(params: {
                 const { newOrganization } = input;
 
                 await coreApi.functions.readWriteSillData.changeAgentOrganization({
-                    "email": ctx.user.email,
+                    "email": user.email,
                     newOrganization,
-                    "userId": ctx.user.id
+                    "userId": user.id
                 });
-            }
-        })
-        .mutation("updateEmail", {
-            "input": z.object({
-                "newEmail": z.string().email()
             }),
-            "resolve": async ({ ctx, input }) => {
-                if (ctx === null) {
+        "updateEmail": t.procedure
+            .input(
+                z.object({
+                    "newEmail": z.string().email()
+                })
+            )
+            .mutation(async ({ ctx: { user }, input }) => {
+                if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
@@ -278,27 +264,20 @@ export function createRouter(params: {
                 assert(keycloakParams !== undefined);
 
                 await coreApi.functions.readWriteSillData.updateUserEmail({
-                    "userId": ctx.user.id,
-                    "email": ctx.user.email,
+                    "userId": user.id,
+                    "email": user.email,
                     newEmail
                 });
-            }
-        })
-        .query("getRegisteredUserCount", {
-            "resolve": async () => coreApi.extras.userApi.getUserCount()
-        })
-        .query("downloadCorsProtectedTextFile", {
-            "input": z.object({
-                "url": z.string()
             }),
-            "resolve": async ({ input }) => {
-                const { url } = input;
+        "getRegisteredUserCount": t.procedure.query(async () => coreApi.extras.userApi.getUserCount()),
+        "downloadCorsProtectedTextFile": t.procedure.input(z.object({ "url": z.string() })).query(async ({ input }) => {
+            const { url } = input;
 
-                const textContent = await fetch(url).then(res => res.text());
+            const textContent = await fetch(url).then(res => res.text());
 
-                return textContent;
-            }
-        });
+            return textContent;
+        })
+    });
 
     return { router };
 }

@@ -302,17 +302,25 @@ export const thunks = {
             formData: SoftwareFormData;
             agent: { email: string; organization: string };
         }) =>
-        async (...args) => {},
+        async (...args): Promise<void> => {
+            console.log(params, args);
+        },
     "createUserOrReferent":
         (params: { formData: DeclarationFormData; agent: { email: string; organization: string } }) =>
-        async (...args) => {},
+        async (...args): Promise<void> => {
+            console.log(params, args);
+        },
     "createInstance":
         (params: { formData: InstanceFormData; agent: { email: string; organization: string } }) =>
-        async (...args) => {},
+        async (...args): Promise<{ instanceId: number }> => {
+            console.log(params, args);
+            return null as any;
+        },
     "updateInstance":
         (params: { instanceId: number; formData: InstanceFormData }) =>
-        async (...args) => {},
-
+        async (...args): Promise<void> => {
+            console.log(params, args);
+        },
     "changeAgentOrganization":
         (params: { userId: string; email: string; newOrganization: string }) =>
         async (...args) => {
