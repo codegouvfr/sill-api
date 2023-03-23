@@ -4,7 +4,7 @@
     "description": "The backend of sill.etalab.gouv.fr",
     "repository": {
         "type": "git",
-        "url": "git://github.com/etalab/sill-web.git"
+        "url": "git://github.com/codegouvfr/sill-api.git"
     },
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
