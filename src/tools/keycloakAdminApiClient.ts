@@ -1,7 +1,7 @@
 import urlJoin from "url-join";
 import fetch from "node-fetch";
 import deepMerge from "deepmerge";
-import type { KcContextBase } from "keycloakify";
+import type { KcContext } from "keycloakify/login/kcContext";
 
 type User = {
     id: string;
@@ -14,7 +14,7 @@ type User = {
 export type KeycloakAdminApiClient = {
     updateUser: (params: { userId: string; body: Record<string, unknown> }) => Promise<void>;
     /** NOTE: The return type isn't correct but it would be if Keycloak was consistent */
-    getUserProfileAttributes: () => Promise<KcContextBase.RegisterUserProfile["profile"]["attributes"]>;
+    getUserProfileAttributes: () => Promise<KcContext.RegisterUserProfile["profile"]["attributes"]>;
     getUsers: (params: { first: number; max: number }) => Promise<User[]>;
 };
 

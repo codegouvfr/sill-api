@@ -1516,10 +1516,10 @@ keycloak-backend@^2.0.1:
     axios "^0.21.0"
     jsonwebtoken "^8.5.1"
 
-keycloakify@^6.8.4:
-  version "6.13.2"
-  resolved "https://registry.yarnpkg.com/keycloakify/-/keycloakify-6.13.2.tgz#6e8456d3c22b5e3f265781086b03a38b18c4ce1b"
-  integrity sha512-2u4wwU/kdAcE2U2a6jJCDeXo838un4sG8vk/MT9F8djeSs+pGk7w7ZViHbFBve26n3QBojtbjj7DkHF0lVFLSw==
+keycloakify@^7.0.3:
+  version "7.0.3"
+  resolved "https://registry.yarnpkg.com/keycloakify/-/keycloakify-7.0.3.tgz#c73d13618b533c125d2941435f05b5668bfcebef"
+  integrity sha512-sGW9rPS9W7/KEAPwsk+bzHbX03YgKUIgAhwbPSPOa9x1SdqpttJSrd/kWMH3t1j/0AJ+fI8lSlRfpz1PgCW+ww==
   dependencies:
     "@octokit/rest" "^18.12.0"
     cheerio "^1.0.0-rc.5"
