@@ -24,16 +24,17 @@ const zUser = z.object({
 }
 
 export function createAccessTokenToUser(params: {
-    accessTokenToParsedJwtPayload: (accessToken: string) => Record<string, unknown>;
+    decodeJwt: (accessToken: string) => Record<string, unknown>;
+    jwtClaimByUserKey: Record<keyof User, string>;
 }) {
-    const { accessTokenToParsedJwtPayload } = params;
+    const { decodeJwt, jwtClaimByUserKey } = params;
 
-    function accessTokenToUser(params: { accessToken: string; jwtClaimByUserKey: Record<keyof User, string> }): User {
-        const { accessToken, jwtClaimByUserKey } = params;
+    function accessTokenToUser(params: { accessToken: string }): User {
+        const { accessToken } = params;
 
         const user = parsedJwtPayloadToUser({
             zUser,
-            "parsedJwtPayload": accessTokenToParsedJwtPayload(accessToken),
+            "parsedJwtPayload": decodeJwt(accessToken),
             jwtClaimByUserKey
         });
 

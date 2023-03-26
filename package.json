@@ -6,8 +6,8 @@
         "type": "git",
         "url": "git://github.com/codegouvfr/sill-api.git"
     },
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "main": "dist/lib/index.js",
+    "types": "dist/lib/index.d.ts",
     "scripts": {
         "build": "tsc",
         "dev": "./.env.local.sh node dist/server/main.js",
@@ -68,7 +68,6 @@
         "prettier": "^2.8.2",
         "redux-clean-architecture": "^3.2.8",
         "run-exclusive": "^2.2.16",
-        "superjson": "^1.12.2",
         "typescript": "^5.0.2",
         "url-join": "^4.0.1"
     },

@@ -21,8 +21,6 @@ import type {
 import type { Equals } from "tsafe";
 import type { OptionalIfCanBeUndefined } from "../tools/OptionalIfCanBeUndefined";
 import { initTRPC } from "@trpc/server";
-import superjson from "superjson";
-import { ZodError } from "zod";
 
 export function createRouter(params: {
     coreApi: CoreApi;
@@ -31,17 +29,7 @@ export function createRouter(params: {
 }) {
     const { coreApi, keycloakParams, jwtClaimByUserKey } = params;
 
-    const t = initTRPC.context<Context>().create({
-        "transformer": superjson,
-        "errorFormatter": ({ shape, error }) => ({
-            ...shape,
-            "data": {
-                ...shape.data,
-                "zodError":
-                    error.code === "BAD_REQUEST" && error.cause instanceof ZodError ? error.cause.flatten() : null
-            }
-        })
-    });
+    const t = initTRPC.context<Context>().create();
 
     const router = t.router({
         "getApiVersion": t.procedure.query(
@@ -55,14 +43,16 @@ export function createRouter(params: {
         ),
         "getOidcParams": t.procedure.query(
             (() => {
-                if (keycloakParams === undefined) {
-                    throw new TRPCError({ "code": "FORBIDDEN", "message": "Authentication disabled" });
-                }
-
-                const { url, realm, clientId } = keycloakParams;
-
                 const out = {
-                    "keycloakParams": { url, realm, clientId },
+                    "keycloakParams": (() => {
+                        if (keycloakParams === undefined) {
+                            return undefined;
+                        }
+
+                        const { url, realm, clientId } = keycloakParams;
+
+                        return { url, realm, clientId };
+                    })(),
                     jwtClaimByUserKey
                 };
 
@@ -119,7 +109,7 @@ export function createRouter(params: {
                     "formData": zSoftwareFormData
                 })
             )
-            .mutation(async ({ ctx: { user }, input }) => {
+            .query(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -133,6 +123,8 @@ export function createRouter(params: {
                         "organization": user.agencyName
                     }
                 });
+
+                return null;
             }),
         "updateSoftware": t.procedure
             .input(
@@ -141,7 +133,7 @@ export function createRouter(params: {
                     "formData": zSoftwareFormData
                 })
             )
-            .mutation(async ({ ctx: { user }, input }) => {
+            .query(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -156,6 +148,8 @@ export function createRouter(params: {
                         "organization": user.agencyName
                     }
                 });
+
+                return null;
             }),
         "createUserOrReferent": t.procedure
             .input(
@@ -163,7 +157,7 @@ export function createRouter(params: {
                     "formData": zDeclarationFormData
                 })
             )
-            .mutation(async ({ ctx: { user }, input }) => {
+            .query(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -177,6 +171,8 @@ export function createRouter(params: {
                         "organization": user.agencyName
                     }
                 });
+
+                return null;
             }),
         "createInstance": t.procedure
             .input(
@@ -184,20 +180,22 @@ export function createRouter(params: {
                     "formData": zInstanceFormData
                 })
             )
-            .mutation(async ({ ctx: { user }, input }) => {
+            .query(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
                 const { formData } = input;
 
-                await coreApi.functions.readWriteSillData.createInstance({
+                const { instanceId } = await coreApi.functions.readWriteSillData.createInstance({
                     formData,
                     "agent": {
                         "email": user.email,
                         "organization": user.agencyName
                     }
                 });
+
+                return { instanceId };
             }),
         "updateInstance": t.procedure
             .input(
@@ -206,7 +204,7 @@ export function createRouter(params: {
                     "formData": zInstanceFormData
                 })
             )
-            .mutation(async ({ ctx: { user }, input }) => {
+            .query(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -217,6 +215,8 @@ export function createRouter(params: {
                     instanceId,
                     formData
                 });
+
+                return null;
             }),
         "getAgents": t.procedure.query(async ({ ctx: { user } }) => {
             if (user === undefined) {
@@ -233,7 +233,7 @@ export function createRouter(params: {
                     "newOrganization": z.string()
                 })
             )
-            .mutation(async ({ ctx: { user }, input }) => {
+            .query(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -247,6 +247,8 @@ export function createRouter(params: {
                     newOrganization,
                     "userId": user.id
                 });
+
+                return null;
             }),
         "updateEmail": t.procedure
             .input(
@@ -254,7 +256,7 @@ export function createRouter(params: {
                     "newEmail": z.string().email()
                 })
             )
-            .mutation(async ({ ctx: { user }, input }) => {
+            .query(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -268,8 +270,13 @@ export function createRouter(params: {
                     "email": user.email,
                     newEmail
                 });
+
+                return null;
             }),
         "getRegisteredUserCount": t.procedure.query(async () => coreApi.extras.userApi.getUserCount()),
+        "getTotalReferentCount": t.procedure.query(() =>
+            coreApi.selectors.readWriteSillData.referentCount(coreApi.getState())
+        ),
         "downloadCorsProtectedTextFile": t.procedure.input(z.object({ "url": z.string() })).query(async ({ input }) => {
             const { url } = input;
 

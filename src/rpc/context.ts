@@ -3,10 +3,6 @@ import * as jwtSimple from "jwt-simple";
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import { type User, createAccessTokenToUser } from "./user";
 
-const { accessTokenToUser } = createAccessTokenToUser({
-    "accessTokenToParsedJwtPayload": accessToken => jwtSimple.decode(accessToken, "", true)
-});
-
 export type Context = {
     user?: User;
 };
@@ -16,6 +12,11 @@ export function createContextFactory(params: {
     keycloakParams: KeycloakParams | undefined;
 }) {
     const { jwtClaimByUserKey, keycloakParams } = params;
+
+    const { accessTokenToUser } = createAccessTokenToUser({
+        "decodeJwt": accessToken => jwtSimple.decode(accessToken, "", true),
+        jwtClaimByUserKey
+    });
 
     const { validateKeycloakSignature } =
         keycloakParams !== undefined
@@ -33,10 +34,7 @@ export function createContextFactory(params: {
 
         await validateKeycloakSignature?.({ accessToken });
 
-        const user = accessTokenToUser({
-            accessToken,
-            jwtClaimByUserKey
-        });
+        const user = accessTokenToUser({ accessToken });
 
         return { user };
     }
