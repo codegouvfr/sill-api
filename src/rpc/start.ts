@@ -18,9 +18,9 @@ export async function startRpcService(params: {
         realm: string;
         clientId: string;
         adminPassword: string;
-        termsOfServices?: LocalizedString;
         agencyNameAttributeName: string;
     };
+    termsOfServiceUrl: LocalizedString;
     jwtClaimByUserKey: Record<keyof User, string>;
     dataRepoSshUrl: string;
     sshPrivateKeyForGitName: string;
@@ -34,6 +34,7 @@ export async function startRpcService(params: {
         sshPrivateKeyForGitName,
         sshPrivateKeyForGit,
         keycloakParams,
+        termsOfServiceUrl,
         jwtClaimByUserKey,
         githubWebhookSecret,
         port,
@@ -83,7 +84,8 @@ export async function startRpcService(params: {
                       "url": keycloakParams.url,
                       "realm": keycloakParams.realm,
                       "clientId": keycloakParams.clientId
-                  }
+                  },
+        termsOfServiceUrl
     });
 
     const exposedSubpath = "api";

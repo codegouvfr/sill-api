@@ -68,14 +68,15 @@
         "prettier": "^2.8.2",
         "redux-clean-architecture": "^3.2.8",
         "run-exclusive": "^2.2.16",
+        "superjson": "^1.12.2",
         "typescript": "^5.0.2",
         "url-join": "^4.0.1"
     },
     "dependencies": {
         "@trpc/server": "^10.18.0",
+        "jwt-decode": "^3.1.2",
         "tsafe": "^1.6.0",
-        "zod": "^3.21.4",
-        "jwt-decode": "^3.1.2"
+        "zod": "^3.21.4"
     },
     "publishConfig": {
         "access": "public"

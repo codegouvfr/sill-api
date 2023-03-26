@@ -12,11 +12,11 @@ const zParsedCONFIGURATION = z.object({
             "url": z.string(), //Example: https://auth.code.gouv.fr/auth (with the /auth at the end)
             "realm": z.string(),
             "clientId": z.string(),
-            "termsOfServices": zLocalizedString.optional(),
             "adminPassword": z.string(),
             "agencyNameAttributeName": z.string()
         })
         .optional(),
+    "termsOfServiceUrl": zLocalizedString,
     "jwtClaimByUserKey": z.object({
         "id": z.string(),
         "email": z.string(),

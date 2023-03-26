@@ -6,10 +6,10 @@ export CONFIGURATION=$(cat << EOF
     "url": "https://auth.code.gouv.fr/auth",
     "realm": "etalab",
     "clientId": "sill",
-    "termsOfServices": "https://sill.code.gouv.fr/tos_fr.md",
     "adminPassword": "$KEYCLOAK_CODEGOUV_ADMIN_PASSWORD",
     "agencyNameAttributeName:": "agencyName"
   },
+  "termsOfServiceUrl": "https://sill.code.gouv.fr/tos_fr.md",
   "jwtClaimByUserKey": {
     "id": "sub",
     "email": "email",

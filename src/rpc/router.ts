@@ -21,15 +21,20 @@ import type {
 import type { Equals } from "tsafe";
 import type { OptionalIfCanBeUndefined } from "../tools/OptionalIfCanBeUndefined";
 import { initTRPC } from "@trpc/server";
+import superjson from "superjson";
+import type { LocalizedString } from "../core/ports/GetWikidataSoftware";
 
 export function createRouter(params: {
     coreApi: CoreApi;
     keycloakParams: KeycloakParams | undefined;
     jwtClaimByUserKey: Record<keyof User, string>;
+    termsOfServiceUrl: LocalizedString;
 }) {
-    const { coreApi, keycloakParams, jwtClaimByUserKey } = params;
+    const { coreApi, keycloakParams, jwtClaimByUserKey, termsOfServiceUrl } = params;
 
-    const t = initTRPC.context<Context>().create();
+    const t = initTRPC.context<Context>().create({
+        "transformer": superjson
+    });
 
     const router = t.router({
         "getApiVersion": t.procedure.query(
@@ -53,7 +58,8 @@ export function createRouter(params: {
 
                         return { url, realm, clientId };
                     })(),
-                    jwtClaimByUserKey
+                    jwtClaimByUserKey,
+                    termsOfServiceUrl
                 };
 
                 return () => out;
@@ -109,7 +115,7 @@ export function createRouter(params: {
                     "formData": zSoftwareFormData
                 })
             )
-            .query(async ({ ctx: { user }, input }) => {
+            .mutation(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -123,8 +129,6 @@ export function createRouter(params: {
                         "organization": user.agencyName
                     }
                 });
-
-                return null;
             }),
         "updateSoftware": t.procedure
             .input(
@@ -133,7 +137,7 @@ export function createRouter(params: {
                     "formData": zSoftwareFormData
                 })
             )
-            .query(async ({ ctx: { user }, input }) => {
+            .mutation(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -148,8 +152,6 @@ export function createRouter(params: {
                         "organization": user.agencyName
                     }
                 });
-
-                return null;
             }),
         "createUserOrReferent": t.procedure
             .input(
@@ -157,7 +159,7 @@ export function createRouter(params: {
                     "formData": zDeclarationFormData
                 })
             )
-            .query(async ({ ctx: { user }, input }) => {
+            .mutation(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -171,8 +173,6 @@ export function createRouter(params: {
                         "organization": user.agencyName
                     }
                 });
-
-                return null;
             }),
         "createInstance": t.procedure
             .input(
@@ -180,7 +180,7 @@ export function createRouter(params: {
                     "formData": zInstanceFormData
                 })
             )
-            .query(async ({ ctx: { user }, input }) => {
+            .mutation(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -204,7 +204,7 @@ export function createRouter(params: {
                     "formData": zInstanceFormData
                 })
             )
-            .query(async ({ ctx: { user }, input }) => {
+            .mutation(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -215,8 +215,6 @@ export function createRouter(params: {
                     instanceId,
                     formData
                 });
-
-                return null;
             }),
         "getAgents": t.procedure.query(async ({ ctx: { user } }) => {
             if (user === undefined) {
@@ -233,7 +231,7 @@ export function createRouter(params: {
                     "newOrganization": z.string()
                 })
             )
-            .query(async ({ ctx: { user }, input }) => {
+            .mutation(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -247,8 +245,6 @@ export function createRouter(params: {
                     newOrganization,
                     "userId": user.id
                 });
-
-                return null;
             }),
         "updateEmail": t.procedure
             .input(
@@ -256,7 +252,7 @@ export function createRouter(params: {
                     "newEmail": z.string().email()
                 })
             )
-            .query(async ({ ctx: { user }, input }) => {
+            .mutation(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
@@ -270,8 +266,6 @@ export function createRouter(params: {
                     "email": user.email,
                     newEmail
                 });
-
-                return null;
             }),
         "getRegisteredUserCount": t.procedure.query(async () => coreApi.extras.userApi.getUserCount()),
         "getTotalReferentCount": t.procedure.query(() =>
