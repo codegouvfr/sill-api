@@ -389,31 +389,81 @@ export const thunks = {
             );
         },
     "createUserOrReferent":
-        (params: { formData: DeclarationFormData; agent: { email: string; organization: string } }) =>
+        (params: {
+            softwareName: string;
+            formData: DeclarationFormData;
+            agent: { email: string; organization: string };
+        }) =>
         async (...args): Promise<void> => {
             console.log(params, args);
 
-            /*
-                const [dispatch, getState, extraArg] = args;
+            const [dispatch] = args;
 
-                const { mutex } = getContext(extraArg);
+            const { formData, softwareName, agent } = params;
 
-                const { formData, agent } = params;
+            await dispatch(
+                localThunks.transaction(async newDb => {
+                    const { agentRows, softwareReferentRows, softwareUserRows, softwareRows } = newDb;
 
-                await mutex.runExclusive(async () => {
-                    const newDb = structuredClone(getState()[name].db);
+                    console.log(softwareReferentRows, softwareUserRows);
 
-                    const { agentRows, softwareReferentRows, softwareUserRows } = newDb;
+                    const softwareRow = softwareRows.find(row => row.name === softwareName);
 
+                    assert(softwareRow !== undefined, "Software not in SILL");
 
-                    await dispatch(
-                        localThunks.submitMutation({
-                            newDb,
-                            "commitMessage": `${softwareRows[index].name} updated by ${agent.email}`
-                        })
-                    );
-                });
-                */
+                    if (agentRows.find(row => row.email === agent.email) === undefined) {
+                        agentRows.push({
+                            "email": agent.email,
+                            "organization": agent.organization
+                        });
+                    }
+
+                    switch (formData.declarationType) {
+                        case "referent":
+                            {
+                                assert(
+                                    softwareReferentRows.find(
+                                        row => row.softwareId === softwareRow.id && row.agentEmail === agent.email
+                                    ) === undefined,
+                                    "Agent already referent of this software"
+                                );
+
+                                softwareReferentRows.push({
+                                    "softwareId": softwareRow.id,
+                                    "agentEmail": agent.email,
+                                    "isExpert": formData.isTechnicalExpert,
+                                    "serviceUrl": formData.serviceUrl,
+                                    "useCaseDescription": formData.usecaseDescription
+                                });
+                            }
+                            break;
+                        case "user":
+                            {
+                                assert(
+                                    softwareUserRows.find(
+                                        row => row.softwareId === softwareRow.id && row.agentEmail === agent.email
+                                    ) === undefined,
+                                    "Agent already declared as user of this software"
+                                );
+
+                                softwareUserRows.push({
+                                    "softwareId": softwareRow.id,
+                                    "agentEmail": agent.email,
+                                    "os": formData.os,
+                                    "serviceUrl": formData.serviceUrl,
+                                    "useCaseDescription": formData.usecaseDescription,
+                                    "version": formData.version
+                                });
+                            }
+                            break;
+                    }
+
+                    return {
+                        newDb,
+                        "commitMessage": `Add ${agent.email} as ${formData.declarationType} of ${softwareName}`
+                    };
+                })
+            );
         },
     "createInstance":
         (params: { formData: InstanceFormData; agent: { email: string; organization: string } }) =>

@@ -156,7 +156,8 @@ export function createRouter(params: {
         "createUserOrReferent": t.procedure
             .input(
                 z.object({
-                    "formData": zDeclarationFormData
+                    "formData": zDeclarationFormData,
+                    "softwareName": z.string()
                 })
             )
             .mutation(async ({ ctx: { user }, input }) => {
@@ -164,10 +165,11 @@ export function createRouter(params: {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const { formData } = input;
+                const { formData, softwareName } = input;
 
                 await coreApi.functions.readWriteSillData.createUserOrReferent({
                     formData,
+                    softwareName,
                     "agent": {
                         "email": user.email,
                         "organization": user.agencyName
