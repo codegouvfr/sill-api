@@ -16,7 +16,7 @@ export CONFIGURATION=$(cat << EOF
     "agencyName": "agency_name",
     "locale": "locale"
   },
-  "dataRepoSshUrl": "git@github.com:codegouv/sill-data-test.git",
+  "dataRepoSshUrl": "git@github.com:codegouvfr/sill-data-test.git",
   "sshPrivateKeyForGitName": "$SSH_PRIVATE_KEY_FOR_GIT_NAME",
   "sshPrivateKeyForGit": "$SSH_PRIVATE_KEY_FOR_GIT",
   "githubPersonalAccessTokenForApiRateLimit": "$GITHUB_TOKEN",

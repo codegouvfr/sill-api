@@ -1,11 +1,11 @@
 <p align="center">
-    <i>The backend of <a href="https://sill.etalab.gouv.fr">sill.etalab.gouv.fr</a></i>
+    <i>The backend of <a href="https://sill.code.gouv.fr">sill.code.gouv.fr</a></i>
     <br>
     <br>
-    <a href="https://github.com/etalab/sill-api/actions">
-      <img src="https://github.com/etalab/sill-api/workflows/ci/badge.svg?branch=main">
+    <a href="https://github.com/codegouvfr/sill-api/actions">
+      <img src="https://github.com/codegouvfr/sill-api/workflows/ci/badge.svg?branch=main">
     </a>
-    <a href="https://github.com/etalab/sill#licence">
+    <a href="https://github.com/codegouvfr/sill#licence">
       <img src="https://img.shields.io/npm/l/sillfr">
     </a>
     <br/>
