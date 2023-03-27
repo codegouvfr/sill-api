@@ -11,6 +11,7 @@ import { type CompiledData, compiledDataPrivateToPublic } from "../ports/Compile
 import { same } from "evt/tools/inDepth/same";
 import { removeDuplicates } from "evt/tools/reducers/removeDuplicates";
 import { exclude } from "tsafe/exclude";
+import { Deferred } from "evt/tools/Deferred";
 
 export type Software = {
     logoUrl: string | undefined;
@@ -58,7 +59,7 @@ export type Instance = {
     mainSoftwareSillId: number;
     organization: string;
     targetAudience: string;
-    publicUrl: string;
+    publicUrl: string | undefined;
     otherSoftwares: WikidataEntry[];
 };
 
@@ -308,7 +309,7 @@ export const thunks = {
 
             const { softwareSillId, formData, agent } = params;
 
-            dispatch(
+            await dispatch(
                 localThunks.transaction(async newDb => {
                     const { softwareRows, softwareReferentRows } = newDb;
 
@@ -468,8 +469,57 @@ export const thunks = {
     "createInstance":
         (params: { formData: InstanceFormData; agent: { email: string; organization: string } }) =>
         async (...args): Promise<{ instanceId: number }> => {
-            console.log(params, args);
-            return null as any;
+            const { agent, formData } = params;
+
+            const [dispatch] = args;
+
+            const dInstanceId = new Deferred<{ instanceId: number }>();
+
+            await dispatch(
+                localThunks.transaction(async newDb => {
+                    const { instanceRows, softwareRows } = newDb;
+
+                    {
+                        const fmtUrl = (url: string | undefined) =>
+                            url === undefined ? {} : url.toLowerCase().replace(/\/$/, "");
+
+                        assert(
+                            instanceRows.find(
+                                row =>
+                                    row.mainSoftwareSillId === formData.mainSoftwareSillId &&
+                                    fmtUrl(row.publicUrl) === fmtUrl(formData.publicUrl)
+                            ) === undefined,
+                            "This instance is already referenced"
+                        );
+                    }
+
+                    const softwareRow = softwareRows.find(row => row.id === formData.mainSoftwareSillId);
+
+                    assert(softwareRow !== undefined, "Can't create instance, software not in SILL");
+
+                    const instanceId =
+                        instanceRows.map(({ id }) => id).reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
+
+                    dInstanceId.resolve({ instanceId });
+
+                    instanceRows.push({
+                        "id": instanceId,
+                        "addedByAgentEmail": agent.email,
+                        "organization": formData.organization,
+                        "mainSoftwareSillId": formData.mainSoftwareSillId,
+                        "otherSoftwares": formData.otherSoftwares,
+                        "publicUrl": formData.publicUrl,
+                        "targetAudience": formData.targetAudience
+                    });
+
+                    return {
+                        newDb,
+                        "commitMessage": `Adding ${softwareRow.name} instance: ${formData.publicUrl}`
+                    };
+                })
+            );
+
+            return dInstanceId.pr;
         },
     "updateInstance":
         (params: { instanceId: number; formData: InstanceFormData }) =>

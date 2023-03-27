@@ -84,7 +84,7 @@ export namespace Db {
         mainSoftwareSillId: number;
         organization: string;
         targetAudience: string;
-        publicUrl: string;
+        publicUrl: string | undefined;
         otherSoftwares: WikidataEntry[];
         addedByAgentEmail: string;
     };

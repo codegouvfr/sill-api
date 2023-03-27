@@ -42,7 +42,7 @@ export namespace CompiledData {
         id: number;
         organization: string;
         targetAudience: string;
-        publicUrl: string;
+        publicUrl: string | undefined;
         otherSoftwares: WikidataEntry[];
     };
 }

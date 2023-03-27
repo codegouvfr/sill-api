@@ -6,6 +6,7 @@ import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { zWikidataEntry } from "../../rpc/router";
 import { id as tsafeId } from "tsafe/id";
+import type { OptionalIfCanBeUndefined } from "../../tools/OptionalIfCanBeUndefined";
 
 const instanceFilePath = pathJoin(process.cwd(), "instance.json");
 
@@ -14,13 +15,13 @@ const zInstanceRow = z.object({
     "mainSoftwareSillId": z.number(),
     "organization": z.string(),
     "targetAudience": z.string(),
-    "publicUrl": z.string(),
+    "publicUrl": z.string().optional(),
     "otherSoftwares": z.array(zWikidataEntry),
     "addedByAgentEmail": z.string()
 });
 
 type Got = ReturnType<(typeof zInstanceRow)["parse"]>;
-type Expected = Db.InstanceRow;
+type Expected = OptionalIfCanBeUndefined<Db.InstanceRow>;
 
 assert<Equals<Got, Expected>>();
 
