@@ -215,7 +215,8 @@ export function createRouter(params: {
 
                 await coreApi.functions.readWriteSillData.updateInstance({
                     instanceId,
-                    formData
+                    formData,
+                    "agentEmail": user.email
                 });
             }),
         "getAgents": t.procedure.query(async ({ ctx: { user } }) => {

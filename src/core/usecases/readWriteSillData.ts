@@ -522,9 +522,43 @@ export const thunks = {
             return dInstanceId.pr;
         },
     "updateInstance":
-        (params: { instanceId: number; formData: InstanceFormData }) =>
+        (params: { instanceId: number; formData: InstanceFormData; agentEmail: string }) =>
         async (...args): Promise<void> => {
-            console.log(params, args);
+            const { instanceId, formData, agentEmail } = params;
+
+            const [dispatch] = args;
+
+            await dispatch(
+                localThunks.transaction(async newDb => {
+                    const { instanceRows } = newDb;
+
+                    const index = instanceRows.findIndex(row => row.id === instanceId);
+
+                    assert(index !== -1, "Can't update instance, it doesn't exist");
+
+                    const { mainSoftwareSillId, organization, otherSoftwares, publicUrl, targetAudience, ...rest } =
+                        formData;
+
+                    assert<Equals<typeof rest, {}>>();
+
+                    const { id, addedByAgentEmail } = instanceRows[index];
+
+                    instanceRows[index] = {
+                        id,
+                        addedByAgentEmail,
+                        mainSoftwareSillId,
+                        organization,
+                        otherSoftwares,
+                        publicUrl,
+                        targetAudience
+                    };
+
+                    return {
+                        newDb,
+                        "commitMessage": `Instance ${formData.publicUrl} updated by ${agentEmail}`
+                    };
+                })
+            );
         },
     "changeAgentOrganization":
         (params: { userId: string; email: string; newOrganization: string }) =>
