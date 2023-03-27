@@ -193,7 +193,11 @@ export const thunks = {
             });
 
             const wasCanceled = await mutex.runExclusive(async (): Promise<boolean> => {
-                if (!same(dbBefore, getState()[name].db)) {
+                const { db } = getState()[name];
+
+                if (!same(dbBefore, db)) {
+                    //While we where re compiling there was some other transaction,
+                    //Re-scheduling.
                     return true;
                 }
 
@@ -201,6 +205,13 @@ export const thunks = {
                     newCompiledData,
                     "commitMessage": "Some Wikidata or other 3rd party source data have changed"
                 });
+
+                dispatch(
+                    actions.updated({
+                        db,
+                        "compiledData": newCompiledData
+                    })
+                );
 
                 return false;
             });
@@ -214,87 +225,77 @@ export const thunks = {
         async (...args) => {
             const { commitMessage } = params;
 
-            const [dispatch, , extraArg] = args;
+            const [dispatch, , { dbApi }] = args;
 
-            const { dbApi } = extraArg;
-
-            const { mutex } = getContext(extraArg);
-
-            await mutex.runExclusive(async () =>
-                dispatch(
-                    localThunks.submitMutation({
-                        "newDb": await dbApi.fetchDb(),
-                        commitMessage
-                    })
-                )
+            await dispatch(
+                localThunks.transaction(async () => ({
+                    "newDb": await dbApi.fetchDb(),
+                    commitMessage
+                }))
             );
         },
     "createSoftware":
         (params: { formData: SoftwareFormData; agent: { email: string; organization: string } }) =>
         async (...args) => {
-            const [dispatch, getState, extraArg] = args;
-
-            const { mutex } = getContext(extraArg);
+            const [dispatch] = args;
 
             const { formData } = params;
 
             const agentRow = { ...params.agent };
 
-            await mutex.runExclusive(async () => {
-                const newDb = structuredClone(getState()[name].db);
+            await dispatch(
+                localThunks.transaction(async newDb => {
+                    const { softwareRows, agentRows } = newDb;
 
-                const { softwareRows, agentRows } = newDb;
+                    assert(
+                        softwareRows.find(s => {
+                            const t = (name: string) => name.toLowerCase().replace(/ /g, "-");
+                            return t(s.name) === t(formData.softwareName);
+                        }) === undefined,
+                        "There is already a software with this name"
+                    );
 
-                assert(
-                    softwareRows.find(s => {
-                        const t = (name: string) => name.toLowerCase().replace(/ /g, "-");
-                        return t(s.name) === t(formData.softwareName);
-                    }) === undefined,
-                    "There is already a software with this name"
-                );
+                    const softwareId =
+                        newDb.softwareRows.map(({ id }) => id).reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
 
-                const softwareId =
-                    newDb.softwareRows.map(({ id }) => id).reduce((prev, curr) => Math.max(prev, curr), 0) + 1;
+                    const now = Date.now();
 
-                const now = Date.now();
+                    softwareRows.push({
+                        "id": softwareId,
+                        "name": formData.softwareName,
+                        "description": formData.softwareDescription,
+                        "referencedSinceTime": now,
+                        "updateTime": now,
+                        "dereferencing": undefined,
+                        "isStillInObservation": false,
+                        "parentSoftware": undefined,
+                        "doRespectRgaa": false,
+                        "isFromFrenchPublicService": formData.isFromFrenchPublicService,
+                        "isPresentInSupportContract": formData.isPresentInSupportContract,
+                        "similarSoftwares": formData.similarSoftwares,
+                        "wikidataId": formData.wikidataId,
+                        "comptoirDuLibreId": formData.comptoirDuLibreId,
+                        "license": formData.softwareLicense,
+                        "softwareType": formData.softwareType,
+                        "catalogNumeriqueGouvFrId": undefined,
+                        "versionMin": formData.softwareMinimalVersion,
+                        "workshopUrls": [],
+                        "testUrls": [],
+                        "categories": [],
+                        "generalInfoMd": undefined,
+                        "addedByAgentEmail": agentRow.email
+                    });
 
-                softwareRows.push({
-                    "id": softwareId,
-                    "name": formData.softwareName,
-                    "description": formData.softwareDescription,
-                    "referencedSinceTime": now,
-                    "updateTime": now,
-                    "dereferencing": undefined,
-                    "isStillInObservation": false,
-                    "parentSoftware": undefined,
-                    "doRespectRgaa": false,
-                    "isFromFrenchPublicService": formData.isFromFrenchPublicService,
-                    "isPresentInSupportContract": formData.isPresentInSupportContract,
-                    "similarSoftwares": formData.similarSoftwares,
-                    "wikidataId": formData.wikidataId,
-                    "comptoirDuLibreId": formData.comptoirDuLibreId,
-                    "license": formData.softwareLicense,
-                    "softwareType": formData.softwareType,
-                    "catalogNumeriqueGouvFrId": undefined,
-                    "versionMin": formData.softwareMinimalVersion,
-                    "workshopUrls": [],
-                    "testUrls": [],
-                    "categories": [],
-                    "generalInfoMd": undefined,
-                    "addedByAgentEmail": agentRow.email
-                });
+                    if (agentRows.find(({ email }) => email === agentRow.email) === undefined) {
+                        agentRows.push(agentRow);
+                    }
 
-                if (agentRows.find(({ email }) => email === agentRow.email) === undefined) {
-                    agentRows.push(agentRow);
-                }
-
-                await dispatch(
-                    localThunks.submitMutation({
+                    return {
                         newDb,
                         "commitMessage": `Add software: ${formData.softwareName}`
-                    })
-                );
-            });
+                    };
+                })
+            );
         },
     "updateSoftware":
         (params: {
@@ -303,98 +304,116 @@ export const thunks = {
             agent: { email: string; organization: string };
         }) =>
         async (...args): Promise<void> => {
-            const [dispatch, getState, extraArg] = args;
-
-            const { mutex } = getContext(extraArg);
+            const [dispatch] = args;
 
             const { softwareSillId, formData, agent } = params;
 
-            await mutex.runExclusive(async () => {
-                const newDb = structuredClone(getState()[name].db);
+            dispatch(
+                localThunks.transaction(async newDb => {
+                    const { softwareRows, softwareReferentRows } = newDb;
 
-                const { softwareRows, softwareReferentRows } = newDb;
+                    assert(
+                        softwareReferentRows.find(({ agentEmail }) => agentEmail === agentEmail) !== undefined,
+                        "The user is not a referent of this software"
+                    );
 
-                assert(
-                    softwareReferentRows.find(({ agentEmail }) => agentEmail === agentEmail) !== undefined,
-                    "The user is not a referent of this software"
-                );
+                    const index = softwareRows.findIndex(softwareRow => softwareRow.id === softwareSillId);
 
-                const index = softwareRows.findIndex(softwareRow => softwareRow.id === softwareSillId);
+                    assert(index !== -1, "The software does not exist");
 
-                assert(index !== -1, "The software does not exist");
+                    {
+                        const {
+                            id,
+                            referencedSinceTime,
+                            dereferencing,
+                            isStillInObservation,
+                            parentSoftware,
+                            doRespectRgaa,
+                            addedByAgentEmail,
+                            catalogNumeriqueGouvFrId,
+                            categories,
+                            generalInfoMd,
+                            testUrls,
+                            workshopUrls
+                        } = softwareRows[index];
 
-                {
-                    const {
-                        id,
-                        referencedSinceTime,
-                        dereferencing,
-                        isStillInObservation,
-                        parentSoftware,
-                        doRespectRgaa,
-                        addedByAgentEmail,
-                        catalogNumeriqueGouvFrId,
-                        categories,
-                        generalInfoMd,
-                        testUrls,
-                        workshopUrls
-                    } = softwareRows[index];
+                        const {
+                            comptoirDuLibreId,
+                            isFromFrenchPublicService,
+                            isPresentInSupportContract,
+                            similarSoftwares,
+                            softwareDescription,
+                            softwareLicense,
+                            softwareMinimalVersion,
+                            softwareName,
+                            softwareType,
+                            wikidataId,
+                            ...rest
+                        } = formData;
 
-                    const {
-                        comptoirDuLibreId,
-                        isFromFrenchPublicService,
-                        isPresentInSupportContract,
-                        similarSoftwares,
-                        softwareDescription,
-                        softwareLicense,
-                        softwareMinimalVersion,
-                        softwareName,
-                        softwareType,
-                        wikidataId,
-                        ...rest
-                    } = formData;
+                        assert<Equals<typeof rest, {}>>();
 
-                    assert<Equals<typeof rest, {}>>();
+                        softwareRows[index] = {
+                            id,
+                            referencedSinceTime,
+                            "updateTime": Date.now(),
+                            dereferencing,
+                            isStillInObservation,
+                            parentSoftware,
+                            doRespectRgaa,
+                            addedByAgentEmail,
+                            catalogNumeriqueGouvFrId,
+                            categories,
+                            generalInfoMd,
+                            testUrls,
+                            workshopUrls,
 
-                    softwareRows[index] = {
-                        id,
-                        referencedSinceTime,
-                        "updateTime": Date.now(),
-                        dereferencing,
-                        isStillInObservation,
-                        parentSoftware,
-                        doRespectRgaa,
-                        addedByAgentEmail,
-                        catalogNumeriqueGouvFrId,
-                        categories,
-                        generalInfoMd,
-                        testUrls,
-                        workshopUrls,
+                            comptoirDuLibreId,
+                            isFromFrenchPublicService,
+                            isPresentInSupportContract,
+                            similarSoftwares,
+                            "description": softwareDescription,
+                            "license": softwareLicense,
+                            "versionMin": softwareMinimalVersion,
+                            "name": softwareName,
+                            "softwareType": softwareType,
+                            "wikidataId": wikidataId
+                        };
+                    }
 
-                        comptoirDuLibreId,
-                        isFromFrenchPublicService,
-                        isPresentInSupportContract,
-                        similarSoftwares,
-                        "description": softwareDescription,
-                        "license": softwareLicense,
-                        "versionMin": softwareMinimalVersion,
-                        "name": softwareName,
-                        "softwareType": softwareType,
-                        "wikidataId": wikidataId
+                    return {
+                        "commitMessage": `${softwareRows[index].name} updated by ${agent.email}`,
+                        newDb
                     };
-                }
-
-                await dispatch(
-                    localThunks.submitMutation({
-                        newDb,
-                        "commitMessage": `${softwareRows[index].name} updated by ${agent.email}`
-                    })
-                );
-            });
+                })
+            );
         },
     "createUserOrReferent":
         (params: { formData: DeclarationFormData; agent: { email: string; organization: string } }) =>
         async (...args): Promise<void> => {
             console.log(params, args);
+
+            /*
+                const [dispatch, getState, extraArg] = args;
+
+                const { mutex } = getContext(extraArg);
+
+                const { formData, agent } = params;
+
+                await mutex.runExclusive(async () => {
+                    const newDb = structuredClone(getState()[name].db);
+
+                    const { agentRows, softwareReferentRows, softwareUserRows } = newDb;
+
+
+                    await dispatch(
+                        localThunks.submitMutation({
+                            newDb,
+                            "commitMessage": `${softwareRows[index].name} updated by ${agent.email}`
+                        })
+                    );
+                });
+                */
         },
     "createInstance":
         (params: { formData: InstanceFormData; agent: { email: string; organization: string } }) =>
@@ -410,120 +429,131 @@ export const thunks = {
     "changeAgentOrganization":
         (params: { userId: string; email: string; newOrganization: string }) =>
         async (...args) => {
-            const [dispatch, getState, extraArg] = args;
+            const [dispatch, , extraArg] = args;
 
             const { userApi } = extraArg;
 
-            const { mutex } = getContext(extraArg);
-
             const { userId, email, newOrganization } = params;
 
-            await userApi.updateUserAgencyName({
-                "agencyName": newOrganization,
-                userId
-            });
+            dispatch(
+                localThunks.transaction(async newDb => {
+                    await userApi.updateUserAgencyName({
+                        "agencyName": newOrganization,
+                        userId
+                    });
 
-            await mutex.runExclusive(async () => {
-                const newDb = structuredClone(getState()[name].db);
+                    const { agentRows } = newDb;
 
-                const { agentRows } = newDb;
+                    const agentRow = agentRows.find(row => row.email === email);
 
-                const agentRow = agentRows.find(row => row.email === email);
+                    if (agentRow === undefined) {
+                        return;
+                    }
 
-                if (agentRow === undefined) {
-                    return;
-                }
+                    const { organization: oldOrganization } = agentRow;
 
-                const { organization: oldOrganization } = agentRow;
+                    agentRow.organization = newOrganization;
 
-                agentRow.organization = newOrganization;
-
-                await dispatch(
-                    localThunks.submitMutation({
+                    return {
+                        "result": undefined,
                         newDb,
                         "commitMessage": `Update ${email} organization from ${oldOrganization} to ${newOrganization}`
-                    })
-                );
-            });
+                    };
+                })
+            );
         },
     "updateUserEmail":
         (params: { userId: string; email: string; newEmail: string }) =>
         async (...args) => {
-            const [dispatch, getState, extraArg] = args;
+            const [dispatch, , extraArg] = args;
 
             const { userApi } = extraArg;
 
-            const { mutex } = getContext(extraArg);
-
             const { userId, email, newEmail } = params;
 
-            userApi.updateUserEmail({
-                "email": newEmail,
-                userId
-            });
+            dispatch(
+                localThunks.transaction(async newDb => {
+                    await userApi.updateUserEmail({
+                        "email": newEmail,
+                        userId
+                    });
 
-            await mutex.runExclusive(async () => {
-                const newDb = structuredClone(getState()[name].db);
+                    const { agentRows, softwareReferentRows } = newDb;
 
-                const { agentRows, softwareReferentRows } = newDb;
+                    const referent = agentRows.find(row => row.email === email);
 
-                const referent = agentRows.find(row => row.email === email);
+                    if (referent === undefined) {
+                        return;
+                    }
 
-                if (referent === undefined) {
-                    return;
-                }
+                    referent.email = newEmail;
 
-                referent.email = newEmail;
+                    softwareReferentRows
+                        .filter(({ agentEmail }) => agentEmail === email)
+                        .forEach(softwareReferentRow => (softwareReferentRow.agentEmail = newEmail));
 
-                softwareReferentRows
-                    .filter(({ agentEmail }) => agentEmail === email)
-                    .forEach(softwareReferentRow => (softwareReferentRow.agentEmail = newEmail));
-
-                await dispatch(
-                    localThunks.submitMutation({
-                        newDb,
-                        "commitMessage": `Updating referent email from ${email} to ${newEmail}`
-                    })
-                );
-            });
+                    return {
+                        "commitMessage": `Updating referent email from ${email} to ${newEmail}`,
+                        newDb
+                    };
+                })
+            );
         }
 } satisfies Thunks;
 
 const localThunks = {
-    "submitMutation":
-        (params: { newDb: Db; commitMessage: string }) =>
-        async (...args) => {
-            const { newDb, commitMessage } = params;
+    "transaction":
+        (asyncReducer: (dbClone: Db) => Promise<{ newDb: Db; commitMessage: string } | undefined>) =>
+        async (...args): Promise<void> => {
+            const [dispatch, getState, extraArg] = args;
 
-            const [dispatch, getState, { dbApi, compileData }] = args;
+            const { compileData, dbApi } = extraArg;
 
-            const state = getState()[name];
+            const { mutex } = getContext(extraArg);
 
-            if (same(newDb, state.db)) {
-                return;
-            }
+            await mutex.runExclusive(async () => {
+                let newDb = structuredClone(getState()[name].db);
 
-            //NOTE: It's important to call compileData first as it may crash
-            //and if it does it mean that if we have committed we'll end up with
-            //inconsistent state.
-            const newCompiledData = await compileData({
-                "db": newDb,
-                "cache_wikidataSoftwares": state.compiledData
-                    .map(software => software.wikidataSoftware)
-                    .filter(exclude(undefined))
-            });
+                const reducerReturnValue = await asyncReducer(newDb);
 
-            await Promise.all([
-                dbApi.updateDb({ newDb, commitMessage }),
-                dbApi.updateCompiledData({ newCompiledData, commitMessage })
-            ]);
+                if (reducerReturnValue === undefined) {
+                    return;
+                }
 
-            dispatch(
-                actions.updated({
+                const { commitMessage, newDb: newDbReturnedByReducer } = reducerReturnValue;
+
+                if (newDbReturnedByReducer !== undefined) {
+                    newDb = newDbReturnedByReducer;
+                }
+
+                const state = getState()[name];
+
+                if (same(newDb, state.db)) {
+                    return;
+                }
+
+                //NOTE: It's important to call compileData first as it may crash
+                //and if it does it mean that if we have committed we'll end up with
+                //inconsistent state.
+                const newCompiledData = await compileData({
                     "db": newDb,
-                    "compiledData": newCompiledData
-                })
-            );
+                    "cache_wikidataSoftwares": state.compiledData
+                        .map(software => software.wikidataSoftware)
+                        .filter(exclude(undefined))
+                });
+
+                await Promise.all([
+                    dbApi.updateDb({ newDb, commitMessage }),
+                    dbApi.updateCompiledData({ newCompiledData, commitMessage })
+                ]);
+
+                dispatch(
+                    actions.updated({
+                        "db": newDb,
+                        "compiledData": newCompiledData
+                    })
+                );
+            });
         }
 } satisfies Thunks;
 
