@@ -5,7 +5,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSelector } from "@reduxjs/toolkit";
 import { createObjectThatThrowsIfAccessed, createUsecaseContextApi } from "redux-clean-architecture";
 import { Mutex } from "async-mutex";
-import { assert } from "tsafe/assert";
+import { assert, type Equals } from "tsafe/assert";
 import type { Db } from "../ports/DbApi";
 import { type CompiledData, compiledDataPrivateToPublic } from "../ports/CompileData";
 import { same } from "evt/tools/inDepth/same";
@@ -303,7 +303,93 @@ export const thunks = {
             agent: { email: string; organization: string };
         }) =>
         async (...args): Promise<void> => {
-            console.log(params, args);
+            const [dispatch, getState, extraArg] = args;
+
+            const { mutex } = getContext(extraArg);
+
+            const { softwareSillId, formData, agent } = params;
+
+            await mutex.runExclusive(async () => {
+                const newDb = structuredClone(getState()[name].db);
+
+                const { softwareRows, softwareReferentRows } = newDb;
+
+                assert(
+                    softwareReferentRows.find(({ agentEmail }) => agentEmail === agentEmail) !== undefined,
+                    "The user is not a referent of this software"
+                );
+
+                const index = softwareRows.findIndex(softwareRow => softwareRow.id === softwareSillId);
+
+                assert(index !== -1, "The software does not exist");
+
+                {
+                    const {
+                        id,
+                        referencedSinceTime,
+                        dereferencing,
+                        isStillInObservation,
+                        parentSoftware,
+                        doRespectRgaa,
+                        addedByAgentEmail,
+                        catalogNumeriqueGouvFrId,
+                        categories,
+                        generalInfoMd,
+                        testUrls,
+                        workshopUrls
+                    } = softwareRows[index];
+
+                    const {
+                        comptoirDuLibreId,
+                        isFromFrenchPublicService,
+                        isPresentInSupportContract,
+                        similarSoftwares,
+                        softwareDescription,
+                        softwareLicense,
+                        softwareMinimalVersion,
+                        softwareName,
+                        softwareType,
+                        wikidataId,
+                        ...rest
+                    } = formData;
+
+                    assert<Equals<typeof rest, {}>>();
+
+                    softwareRows[index] = {
+                        id,
+                        referencedSinceTime,
+                        "updateTime": Date.now(),
+                        dereferencing,
+                        isStillInObservation,
+                        parentSoftware,
+                        doRespectRgaa,
+                        addedByAgentEmail,
+                        catalogNumeriqueGouvFrId,
+                        categories,
+                        generalInfoMd,
+                        testUrls,
+                        workshopUrls,
+
+                        comptoirDuLibreId,
+                        isFromFrenchPublicService,
+                        isPresentInSupportContract,
+                        similarSoftwares,
+                        "description": softwareDescription,
+                        "license": softwareLicense,
+                        "versionMin": softwareMinimalVersion,
+                        "name": softwareName,
+                        "softwareType": softwareType,
+                        "wikidataId": wikidataId
+                    };
+                }
+
+                await dispatch(
+                    localThunks.submitMutation({
+                        newDb,
+                        "commitMessage": `${softwareRows[index].name} updated by ${agent.email}`
+                    })
+                );
+            });
         },
     "createUserOrReferent":
         (params: { formData: DeclarationFormData; agent: { email: string; organization: string } }) =>
