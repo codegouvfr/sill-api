@@ -8,6 +8,7 @@ RUN yarn build
 RUN rm -r src
 RUN mv dist src
 RUN npm install -g @vercel/ncc@0.36.1
+# Will generate dist/index.js
 RUN npx ncc build src/main.js
 
 # production environment
