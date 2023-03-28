@@ -12,7 +12,7 @@ import { createCompileData } from "./adapters/compileData";
 import { getWikidataSoftware } from "./adapters/getWikidataSoftware";
 import { getCnllPrestatairesSill } from "./adapters/getCnllPrestatairesSill";
 import { getComptoirDuLibre } from "./adapters/getComptoirDuLibre";
-import { getWikidataOptions } from "./adapters/getWikidataSoftwareOptions";
+import { getWikidataSoftwareOptions } from "./adapters/getWikidataSoftwareOptions";
 import { createGetSoftwareLatestVersion } from "./adapters/getSoftwareLatestVersion";
 
 export async function createCore(params: {
@@ -44,7 +44,7 @@ export async function createCore(params: {
                       })
                     : createKeycloakUserApi(keycloakUserApiParams),
             compileData,
-            getWikidataOptions,
+            getWikidataSoftwareOptions,
             getSoftwareLatestVersion,
             getComptoirDuLibre,
             getWikidataSoftware

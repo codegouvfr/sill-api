@@ -22,7 +22,7 @@ import type { Equals } from "tsafe";
 import type { OptionalIfCanBeUndefined } from "../tools/OptionalIfCanBeUndefined";
 import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
-import type { LocalizedString } from "../core/ports/GetWikidataSoftware";
+import { LocalizedString, Language } from "../core/ports/GetWikidataSoftware";
 
 export function createRouter(params: {
     coreApi: CoreApi;
@@ -76,7 +76,8 @@ export function createRouter(params: {
         "getWikidataOptions": t.procedure
             .input(
                 z.object({
-                    "queryString": z.string()
+                    "queryString": z.string(),
+                    "language": zLanguage
                 })
             )
             .query(({ ctx: { user }, input }) => {
@@ -85,10 +86,11 @@ export function createRouter(params: {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const { queryString } = input;
+                const { queryString, language } = input;
 
                 return coreApi.functions.suggestionAndAutoFill.getWikidataOptionsWithPresenceInSill({
-                    queryString
+                    queryString,
+                    language
                 });
             }),
         "getSoftwareFormAutoFillDataFromWikidataAndOtherSources": t.procedure
@@ -409,3 +411,12 @@ const zInstanceFormData = (() => {
 
     return zOut as z.ZodType<InstanceFormData>;
 })();
+
+const zLanguage = z.union([z.literal("fr"), z.literal("en")]);
+
+{
+    type Got = ReturnType<(typeof zLanguage)["parse"]>;
+    type Expected = Language;
+
+    assert<Equals<Got, Expected>>();
+}

@@ -18,13 +18,13 @@ export const reducer = null;
 
 export const thunks = {
     "getWikidataOptionsWithPresenceInSill":
-        (params: { queryString: string }) =>
+        (params: { queryString: string; language: Language }) =>
         async (...args) => {
-            const { queryString } = params;
+            const { queryString, language } = params;
 
-            const [, getState, { getWikidataOptions }] = args;
+            const [, getState, { getWikidataSoftwareOptions }] = args;
 
-            const queryResults = await getWikidataOptions({ queryString });
+            const queryResults = await getWikidataSoftwareOptions({ queryString, language });
 
             const sillWikidataIds = privateSelector.sillWikidataIds(getState());
 
