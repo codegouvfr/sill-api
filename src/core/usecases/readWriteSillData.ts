@@ -502,6 +502,8 @@ export const thunks = {
 
                     dInstanceId.resolve({ instanceId });
 
+                    const now = Date.now();
+
                     instanceRows.push({
                         "id": instanceId,
                         "addedByAgentEmail": agent.email,
@@ -509,7 +511,9 @@ export const thunks = {
                         "mainSoftwareSillId": formData.mainSoftwareSillId,
                         "otherSoftwares": formData.otherSoftwares,
                         "publicUrl": formData.publicUrl,
-                        "targetAudience": formData.targetAudience
+                        "targetAudience": formData.targetAudience,
+                        "referencedSinceTime": now,
+                        "updateTime": now
                     });
 
                     return {
@@ -541,7 +545,7 @@ export const thunks = {
 
                     assert<Equals<typeof rest, {}>>();
 
-                    const { id, addedByAgentEmail } = instanceRows[index];
+                    const { id, addedByAgentEmail, referencedSinceTime } = instanceRows[index];
 
                     instanceRows[index] = {
                         id,
@@ -550,7 +554,9 @@ export const thunks = {
                         organization,
                         otherSoftwares,
                         publicUrl,
-                        targetAudience
+                        targetAudience,
+                        referencedSinceTime,
+                        "updateTime": Date.now()
                     };
 
                     return {

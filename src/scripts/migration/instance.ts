@@ -17,7 +17,9 @@ const zInstanceRow = z.object({
     "targetAudience": z.string(),
     "publicUrl": z.string().optional(),
     "otherSoftwares": z.array(zWikidataEntry),
-    "addedByAgentEmail": z.string()
+    "addedByAgentEmail": z.string(),
+    "referencedSinceTime": z.number(),
+    "updateTime": z.number()
 });
 
 type Got = ReturnType<(typeof zInstanceRow)["parse"]>;
@@ -46,6 +48,8 @@ fs.writeFileSync(
                     publicUrl,
                     targetAudience,
                     addedByAgentEmail,
+                    referencedSinceTime,
+                    updateTime,
                     ...rest
                 } = instanceRow;
 
@@ -58,7 +62,9 @@ fs.writeFileSync(
                     otherSoftwares,
                     publicUrl,
                     targetAudience,
-                    addedByAgentEmail
+                    addedByAgentEmail,
+                    referencedSinceTime,
+                    updateTime
                 });
             }),
             null,

@@ -87,6 +87,8 @@ export namespace Db {
         publicUrl: string | undefined;
         otherSoftwares: WikidataEntry[];
         addedByAgentEmail: string;
+        referencedSinceTime: number;
+        updateTime: number;
     };
 }
 
