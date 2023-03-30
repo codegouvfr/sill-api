@@ -7,6 +7,12 @@ import { z } from "zod";
 import { id as tsafeId } from "tsafe/id";
 import type { OptionalIfCanBeUndefined } from "../../tools/OptionalIfCanBeUndefined";
 
+/*
+npm -g install ts-node
+cd ~/github/sill/sill-data
+ts-node --skipProject ../sill-api/src/scripts/migration/software.ts
+*/
+
 export const zWikidataEntry = z.object({
     "wikidataLabel": z.string(),
     "wikidataDescription": z.string(),

@@ -5,8 +5,8 @@ export const getWikidataSoftwareOptions: GetWikidataSoftwareOptions = async ({ q
     const results: {
         search: {
             id: string;
-            display: { description: { value: string } };
-            label: string;
+            display: { description?: { value?: string } };
+            label?: string;
         }[];
     } = (await fetch(
         [
@@ -23,7 +23,7 @@ export const getWikidataSoftwareOptions: GetWikidataSoftwareOptions = async ({ q
 
     return results.search.map(entry => ({
         "id": entry.id,
-        "description": entry.display.description.value,
-        "label": entry.label
+        "description": entry.display.description?.value ?? "",
+        "label": entry.label ?? ""
     }));
 };
