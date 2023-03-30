@@ -22,4 +22,6 @@ assert(sshPrivateKey !== undefined);
     });
 
     await coreApi.functions.readWriteSillData.triggerPeriodicalNonIncrementalCompilation();
+
+    process.exit(0);
 })();

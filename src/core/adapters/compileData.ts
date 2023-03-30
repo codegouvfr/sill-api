@@ -15,10 +15,7 @@ export function createCompileData(params: {
     const compileData: CompileData = async params => {
         const {
             db: { softwareRows, agentRows, softwareReferentRows, softwareUserRows, instanceRows },
-            cache_wikidataSoftwares,
-            log = () => {
-                /*nothing*/
-            }
+            cache_wikidataSoftwares
         } = params;
 
         const [{ softwares: cdlSoftwares }, cnllPrestatairesSill] = await Promise.all([
@@ -33,8 +30,6 @@ export function createCompileData(params: {
 
             for (let i = 0; i < wikidataIds.length; i++) {
                 const wikidataId = wikidataIds[i];
-
-                log(`Fetching WikiData entry ${wikidataId} (${i + 1}/${wikidataIds.length})`);
 
                 wikidataSoftwareById[wikidataId] =
                     cache_wikidataSoftwares.find(wikidataSoftware => wikidataSoftware.id === wikidataId) ??
