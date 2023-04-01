@@ -4,7 +4,7 @@ export CONFIGURATION=$(cat << EOF
 {
   "keycloakParams": {
     "url": "https://auth.code.gouv.fr/auth",
-    "realm": "etalab",
+    "realm": "codegouv",
     "clientId": "sill",
     "adminPassword": "$KEYCLOAK_CODEGOUV_ADMIN_PASSWORD",
     "agencyNameAttributeName": "agencyName"
