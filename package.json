@@ -14,7 +14,7 @@
         "_format": "prettier \"**/*.{ts,tsx,json,md}\"",
         "format": "npm run _format -- --write",
         "format:check": "npm run _format -- --list-different",
-        "link-in-web": "node dist/bin/link-in-app.js sill-web"
+        "link-in-web": "ts-node --skipProject src/scripts/link-in-app.ts sill-web"
     },
     "lint-staged": {
         "*.{ts,tsx,json,md}": [
