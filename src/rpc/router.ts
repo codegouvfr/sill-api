@@ -10,6 +10,7 @@ import type { CoreApi } from "../core";
 import type { Context } from "./context";
 import type { User } from "./user";
 import type { KeycloakParams } from "../tools/createValidateKeycloakSignature";
+import memoize from "memoizee";
 import type {
     SoftwareType,
     Os,
@@ -23,14 +24,21 @@ import type { OptionalIfCanBeUndefined } from "../tools/OptionalIfCanBeUndefined
 import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
 import { LocalizedString, Language } from "../core/ports/GetWikidataSoftware";
+import { createResolveLocalizedString } from "i18nifty/LocalizedString";
+import { languages } from "../scripts/migration/old_model/typesx";
 
 export function createRouter(params: {
     coreApi: CoreApi;
-    keycloakParams: KeycloakParams | undefined;
+    keycloakParams:
+        | (KeycloakParams & {
+              organizationUserProfileAttributeName: string;
+          })
+        | undefined;
     jwtClaimByUserKey: Record<keyof User, string>;
     termsOfServiceUrl: LocalizedString;
+    readmeUrl: LocalizedString;
 }) {
-    const { coreApi, keycloakParams, jwtClaimByUserKey, termsOfServiceUrl } = params;
+    const { coreApi, keycloakParams, jwtClaimByUserKey, termsOfServiceUrl, readmeUrl } = params;
 
     const t = initTRPC.context<Context>().create({
         "transformer": superjson
@@ -58,11 +66,23 @@ export function createRouter(params: {
 
                         return { url, realm, clientId };
                     })(),
-                    jwtClaimByUserKey,
-                    termsOfServiceUrl
+                    jwtClaimByUserKey
                 };
 
                 return () => out;
+            })()
+        ),
+        "getTermsOfServiceUrl": t.procedure.query(() => termsOfServiceUrl),
+        "getReadmeUrl": t.procedure.query(() => readmeUrl),
+        "getOrganizationUserProfileAttributeName": t.procedure.query(
+            (() => {
+                const { organizationUserProfileAttributeName } = keycloakParams ?? {};
+                if (organizationUserProfileAttributeName === undefined) {
+                    return () => {
+                        throw new TRPCError({ "code": "METHOD_NOT_SUPPORTED" });
+                    };
+                }
+                return () => organizationUserProfileAttributeName;
             })()
         ),
         "getSoftwares": t.procedure.query(() => {
@@ -128,7 +148,7 @@ export function createRouter(params: {
                     formData,
                     "agent": {
                         "email": user.email,
-                        "organization": user.agencyName
+                        "organization": user.organization
                     }
                 });
             }),
@@ -151,7 +171,7 @@ export function createRouter(params: {
                     formData,
                     "agent": {
                         "email": user.email,
-                        "organization": user.agencyName
+                        "organization": user.organization
                     }
                 });
             }),
@@ -174,7 +194,7 @@ export function createRouter(params: {
                     softwareName,
                     "agent": {
                         "email": user.email,
-                        "organization": user.agencyName
+                        "organization": user.organization
                     }
                 });
             }),
@@ -195,7 +215,7 @@ export function createRouter(params: {
                     formData,
                     "agent": {
                         "email": user.email,
-                        "organization": user.agencyName
+                        "organization": user.organization
                     }
                 });
 
@@ -229,7 +249,7 @@ export function createRouter(params: {
             return coreApi.selectors.readWriteSillData.agents(coreApi.getState());
         }),
         "getAllowedEmailRegexp": t.procedure.query(coreApi.extras.userApi.getAllowedEmailRegexp),
-        "getAgencyNames": t.procedure.query(coreApi.extras.userApi.getAgencyNames),
+        "getAllOrganizations": t.procedure.query(coreApi.extras.userApi.getAllOrganizations),
         "changeAgentOrganization": t.procedure
             .input(
                 z.object({
@@ -276,13 +296,30 @@ export function createRouter(params: {
         "getTotalReferentCount": t.procedure.query(() =>
             coreApi.selectors.readWriteSillData.referentCount(coreApi.getState())
         ),
-        "downloadCorsProtectedTextFile": t.procedure.input(z.object({ "url": z.string() })).query(async ({ input }) => {
-            const { url } = input;
+        "downloadCorsProtectedTextFile": t.procedure.input(z.object({ "url": z.string() })).query(
+            (() => {
+                const memoizedFetch = memoize(async (url: string) => fetch(url).then(res => res.text()), {
+                    "promise": true,
+                    "maxAge": (1000 * 3600) / 2,
+                    "preFetch": true
+                });
 
-            const textContent = await fetch(url).then(res => res.text());
+                const allowedUrls = languages
+                    .map(lang => createResolveLocalizedString({ "currentLanguage": lang, "fallbackLanguage": "en" }))
+                    .map(({ resolveLocalizedString }) => [termsOfServiceUrl, readmeUrl].map(resolveLocalizedString))
+                    .flat();
 
-            return textContent;
-        })
+                return async ({ input }) => {
+                    const { url } = input;
+
+                    if (!allowedUrls.includes(url)) {
+                        throw new TRPCError({ "code": "FORBIDDEN" });
+                    }
+
+                    return memoizedFetch(url);
+                };
+            })()
+        )
     });
 
     return { router };

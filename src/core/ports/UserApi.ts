@@ -1,11 +1,11 @@
 export type UserApi = {
-    updateUserAgencyName: (params: { userId: string; agencyName: string }) => Promise<void>;
+    updateUserOrganization: (params: { userId: string; organization: string }) => Promise<void>;
     updateUserEmail: (params: { userId: string; email: string }) => Promise<void>;
     getAllowedEmailRegexp: {
         (): Promise<string>;
         clear: () => void;
     };
-    getAgencyNames: {
+    getAllOrganizations: {
         (): Promise<string[]>;
         clear: () => void;
     };

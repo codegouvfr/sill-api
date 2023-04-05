@@ -18,9 +18,10 @@ export async function startRpcService(params: {
         realm: string;
         clientId: string;
         adminPassword: string;
-        agencyNameAttributeName: string;
+        organizationUserProfileAttributeName: string;
     };
     termsOfServiceUrl: LocalizedString;
+    readmeUrl: LocalizedString;
     jwtClaimByUserKey: Record<keyof User, string>;
     dataRepoSshUrl: string;
     sshPrivateKeyForGitName: string;
@@ -35,6 +36,7 @@ export async function startRpcService(params: {
         sshPrivateKeyForGit,
         keycloakParams,
         termsOfServiceUrl,
+        readmeUrl,
         jwtClaimByUserKey,
         githubWebhookSecret,
         port,
@@ -57,7 +59,7 @@ export async function startRpcService(params: {
                       "url": keycloakParams.url,
                       "realm": keycloakParams.realm,
                       "adminPassword": keycloakParams.adminPassword,
-                      "agencyNameAttributeName": keycloakParams.agencyNameAttributeName
+                      "organizationUserProfileAttributeName": keycloakParams.organizationUserProfileAttributeName
                   },
         githubPersonalAccessTokenForApiRateLimit
     });
@@ -83,9 +85,11 @@ export async function startRpcService(params: {
                 : {
                       "url": keycloakParams.url,
                       "realm": keycloakParams.realm,
-                      "clientId": keycloakParams.clientId
+                      "clientId": keycloakParams.clientId,
+                      "organizationUserProfileAttributeName": keycloakParams.organizationUserProfileAttributeName
                   },
-        termsOfServiceUrl
+        termsOfServiceUrl,
+        readmeUrl
     });
 
     const exposedSubpath = "api";

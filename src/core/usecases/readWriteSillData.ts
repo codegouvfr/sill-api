@@ -577,8 +577,8 @@ export const thunks = {
 
             dispatch(
                 localThunks.transaction(async newDb => {
-                    await userApi.updateUserAgencyName({
-                        "agencyName": newOrganization,
+                    await userApi.updateUserOrganization({
+                        "organization": newOrganization,
                         userId
                     });
 

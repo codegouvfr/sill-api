@@ -70,7 +70,8 @@
         "run-exclusive": "^2.2.16",
         "superjson": "^1.12.2",
         "typescript": "^5.0.2",
-        "url-join": "^4.0.1"
+        "url-join": "^4.0.1",
+        "ts-node": "^10.9.1"
     },
     "dependencies": {
         "@trpc/server": "^10.18.0",

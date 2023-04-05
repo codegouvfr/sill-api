@@ -13,15 +13,15 @@ const zParsedCONFIGURATION = z.object({
             "realm": z.string(),
             "clientId": z.string(),
             "adminPassword": z.string(),
-            "agencyNameAttributeName": z.string()
+            "organizationUserProfileAttributeName": z.string()
         })
         .optional(),
     "termsOfServiceUrl": zLocalizedString,
+    "readmeUrl": zLocalizedString,
     "jwtClaimByUserKey": z.object({
         "id": z.string(),
         "email": z.string(),
-        "agencyName": z.string(),
-        "locale": z.string()
+        "organization": z.string()
     }),
     "dataRepoSshUrl": z.string(),
     // Like id_ed25537

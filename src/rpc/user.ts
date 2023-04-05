@@ -5,15 +5,13 @@ import { parsedJwtPayloadToUser } from "../tools/parsedJwtPayloadToUser";
 export type User = {
     id: string;
     email: string;
-    agencyName: string;
-    locale?: string;
+    organization: string;
 };
 
 const zUser = z.object({
     "id": z.string(),
     "email": z.string(),
-    "agencyName": z.string(),
-    "locale": z.string().optional()
+    "organization": z.string()
 });
 
 {

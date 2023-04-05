@@ -7,11 +7,11 @@ export type KeycloakUserApiParams = {
     url: string;
     adminPassword: string;
     realm: string;
-    agencyNameAttributeName: string;
+    organizationUserProfileAttributeName: string;
 };
 
 export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
-    const { url, adminPassword, realm, agencyNameAttributeName } = params;
+    const { url, adminPassword, realm, organizationUserProfileAttributeName } = params;
 
     const keycloakAdminApiClient = createKeycloakAdminApiClient({
         url,
@@ -28,10 +28,10 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
                 "body": { email }
             })
         ),
-        "updateUserAgencyName": runExclusive.build(groupRef, ({ userId, agencyName }) =>
+        "updateUserOrganization": runExclusive.build(groupRef, ({ userId, organization }) =>
             keycloakAdminApiClient.updateUser({
                 userId,
-                "body": { "attributes": { [agencyNameAttributeName]: agencyName } }
+                "body": { "attributes": { [organizationUserProfileAttributeName]: organization } }
             })
         ),
         "getAllowedEmailRegexp": memoize(
@@ -54,9 +54,9 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
                 "maxAge": 5 * 60 * 1000
             }
         ),
-        "getAgencyNames": memoize(
+        "getAllOrganizations": memoize(
             async () => {
-                const agencyNames = new Set<string>();
+                const organizations = new Set<string>();
 
                 let first = 0;
 
@@ -70,17 +70,17 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
                     });
 
                     users.forEach(user => {
-                        let agencyName: string;
+                        let organization: string;
 
                         try {
-                            agencyName = user.attributes["agencyName"][0].toLowerCase();
+                            organization = user.attributes[organizationUserProfileAttributeName][0].toLowerCase();
                         } catch {
                             console.log("Strange user: ", user);
 
                             return;
                         }
 
-                        agencyNames.add(agencyName);
+                        organizations.add(organization);
                     });
 
                     if (users.length < max) {
@@ -90,7 +90,7 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
                     first += max;
                 }
 
-                return Array.from(agencyNames);
+                return Array.from(organizations);
             },
             {
                 "promise": true,

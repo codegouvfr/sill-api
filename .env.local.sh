@@ -7,14 +7,14 @@ export CONFIGURATION=$(cat << EOF
     "realm": "codegouv",
     "clientId": "sill",
     "adminPassword": "$KEYCLOAK_CODEGOUV_ADMIN_PASSWORD",
-    "agencyNameAttributeName": "agencyName"
+    "organizationUserProfileAttributeName": "agencyName"
   },
+  "readmeUrl": "https://git.sr.ht/~etalab/logiciels-libres/blob/master/sill.md",
   "termsOfServiceUrl": "https://sill.code.gouv.fr/tos_fr.md",
   "jwtClaimByUserKey": {
     "id": "sub",
     "email": "email",
-    "agencyName": "agency_name",
-    "locale": "locale"
+    "organization": "organization"
   },
   "dataRepoSshUrl": "git@github.com:codegouvfr/sill-data-test.git",
   "sshPrivateKeyForGitName": "$SSH_PRIVATE_KEY_FOR_GIT_NAME",
