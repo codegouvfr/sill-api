@@ -23,9 +23,8 @@ import type { Equals } from "tsafe";
 import type { OptionalIfCanBeUndefined } from "../tools/OptionalIfCanBeUndefined";
 import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
-import { LocalizedString, Language } from "../core/ports/GetWikidataSoftware";
+import { type LocalizedString, Language, languages } from "../core/ports/GetWikidataSoftware";
 import { createResolveLocalizedString } from "i18nifty/LocalizedString";
-import { languages } from "../scripts/migration/old_model/typesx";
 
 export function createRouter(params: {
     coreApi: CoreApi;
@@ -72,8 +71,6 @@ export function createRouter(params: {
                 return () => out;
             })()
         ),
-        "getTermsOfServiceUrl": t.procedure.query(() => termsOfServiceUrl),
-        "getReadmeUrl": t.procedure.query(() => readmeUrl),
         "getOrganizationUserProfileAttributeName": t.procedure.query(
             (() => {
                 const { organizationUserProfileAttributeName } = keycloakParams ?? {};
@@ -296,30 +293,54 @@ export function createRouter(params: {
         "getTotalReferentCount": t.procedure.query(() =>
             coreApi.selectors.readWriteSillData.referentCount(coreApi.getState())
         ),
-        "downloadCorsProtectedTextFile": t.procedure.input(z.object({ "url": z.string() })).query(
-            (() => {
-                const memoizedFetch = memoize(async (url: string) => fetch(url).then(res => res.text()), {
-                    "promise": true,
-                    "maxAge": (1000 * 3600) / 2,
-                    "preFetch": true
-                });
+        "getTermsOfServiceUrl": t.procedure.query(() => termsOfServiceUrl),
+        "getMarkdown": t.procedure
+            .input(
+                z.object({
+                    "language": zLanguage,
+                    "name": z.union([z.literal("readme"), z.literal("termsOfService")])
+                })
+            )
+            .query(
+                (() => {
+                    const memoizedFetch = memoize(async (url: string) => fetch(url).then(res => res.text()), {
+                        "promise": true,
+                        "maxAge": (1000 * 3600) / 2,
+                        "preFetch": true
+                    });
 
-                const allowedUrls = languages
-                    .map(lang => createResolveLocalizedString({ "currentLanguage": lang, "fallbackLanguage": "en" }))
-                    .map(({ resolveLocalizedString }) => [termsOfServiceUrl, readmeUrl].map(resolveLocalizedString))
-                    .flat();
+                    const allowedUrls = languages
+                        .map(lang =>
+                            createResolveLocalizedString({ "currentLanguage": lang, "fallbackLanguage": "en" })
+                        )
+                        .map(({ resolveLocalizedString }) => [termsOfServiceUrl, readmeUrl].map(resolveLocalizedString))
+                        .flat();
 
-                return async ({ input }) => {
-                    const { url } = input;
+                    allowedUrls.forEach(memoizedFetch);
 
-                    if (!allowedUrls.includes(url)) {
-                        throw new TRPCError({ "code": "FORBIDDEN" });
-                    }
+                    return async ({ input }) => {
+                        const { language, name } = input;
 
-                    return memoizedFetch(url);
-                };
-            })()
-        )
+                        const { resolveLocalizedString } = createResolveLocalizedString({
+                            "currentLanguage": language,
+                            "fallbackLanguage": "en"
+                        });
+
+                        return memoizedFetch(
+                            resolveLocalizedString(
+                                (() => {
+                                    switch (name) {
+                                        case "readme":
+                                            return readmeUrl;
+                                        case "termsOfService":
+                                            return termsOfServiceUrl;
+                                    }
+                                })()
+                            )
+                        );
+                    };
+                })()
+            )
     });
 
     return { router };
