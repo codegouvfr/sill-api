@@ -51,7 +51,8 @@ export async function createKeycloakUserApi(params: KeycloakUserApiParams): Prom
             },
             {
                 "promise": true,
-                "maxAge": 5 * 60 * 1000
+                "maxAge": 5 * 60 * 1000,
+                "preFetch": true
             }
         ),
         "getAllOrganizations": memoize(
@@ -94,7 +95,8 @@ export async function createKeycloakUserApi(params: KeycloakUserApiParams): Prom
             },
             {
                 "promise": true,
-                "maxAge": 60 * 60 * 1000
+                "maxAge": 60 * 60 * 1000,
+                "preFetch": true
             }
         ),
         "getUserCount": memoize(
@@ -125,7 +127,8 @@ export async function createKeycloakUserApi(params: KeycloakUserApiParams): Prom
             },
             {
                 "promise": true,
-                "maxAge": 60 * 60 * 1000
+                "maxAge": 60 * 60 * 1000,
+                "preFetch": true
             }
         )
     };
