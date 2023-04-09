@@ -14,6 +14,8 @@ import { getCnllPrestatairesSill } from "./adapters/getCnllPrestatairesSill";
 import { getComptoirDuLibre } from "./adapters/getComptoirDuLibre";
 import { getWikidataSoftwareOptions } from "./adapters/getWikidataSoftwareOptions";
 import { createGetSoftwareLatestVersion } from "./adapters/getSoftwareLatestVersion";
+import { objectKeys } from "tsafe/objectKeys";
+import { exclude } from "tsafe/exclude";
 
 export async function createCore(params: {
     gitDbApiParams: GitDbApiParams;
@@ -42,7 +44,7 @@ export async function createCore(params: {
                     ? createObjectThatThrowsIfAccessed<UserApi>({
                           "debugMessage": "No Keycloak server"
                       })
-                    : createKeycloakUserApi(keycloakUserApiParams),
+                    : await createKeycloakUserApi(keycloakUserApiParams),
             compileData,
             getWikidataSoftwareOptions,
             getSoftwareLatestVersion,
@@ -52,6 +54,17 @@ export async function createCore(params: {
     });
 
     await core.dispatch(usecases.readWriteSillData.privateThunks.initialize());
+
+    //NOTE: Cache initialization so that the first user do not get slow response.
+    objectKeys(usecases)
+        .map(usecaseName => usecases[usecaseName])
+        .map(usecase => ("selectors" in usecase ? usecase.selectors : undefined))
+        .filter(exclude(undefined))
+        .forEach(selectors =>
+            objectKeys(selectors)
+                .map(selectorName => selectors[selectorName])
+                .forEach(selector => selector(core.getState()))
+        );
 
     return core;
 }

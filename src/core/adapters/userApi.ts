@@ -10,7 +10,7 @@ export type KeycloakUserApiParams = {
     organizationUserProfileAttributeName: string;
 };
 
-export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
+export async function createKeycloakUserApi(params: KeycloakUserApiParams): Promise<UserApi> {
     const { url, adminPassword, realm, organizationUserProfileAttributeName } = params;
 
     const keycloakAdminApiClient = createKeycloakAdminApiClient({
@@ -21,7 +21,7 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
 
     const groupRef = runExclusive.createGroupRef();
 
-    return {
+    const userApi: UserApi = {
         "updateUserEmail": runExclusive.build(groupRef, ({ userId, email }) =>
             keycloakAdminApiClient.updateUser({
                 userId,
@@ -129,4 +129,9 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
             }
         )
     };
+
+    //NOTE: Preload data
+    await Promise.all([userApi.getUserCount(), userApi.getAllOrganizations(), userApi.getAllowedEmailRegexp()]);
+
+    return userApi;
 }
