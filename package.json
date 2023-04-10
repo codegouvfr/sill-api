@@ -15,7 +15,8 @@
         "format": "npm run _format -- --write",
         "format:check": "npm run _format -- --list-different",
         "link-in-web": "ts-node --skipProject src/scripts/link-in-app.ts sill-web",
-        "reset-data-test": "ts-node --skipProject src/scripts/reset-data-test.ts"
+        "reset-data-test": "ts-node --skipProject src/scripts/reset-data-test.ts",
+        "trigger-compiled-data-branch-update": "ts-node src/scripts/trigger-compiled-data-branch-update.ts"
     },
     "lint-staged": {
         "*.{ts,tsx,json,md}": [
@@ -47,6 +48,7 @@
         "@types/node": "^16.4.9",
         "@types/node-fetch": "^2.5.7",
         "@types/ungap__structured-clone": "^0.3.0",
+        "@types/url-join": "^4.0.1",
         "@ungap/structured-clone": "^0.3.4",
         "async-mutex": "^0.4.0",
         "cheerio": "^1.0.0-rc.5",
@@ -70,9 +72,9 @@
         "redux-clean-architecture": "^3.2.8",
         "run-exclusive": "^2.2.18",
         "superjson": "^1.12.2",
-        "typescript": "^5.0.2",
-        "url-join": "^4.0.1",
-        "ts-node": "^10.9.1"
+        "ts-node": "^10.9.1",
+        "typescript": "^5.0.4",
+        "url-join": "^4.0.1"
     },
     "dependencies": {
         "@trpc/server": "^10.18.0",

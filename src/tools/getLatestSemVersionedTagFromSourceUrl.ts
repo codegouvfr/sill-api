@@ -6,7 +6,7 @@ import { getLatestSemVersionedTagFactory } from "./octokit-addons/getLatestSemVe
 export async function getLatestSemVersionedTagFromSourceUrl(params: {
     sourceUrl: string;
     githubPersonalAccessTokenForApiRateLimit: string | undefined;
-}) {
+}): Promise<{ tag: string; publicationTime: number } | undefined> {
     const { sourceUrl, githubPersonalAccessTokenForApiRateLimit } = params;
 
     let parsedGitHubRepoUrl: ReturnType<typeof parseGitHubRepoUrl>;
@@ -23,15 +23,37 @@ export async function getLatestSemVersionedTagFromSourceUrl(params: {
         octokit
     });
 
-    const tag = await getLatestSemVersionedTag({
+    const res = await getLatestSemVersionedTag({
         "owner": parsedGitHubRepoUrl.owner,
         "repo": parsedGitHubRepoUrl.repoName,
         "doIgnoreBeta": true
-    })
-        .then(res => (res === undefined ? undefined : res.tag))
-        .catch(error => (console.warn(error.message), undefined));
+    }).catch(error => (console.warn(error.message), undefined));
 
-    return tag;
+    if (res === undefined) {
+        console.log("failed to get latest version");
+        return undefined;
+    }
+
+    const { tag } = res;
+
+    const {
+        data: {
+            commit: { author }
+        }
+    } = await octokit.repos.getCommit({
+        "owner": parsedGitHubRepoUrl.owner,
+        "repo": parsedGitHubRepoUrl.repoName,
+        "ref": tag
+    });
+
+    if (author === null || author.date === undefined) {
+        return undefined;
+    }
+
+    return {
+        tag,
+        "publicationTime": new Date(author.date).getTime()
+    };
 }
 
 const getOctokit = memoize(

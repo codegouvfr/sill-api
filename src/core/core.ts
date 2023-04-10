@@ -24,14 +24,15 @@ export async function createCore(params: {
 }) {
     const { gitDbApiParams, keycloakUserApiParams, githubPersonalAccessTokenForApiRateLimit } = params;
 
+    const { getSoftwareLatestVersion } = createGetSoftwareLatestVersion({
+        githubPersonalAccessTokenForApiRateLimit
+    });
+
     const { compileData } = createCompileData({
         getWikidataSoftware,
         getCnllPrestatairesSill,
-        getComptoirDuLibre
-    });
-
-    const { getSoftwareLatestVersion } = createGetSoftwareLatestVersion({
-        githubPersonalAccessTokenForApiRateLimit
+        getComptoirDuLibre,
+        getSoftwareLatestVersion
     });
 
     const core = createCoreFromUsecases({
@@ -47,9 +48,9 @@ export async function createCore(params: {
                     : await createKeycloakUserApi(keycloakUserApiParams),
             compileData,
             getWikidataSoftwareOptions,
-            getSoftwareLatestVersion,
             getComptoirDuLibre,
-            getWikidataSoftware
+            getWikidataSoftware,
+            getSoftwareLatestVersion
         }
     });
 

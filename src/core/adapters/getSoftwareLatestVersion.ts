@@ -4,11 +4,23 @@ import { getLatestSemVersionedTagFromSourceUrl } from "../../tools/getLatestSemV
 export function createGetSoftwareLatestVersion(params: { githubPersonalAccessTokenForApiRateLimit: string }) {
     const { githubPersonalAccessTokenForApiRateLimit } = params;
 
-    const getSoftwareLatestVersion: GetSoftwareLatestVersion = async ({ repoUrl }) =>
-        getLatestSemVersionedTagFromSourceUrl({
+    const getSoftwareLatestVersion: GetSoftwareLatestVersion = async ({ repoUrl }) => {
+        const resp = await getLatestSemVersionedTagFromSourceUrl({
             githubPersonalAccessTokenForApiRateLimit,
             "sourceUrl": repoUrl
         });
+
+        if (resp === undefined) {
+            return undefined;
+        }
+
+        const { tag, publicationTime } = resp;
+
+        return {
+            "semVer": tag,
+            publicationTime
+        };
+    };
 
     return { getSoftwareLatestVersion };
 }

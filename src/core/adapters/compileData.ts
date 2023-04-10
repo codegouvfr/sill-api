@@ -1,21 +1,22 @@
 import { assert } from "tsafe/assert";
-import { exclude } from "tsafe/exclude";
 import type { CompileData, CompiledData } from "../ports/CompileData";
 import type { GetWikidataSoftware, WikidataSoftware } from "../ports/GetWikidataSoftware";
 import type { GetCnllPrestatairesSill } from "../ports/GetCnllPrestatairesSill";
+import type { GetSoftwareLatestVersion } from "../ports/GetSoftwareLatestVersion";
 import type { GetComptoirDuLibre } from "../ports/GetComptoirDuLibre";
 
 export function createCompileData(params: {
     getWikidataSoftware: GetWikidataSoftware;
     getComptoirDuLibre: GetComptoirDuLibre;
     getCnllPrestatairesSill: GetCnllPrestatairesSill;
+    getSoftwareLatestVersion: GetSoftwareLatestVersion;
 }) {
-    const { getWikidataSoftware, getComptoirDuLibre, getCnllPrestatairesSill } = params;
+    const { getWikidataSoftware, getComptoirDuLibre, getCnllPrestatairesSill, getSoftwareLatestVersion } = params;
 
     const compileData: CompileData = async params => {
         const {
             db: { softwareRows, agentRows, softwareReferentRows, softwareUserRows, instanceRows },
-            cache_wikidataSoftwares
+            cache
         } = params;
 
         const [{ softwares: cdlSoftwares }, cnllPrestatairesSill] = await Promise.all([
@@ -23,19 +24,45 @@ export function createCompileData(params: {
             getCnllPrestatairesSill()
         ]);
 
-        const wikidataSoftwareById: Record<string, WikidataSoftware | undefined> = {};
+        console.log("start compiling");
 
-        {
-            const wikidataIds = softwareRows.map(({ wikidataId }) => wikidataId).filter(exclude(undefined));
+        const { wikidataSoftwareBySillId, softwareLatestVersionBySillId } = await (async () => {
+            const wikidataSoftwareBySillId: Record<number, WikidataSoftware | undefined> = {};
+            const softwareLatestVersionBySillId: Record<
+                number,
+                { semVer: string; publicationTime: number } | undefined
+            > = {};
 
-            for (let i = 0; i < wikidataIds.length; i++) {
-                const wikidataId = wikidataIds[i];
+            {
+                for (const { id: sillId, wikidataId } of softwareRows) {
+                    console.log(sillId);
 
-                wikidataSoftwareById[wikidataId] =
-                    cache_wikidataSoftwares.find(wikidataSoftware => wikidataSoftware.id === wikidataId) ??
-                    (await getWikidataSoftware({ wikidataId }));
+                    const cacheEntry = cache[sillId];
+
+                    if (cacheEntry !== undefined) {
+                        wikidataSoftwareBySillId[sillId] = cacheEntry.wikidataSoftware;
+                        softwareLatestVersionBySillId[sillId] = cacheEntry.latestVersion;
+                        continue;
+                    }
+
+                    const wikidataSoftware =
+                        wikidataId === undefined ? undefined : await getWikidataSoftware({ wikidataId });
+
+                    wikidataSoftwareBySillId[sillId] = wikidataSoftware;
+                    softwareLatestVersionBySillId[sillId] =
+                        wikidataSoftware?.sourceUrl === undefined
+                            ? undefined
+                            : await getSoftwareLatestVersion({ "repoUrl": wikidataSoftware.sourceUrl });
+
+                    console.log({
+                        "sourceUrl": wikidataSoftware?.sourceUrl,
+                        "latestVersion": softwareLatestVersionBySillId[sillId]
+                    });
+                }
             }
-        }
+
+            return { wikidataSoftwareBySillId, softwareLatestVersionBySillId };
+        })();
 
         return softwareRows
             .map(softwareRow => ({
@@ -69,13 +96,13 @@ export function createCompileData(params: {
             }))
             .map(
                 ({
-                    softwareRow: { wikidataId, comptoirDuLibreId, id, ...rest },
+                    softwareRow: { wikidataId, comptoirDuLibreId, id: sillId, ...rest },
                     referents,
                     users
                 }): CompiledData.Software<"private"> => ({
                     ...rest,
-                    id,
-                    "wikidataSoftware": wikidataId === undefined ? undefined : wikidataSoftwareById[wikidataId],
+                    "id": sillId,
+                    "wikidataSoftware": wikidataSoftwareBySillId[sillId],
                     "comptoirDuLibreSoftware":
                         comptoirDuLibreId === undefined
                             ? undefined
@@ -90,16 +117,17 @@ export function createCompileData(params: {
                                   return cdlSoftware;
                               })(),
                     "annuaireCnllServiceProviders": cnllPrestatairesSill
-                        .find(({ sill_id }) => sill_id === id)
+                        .find(({ sill_id }) => sill_id === sillId)
                         ?.prestataires.map(({ nom, siren, url }) => ({
                             "name": nom,
                             siren,
                             url
                         })),
+                    "latestVersion": softwareLatestVersionBySillId[sillId],
                     referents,
                     users,
                     "instances": instanceRows
-                        .filter(row => row.mainSoftwareSillId === id)
+                        .filter(row => row.mainSoftwareSillId === sillId)
                         .map(({ mainSoftwareSillId, ...rest }) => rest)
                 })
             );

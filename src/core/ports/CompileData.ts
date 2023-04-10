@@ -4,7 +4,13 @@ import type { ComptoirDuLibre } from "./GetComptoirDuLibre";
 
 export type CompileData = (params: {
     db: Db;
-    cache_wikidataSoftwares: WikidataSoftware[];
+    cache: Record<
+        number /** softwareSillId */,
+        {
+            wikidataSoftware: WikidataSoftware | undefined;
+            latestVersion: { semVer: string; publicationTime: number } | undefined;
+        }
+    >;
     log?: typeof console.log;
 }) => Promise<CompiledData<"private">>;
 
@@ -22,6 +28,12 @@ export namespace CompiledData {
                       siren: string;
                       url: string;
                   }[]
+                | undefined;
+            latestVersion:
+                | {
+                      semVer: string;
+                      publicationTime: number;
+                  }
                 | undefined;
         };
 

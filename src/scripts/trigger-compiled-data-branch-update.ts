@@ -9,6 +9,10 @@ const sshPrivateKey = process.env["SSH_PRIVATE_KEY_FOR_GIT"];
 
 assert(sshPrivateKey !== undefined);
 
+const githubPersonalAccessTokenForApiRateLimit = process.env["GITHUB_TOKEN"];
+
+assert(githubPersonalAccessTokenForApiRateLimit !== undefined);
+
 (async () => {
     const coreApi = await createCoreApi({
         "keycloakUserApiParams": undefined,
@@ -17,8 +21,7 @@ assert(sshPrivateKey !== undefined);
             sshPrivateKey,
             sshPrivateKeyName
         },
-        // It's just for API rate limit.
-        "githubPersonalAccessTokenForApiRateLimit": ""
+        githubPersonalAccessTokenForApiRateLimit
     });
 
     await coreApi.functions.readWriteSillData.triggerPeriodicalNonIncrementalCompilation();

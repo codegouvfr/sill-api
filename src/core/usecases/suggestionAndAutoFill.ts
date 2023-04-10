@@ -99,7 +99,9 @@ export const thunks = {
                 "softwareMinimalVersion":
                     wikidataSoftware.sourceUrl === undefined
                         ? undefined
-                        : await getSoftwareLatestVersion({ "repoUrl": wikidataSoftware.sourceUrl })
+                        : await getSoftwareLatestVersion({ "repoUrl": wikidataSoftware.sourceUrl }).then(
+                              resp => resp?.semVer
+                          )
             });
         }
 } satisfies Thunks;

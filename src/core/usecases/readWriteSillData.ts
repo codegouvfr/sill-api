@@ -10,7 +10,6 @@ import type { Db } from "../ports/DbApi";
 import { type CompiledData, compiledDataPrivateToPublic } from "../ports/CompileData";
 import { same } from "evt/tools/inDepth/same";
 import { removeDuplicates } from "evt/tools/reducers/removeDuplicates";
-import { exclude } from "tsafe/exclude";
 import { Deferred } from "evt/tools/Deferred";
 
 export type Software = {
@@ -18,7 +17,7 @@ export type Software = {
     softwareId: number;
     softwareName: string;
     softwareDescription: string;
-    lastVersion:
+    latestVersion:
         | {
               semVer: string;
               publicationTime: number;
@@ -188,10 +187,14 @@ export const thunks = {
 
             const dbBefore = structuredClone(getState()[name].db);
 
+            console.log("here we go");
+
             const newCompiledData = await compileData({
                 "db": dbBefore,
-                "cache_wikidataSoftwares": []
+                "cache": {}
             });
+
+            console.log("after compilation");
 
             const wasCanceled = await mutex.runExclusive(async (): Promise<boolean> => {
                 const { db } = getState()[name];
@@ -677,9 +680,12 @@ const localThunks = {
                 //inconsistent state.
                 const newCompiledData = await compileData({
                     "db": newDb,
-                    "cache_wikidataSoftwares": state.compiledData
-                        .map(software => software.wikidataSoftware)
-                        .filter(exclude(undefined))
+                    "cache": Object.fromEntries(
+                        state.compiledData.map(({ id, wikidataSoftware, latestVersion }) => [
+                            id,
+                            { wikidataSoftware, latestVersion }
+                        ])
+                    )
                 });
 
                 await Promise.all([
@@ -709,8 +715,7 @@ export const selectors = (() => {
                 "softwareId": o.id,
                 "softwareName": o.name,
                 "softwareDescription": o.description,
-                //TODO: Collect last version
-                "lastVersion": undefined,
+                "latestVersion": o.latestVersion,
                 "parentSoftware": o.parentSoftware,
                 "testUrl": o.testUrls[0]?.url,
                 "addedTime": o.referencedSinceTime,
