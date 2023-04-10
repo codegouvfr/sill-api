@@ -8,13 +8,13 @@ export function getLatestSemVersionedTagFactory(params: { octokit: Octokit }) {
     async function getLatestSemVersionedTag(params: { owner: string; repo: string; doIgnoreBeta: boolean }): Promise<
         | {
               tag: string;
-              version: NpmModuleVersion;
+              version: NpmModuleVersion | undefined;
           }
         | undefined
     > {
         const { owner, repo, doIgnoreBeta } = params;
 
-        const semVersionedTags: { tag: string; version: NpmModuleVersion }[] = [];
+        const semVersionedTags: { tag: string; version: NpmModuleVersion | undefined }[] = [];
 
         const { listTags } = listTagsFactory({ octokit });
 
@@ -27,22 +27,26 @@ export function getLatestSemVersionedTagFactory(params: { octokit: Octokit }) {
 
             tagsAlreadyListed++;
 
-            let version: NpmModuleVersion;
+            let version: NpmModuleVersion | undefined;
+
+            if (!(tag.includes(".") && /\d/.test(tag))) {
+                continue;
+            }
 
             try {
                 version = NpmModuleVersion.parse(tag.replace(/^[vV]?/, ""));
             } catch {
-                continue;
+                version = undefined;
             }
 
-            if (doIgnoreBeta && version.betaPreRelease !== undefined) {
+            if (doIgnoreBeta && version !== undefined && version.betaPreRelease !== undefined) {
                 continue;
             }
 
             semVersionedTags.push({ tag, version });
         }
 
-        return semVersionedTags.sort(({ version: vX }, { version: vY }) => NpmModuleVersion.compare(vY, vX))[0];
+        return semVersionedTags[0];
     }
 
     return { getLatestSemVersionedTag };

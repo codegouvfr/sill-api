@@ -34,8 +34,8 @@ export function createCompileData(params: {
             > = {};
 
             {
-                for (const { id: sillId, wikidataId } of softwareRows) {
-                    console.log(sillId);
+                for (const { id: sillId, name, wikidataId } of softwareRows) {
+                    console.log(`Scrapping the web for info about ${name}`);
 
                     const cacheEntry = cache[sillId];
 

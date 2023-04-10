@@ -26,7 +26,7 @@ export const getWikidataSoftware: GetWikidataSoftware = async ({ wikidataId }) =
     const { entity } =
         (await fetchEntity(wikidataId).catch(error => {
             if (error instanceof WikidataFetchError) {
-                if (error.status === 404) {
+                if (error.status === 404 || error.status === undefined) {
                     return undefined;
                 }
                 throw error;
@@ -109,7 +109,11 @@ export const getWikidataSoftware: GetWikidataSoftware = async ({ wikidataId }) =
                 return undefined;
             }
 
-            const { entity } = await fetchEntity(licenseId);
+            const { entity } = await fetchEntity(licenseId).catch(() => ({ "entity": undefined }));
+
+            if (entity === undefined) {
+                return undefined;
+            }
 
             return entity.aliases.en?.[0]?.value;
         })(),
@@ -120,7 +124,10 @@ export const getWikidataSoftware: GetWikidataSoftware = async ({ wikidataId }) =
                 ...getClaimDataValue<"wikibase-entityid">("P172"),
                 ...getClaimDataValue<"wikibase-entityid">("P178")
             ].map(async ({ id }) => {
-                const { entity } = await fetchEntity(id);
+                const { entity } = await fetchEntity(id).catch(() => ({ "entity": undefined }));
+                if (entity === undefined) {
+                    return undefined;
+                }
 
                 /*
 					const { getClaimDataValue } = createGetClaimDataValue({
@@ -203,7 +210,7 @@ function wikidataSingleLocalizedStringToLocalizedString(
 }
 
 export class WikidataFetchError extends Error {
-    constructor(public readonly status: number) {
+    constructor(public readonly status: number | undefined) {
         super(`Wikidata fetch error status: ${status}`);
         Object.setPrototypeOf(this, new.target.prototype);
     }
@@ -211,10 +218,16 @@ export class WikidataFetchError extends Error {
 
 const fetchEntity = memoize(
     async function callee(wikidataId: string): Promise<{ entity: Entity }> {
-        const res = await fetch(`https://www.wikidata.org/wiki/Special:EntityData/${wikidataId}.json`);
+        const res = await fetch(`https://www.wikidata.org/wiki/Special:EntityData/${wikidataId}.json`).catch(
+            () => undefined
+        );
+
+        if (res === undefined) {
+            throw new WikidataFetchError(undefined);
+        }
 
         if (res.status === 429) {
-            return callee(wikidataId);
+            return await callee(wikidataId);
         }
 
         if (res.status === 404) {
@@ -251,5 +264,3 @@ function createGetClaimDataValue(params: { entity: Entity }) {
 
     return { getClaimDataValue };
 }
-
-//createWikidataApi().getWikidataSoftware({ "wikidataId": "Q112074632" }).then(console.log)

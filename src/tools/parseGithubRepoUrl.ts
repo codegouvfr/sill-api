@@ -1,14 +1,22 @@
-import { assert } from "tsafe/assert";
-
 export function parseGitHubRepoUrl(url: string): {
     owner: string;
     repoName: string;
     repository: string;
 } {
-    const match = url.match(/^https:\/\/github.com\/([^/]+)\/([^/]+)$/);
+    const regex = /^https?:\/\/github\.com\/([^\/]+)\/([^\/]+)(\.git)?$/;
+    const match = url.match(regex);
 
-    assert(match !== null, `Invalid GitHub repo URL: ${url}`);
+    if (!match) {
+        throw new Error("Invalid GitHub URL");
+    }
 
-    const [, owner, repoName] = match;
-    return { owner, repoName, "repository": `${owner}/${repoName}` };
+    const owner = match[1];
+    const repoName = match[2].replace(/\.git$/, "");
+    const repository = `${owner}/${repoName}`;
+
+    return {
+        owner,
+        repoName,
+        repository
+    };
 }
