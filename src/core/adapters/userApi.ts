@@ -10,7 +10,9 @@ export type KeycloakUserApiParams = {
     organizationUserProfileAttributeName: string;
 };
 
-export async function createKeycloakUserApi(params: KeycloakUserApiParams): Promise<UserApi> {
+const maxAge = 5 * 60 * 1000;
+
+export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
     const { url, adminPassword, realm, organizationUserProfileAttributeName } = params;
 
     const keycloakAdminApiClient = createKeycloakAdminApiClient({
@@ -51,7 +53,7 @@ export async function createKeycloakUserApi(params: KeycloakUserApiParams): Prom
             },
             {
                 "promise": true,
-                "maxAge": 5 * 60 * 1000,
+                maxAge,
                 "preFetch": true
             }
         ),
@@ -95,7 +97,7 @@ export async function createKeycloakUserApi(params: KeycloakUserApiParams): Prom
             },
             {
                 "promise": true,
-                "maxAge": 60 * 60 * 1000,
+                maxAge,
                 "preFetch": true
             }
         ),
@@ -127,14 +129,19 @@ export async function createKeycloakUserApi(params: KeycloakUserApiParams): Prom
             },
             {
                 "promise": true,
-                "maxAge": 60 * 60 * 1000,
+                maxAge,
                 "preFetch": true
             }
         )
     };
 
-    //NOTE: Preload data
-    await Promise.all([userApi.getUserCount(), userApi.getAllOrganizations(), userApi.getAllowedEmailRegexp()]);
+    (["getUserCount", "getAllOrganizations", "getAllowedEmailRegexp"] as const).map(function callee(methodName) {
+        const f = userApi[methodName];
+
+        f();
+
+        setInterval(f, maxAge - 10_000);
+    });
 
     return userApi;
 }

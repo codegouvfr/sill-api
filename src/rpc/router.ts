@@ -303,20 +303,28 @@ export function createRouter(params: {
             )
             .query(
                 (() => {
+                    const maxAge = (1000 * 3600) / 2;
+
                     const memoizedFetch = memoize(async (url: string) => fetch(url).then(res => res.text()), {
                         "promise": true,
-                        "maxAge": (1000 * 3600) / 2,
+                        maxAge,
                         "preFetch": true
                     });
 
-                    const allowedUrls = languages
-                        .map(lang =>
-                            createResolveLocalizedString({ "currentLanguage": lang, "fallbackLanguage": "en" })
-                        )
+                    // prettier-ignore
+                    languages
+                        .map(lang => createResolveLocalizedString({ "currentLanguage": lang, "fallbackLanguage": "en" }))
                         .map(({ resolveLocalizedString }) => [termsOfServiceUrl, readmeUrl].map(resolveLocalizedString))
-                        .flat();
+                        .flat()
+                        .forEach(async function callee(url) {
 
-                    allowedUrls.forEach(memoizedFetch);
+                            memoizedFetch(url);
+
+                            await new Promise(resolve => setTimeout(resolve, maxAge - 10_000));
+
+                            callee(url);
+
+                        });
 
                     return async ({ input }) => {
                         const { language, name } = input;
