@@ -43,6 +43,7 @@ export type Software = {
     wikidataId: string | undefined;
     softwareType: SoftwareType;
     similarSoftwares: WikidataEntry[];
+    keywords: string[];
 };
 
 export type Agent = {
@@ -717,7 +718,7 @@ export const selectors = (() => {
     const softwares = createSelector(compiledData, compiledData =>
         compiledData.map(
             (o): Software => ({
-                "logoUrl": o.wikidataSoftware?.logoUrl,
+                "logoUrl": o.logoUrl ?? o.wikidataSoftware?.logoUrl,
                 "softwareId": o.id,
                 "softwareName": o.name,
                 "softwareDescription": o.description,
@@ -759,7 +760,8 @@ export const selectors = (() => {
                 "compotoirDuLibreId": o.comptoirDuLibreSoftware?.id,
                 "wikidataId": o.wikidataSoftware?.id,
                 "softwareType": o.softwareType,
-                "similarSoftwares": o.similarSoftwares
+                "similarSoftwares": o.similarSoftwares,
+                "keywords": o.keywords
             })
         )
     );
