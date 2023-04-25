@@ -93,7 +93,9 @@ const zSoftwareRow = z.object({
     ),
     "categories": z.array(z.string()),
     "generalInfoMd": z.string().optional(),
-    "addedByAgentEmail": z.string()
+    "addedByAgentEmail": z.string(),
+    "logoUrl": z.string().optional(),
+    "keywords": z.array(z.string())
 });
 
 {
@@ -142,6 +144,8 @@ fs.writeFileSync(
                     softwareType,
                     categories,
                     addedByAgentEmail,
+                    logoUrl,
+                    keywords,
                     ...rest
                 } = softwareRow;
 
@@ -179,7 +183,9 @@ fs.writeFileSync(
                     similarSoftwares,
                     softwareType,
                     categories,
-                    addedByAgentEmail
+                    addedByAgentEmail,
+                    logoUrl,
+                    keywords
                 });
             }),
             null,

@@ -287,7 +287,9 @@ export const thunks = {
                         "testUrls": [],
                         "categories": [],
                         "generalInfoMd": undefined,
-                        "addedByAgentEmail": agentRow.email
+                        "addedByAgentEmail": agentRow.email,
+                        "logoUrl": undefined,
+                        "keywords": []
                     });
 
                     if (agentRows.find(({ email }) => email === agentRow.email) === undefined) {
@@ -338,7 +340,9 @@ export const thunks = {
                             categories,
                             generalInfoMd,
                             testUrls,
-                            workshopUrls
+                            workshopUrls,
+                            logoUrl,
+                            keywords
                         } = softwareRows[index];
 
                         const {
@@ -381,7 +385,9 @@ export const thunks = {
                             "versionMin": softwareMinimalVersion,
                             "name": softwareName,
                             "softwareType": softwareType,
-                            "wikidataId": wikidataId
+                            "wikidataId": wikidataId,
+                            logoUrl,
+                            keywords
                         };
                     }
 

@@ -53,6 +53,8 @@ export namespace Db {
         categories: string[];
         generalInfoMd: string | undefined;
         addedByAgentEmail: string;
+        logoUrl: string | undefined;
+        keywords: string[];
     };
 
     export type AgentRow = {

@@ -104,7 +104,9 @@ const zSoftwareRow = z.object({
     ),
     "categories": z.array(z.string()),
     "generalInfoMd": z.string().optional(),
-    "addedByAgentEmail": z.string()
+    "addedByAgentEmail": z.string(),
+    "logoUrl": z.string().optional(),
+    "keywords": z.array(z.string())
 });
 
 {
@@ -285,7 +287,9 @@ const oldSoftwareReferentRows = JSON.parse(
                                 }
 
                                 return row.referentEmail;
-                            })()
+                            })(),
+                            "logoUrl": undefined,
+                            "keywords": []
                         });
                     })
                 ),
