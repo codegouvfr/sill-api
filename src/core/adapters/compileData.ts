@@ -59,7 +59,7 @@ export function createCompileData(params: {
             return { wikidataSoftwareBySillId, softwareLatestVersionBySillId };
         })();
 
-        const compiledData=  softwareRows
+        const compiledData = softwareRows
             .map(softwareRow => ({
                 softwareRow,
                 "referents": softwareReferentRows
@@ -127,10 +127,9 @@ export function createCompileData(params: {
                 })
             );
 
-            console.log("Done compiling");
+        console.log("Done compiling");
 
-            return compiledData;
-
+        return compiledData;
     };
 
     return { compileData };
