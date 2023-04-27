@@ -177,15 +177,12 @@ export const privateThunks = {
                     break periodical_update;
                 }
 
-                const run = () =>
-                    dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "periodical" }));
+                dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "initial" }));
 
                 setInterval(
-                    run,
+                    () => dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "periodical" })),
                     4 * 3600 * 1000 //4 hour
                 );
-
-                run();
             }
         }
 } satisfies Thunks;
@@ -682,7 +679,7 @@ const localThunks = {
             });
         },
     "triggerNonIncrementalCompilation":
-        (params: { triggerType: "periodical" | "manual" }) =>
+        (params: { triggerType: "periodical" | "manual" | "initial" }) =>
         async (...args) => {
             const { triggerType } = params;
 
@@ -715,6 +712,8 @@ const localThunks = {
                     newCompiledData,
                     "commitMessage": (() => {
                         switch (triggerType) {
+                            case "initial":
+                                return "Some data have changed while the backend was down";
                             case "periodical":
                                 return "Periodical update: Some Wikidata or other 3rd party source data have changed";
                             case "manual":
