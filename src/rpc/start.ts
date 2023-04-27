@@ -28,6 +28,7 @@ export async function startRpcService(params: {
     githubWebhookSecret?: string;
     githubPersonalAccessTokenForApiRateLimit: string;
     port: number;
+    isDevEnvironnement: boolean;
 }) {
     const {
         dataRepoSshUrl,
@@ -40,6 +41,7 @@ export async function startRpcService(params: {
         githubWebhookSecret,
         port,
         githubPersonalAccessTokenForApiRateLimit,
+        isDevEnvironnement,
         ...rest
     } = params;
 
@@ -60,7 +62,8 @@ export async function startRpcService(params: {
                       "adminPassword": keycloakParams.adminPassword,
                       "organizationUserProfileAttributeName": keycloakParams.organizationUserProfileAttributeName
                   },
-        githubPersonalAccessTokenForApiRateLimit
+        githubPersonalAccessTokenForApiRateLimit,
+        "doPerformPeriodicalUpdate": !isDevEnvironnement
     });
 
     const { createContext } = createContextFactory({

@@ -154,8 +154,10 @@ const { getContext } = createUsecaseContextApi(() => ({
 
 export const privateThunks = {
     "initialize":
-        () =>
+        (params: { doPerformPeriodicalUpdate: boolean }) =>
         async (...args) => {
+            const { doPerformPeriodicalUpdate } = params;
+
             const [dispatch, , extraArg] = args;
 
             const { dbApi } = extraArg;
@@ -169,13 +171,22 @@ export const privateThunks = {
                 })
             );
 
-            //TODO: Remove
-            dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "periodical" }));
+            periodical_update: {
+                if (!doPerformPeriodicalUpdate) {
+                    console.log("Periodical update disabled");
+                    break periodical_update;
+                }
 
-            setInterval(
-                () => dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "periodical" })),
-                4 * 3600 * 1000 //4 hour
-            );
+                const run = () =>
+                    dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "periodical" }));
+
+                setInterval(
+                    run,
+                    4 * 3600 * 1000 //4 hour
+                );
+
+                run();
+            }
         }
 } satisfies Thunks;
 

@@ -21,8 +21,14 @@ export async function createCore(params: {
     gitDbApiParams: GitDbApiParams;
     keycloakUserApiParams: KeycloakUserApiParams | undefined;
     githubPersonalAccessTokenForApiRateLimit: string;
+    doPerformPeriodicalUpdate: boolean;
 }) {
-    const { gitDbApiParams, keycloakUserApiParams, githubPersonalAccessTokenForApiRateLimit } = params;
+    const {
+        gitDbApiParams,
+        keycloakUserApiParams,
+        githubPersonalAccessTokenForApiRateLimit,
+        doPerformPeriodicalUpdate
+    } = params;
 
     const { getSoftwareLatestVersion } = createGetSoftwareLatestVersion({
         githubPersonalAccessTokenForApiRateLimit
@@ -54,7 +60,11 @@ export async function createCore(params: {
         }
     });
 
-    await core.dispatch(usecases.readWriteSillData.privateThunks.initialize());
+    await core.dispatch(
+        usecases.readWriteSillData.privateThunks.initialize({
+            doPerformPeriodicalUpdate
+        })
+    );
 
     //NOTE: Cache initialization so that the first user do not get slow response.
     objectKeys(usecases)

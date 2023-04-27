@@ -34,7 +34,8 @@ const zParsedCONFIGURATION = z.object({
     // we use the GitHub API for pre filling the version when adding a software
     "githubPersonalAccessTokenForApiRateLimit": z.string(),
     //Port we listen to, default 8080
-    "port": z.number().optional()
+    "port": z.number().optional(),
+    "isDevEnvironnement": z.boolean().optional()
 });
 
 const { parsedCONFIGURATION } = (() => {
@@ -67,5 +68,6 @@ const { parsedCONFIGURATION } = (() => {
 
 startRpcService({
     ...parsedCONFIGURATION,
-    "port": parsedCONFIGURATION.port ?? 8080
+    "port": parsedCONFIGURATION.port ?? 8080,
+    "isDevEnvironnement": parsedCONFIGURATION.isDevEnvironnement ?? false
 });

@@ -21,7 +21,8 @@ assert(githubPersonalAccessTokenForApiRateLimit !== undefined);
             sshPrivateKey,
             sshPrivateKeyName
         },
-        githubPersonalAccessTokenForApiRateLimit
+        githubPersonalAccessTokenForApiRateLimit,
+        "doPerformPeriodicalUpdate": false
     });
 
     await coreApi.functions.readWriteSillData.manuallyTriggerNonIncrementalCompilation();
