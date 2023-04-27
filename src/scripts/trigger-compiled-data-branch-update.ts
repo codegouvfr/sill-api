@@ -24,7 +24,7 @@ assert(githubPersonalAccessTokenForApiRateLimit !== undefined);
         githubPersonalAccessTokenForApiRateLimit
     });
 
-    await coreApi.functions.readWriteSillData.triggerPeriodicalNonIncrementalCompilation();
+    await coreApi.functions.readWriteSillData.manuallyTriggerNonIncrementalCompilation();
 
     process.exit(0);
 })();

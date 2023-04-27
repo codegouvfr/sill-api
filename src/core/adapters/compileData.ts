@@ -24,7 +24,7 @@ export function createCompileData(params: {
             getCnllPrestatairesSill()
         ]);
 
-        console.log("start compiling");
+        console.log("Start compiling");
 
         const { wikidataSoftwareBySillId, softwareLatestVersionBySillId } = await (async () => {
             const wikidataSoftwareBySillId: Record<number, WikidataSoftware | undefined> = {};
@@ -53,11 +53,6 @@ export function createCompileData(params: {
                         wikidataSoftware?.sourceUrl === undefined
                             ? undefined
                             : await getSoftwareLatestVersion({ "repoUrl": wikidataSoftware.sourceUrl });
-
-                    console.log({
-                        "sourceUrl": wikidataSoftware?.sourceUrl,
-                        "latestVersion": softwareLatestVersionBySillId[sillId]
-                    });
                 }
             }
 

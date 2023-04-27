@@ -170,60 +170,19 @@ export const privateThunks = {
             );
 
             setInterval(
-                () => dispatch(thunks.triggerPeriodicalNonIncrementalCompilation()),
+                () => dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "periodical" })),
                 4 * 3600 * 1000 //4 hour
             );
         }
 } satisfies Thunks;
 
 export const thunks = {
-    "triggerPeriodicalNonIncrementalCompilation":
+    "manuallyTriggerNonIncrementalCompilation":
         () =>
         async (...args) => {
-            const [dispatch, getState, extraArg] = args;
+            const [dispatch] = args;
 
-            const { dbApi, compileData } = extraArg;
-
-            const { mutex } = getContext(extraArg);
-
-            const dbBefore = structuredClone(getState()[name].db);
-
-            console.log("here we go");
-
-            const newCompiledData = await compileData({
-                "db": dbBefore,
-                "cache": {}
-            });
-
-            console.log("after compilation");
-
-            const wasCanceled = await mutex.runExclusive(async (): Promise<boolean> => {
-                const { db } = getState()[name];
-
-                if (!same(dbBefore, db)) {
-                    //While we where re compiling there was some other transaction,
-                    //Re-scheduling.
-                    return true;
-                }
-
-                await dbApi.updateCompiledData({
-                    newCompiledData,
-                    "commitMessage": "Some Wikidata or other 3rd party source data have changed"
-                });
-
-                dispatch(
-                    actions.updated({
-                        db,
-                        "compiledData": newCompiledData
-                    })
-                );
-
-                return false;
-            });
-
-            if (wasCanceled) {
-                await dispatch(thunks.triggerPeriodicalNonIncrementalCompilation());
-            }
+            await dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "manual" }));
         },
     "notifyPushOnMainBranch":
         (params: { commitMessage: string }) =>
@@ -707,6 +666,62 @@ const localThunks = {
                     })
                 );
             });
+        },
+    "triggerNonIncrementalCompilation":
+        (params: { triggerType: "periodical" | "manual" }) =>
+        async (...args) => {
+            const { triggerType } = params;
+
+            const [dispatch, getState, extraArg] = args;
+
+            const { dbApi, compileData } = extraArg;
+
+            const { mutex } = getContext(extraArg);
+
+            const dbBefore = structuredClone(getState()[name].db);
+
+            const newCompiledData = await compileData({
+                "db": dbBefore,
+                "cache": {}
+            });
+
+            const wasCanceled = await mutex.runExclusive(async (): Promise<boolean> => {
+                const { db } = getState()[name];
+
+                if (!same(dbBefore, db)) {
+                    //While we where re compiling there was some other transaction,
+                    //Re-scheduling.
+                    console.log(
+                        "Re-scheduling non incremental compilation, db has changed (probably due to a concurrent transaction)"
+                    );
+                    return true;
+                }
+
+                await dbApi.updateCompiledData({
+                    newCompiledData,
+                    "commitMessage": (() => {
+                        switch (triggerType) {
+                            case "periodical":
+                                return "Periodical update: Some Wikidata or other 3rd party source data have changed";
+                            case "manual":
+                                return "Manual trigger: Some data have changed since last compilation";
+                        }
+                    })()
+                });
+
+                dispatch(
+                    actions.updated({
+                        db,
+                        "compiledData": newCompiledData
+                    })
+                );
+
+                return false;
+            });
+
+            if (wasCanceled) {
+                await dispatch(localThunks.triggerNonIncrementalCompilation(params));
+            }
         }
 } satisfies Thunks;
 

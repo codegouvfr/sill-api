@@ -11,7 +11,6 @@ export type CompileData = (params: {
             latestVersion: { semVer: string; publicationTime: number } | undefined;
         }
     >;
-    log?: typeof console.log;
 }) => Promise<CompiledData<"private">>;
 
 export type CompiledData<T extends "private" | "public"> = CompiledData.Software<T>[];
