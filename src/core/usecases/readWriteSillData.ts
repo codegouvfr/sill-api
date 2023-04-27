@@ -169,6 +169,9 @@ export const privateThunks = {
                 })
             );
 
+            //TODO: Remove
+            dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "periodical" }));
+
             setInterval(
                 () => dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "periodical" })),
                 4 * 3600 * 1000 //4 hour
