@@ -681,6 +681,8 @@ const localThunks = {
     "triggerNonIncrementalCompilation":
         (params: { triggerType: "periodical" | "manual" | "initial" }) =>
         async (...args) => {
+            console.log("Starting non incremental compilation");
+
             const { triggerType } = params;
 
             const [dispatch, getState, extraArg] = args;
@@ -733,8 +735,11 @@ const localThunks = {
             });
 
             if (wasCanceled) {
+                console.log("Data have changed, re-scheduling non incremental compilation");
                 await dispatch(localThunks.triggerNonIncrementalCompilation(params));
             }
+
+            console.log("Done with non incremental compilation");
         }
 } satisfies Thunks;
 
