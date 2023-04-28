@@ -593,19 +593,25 @@ export const thunks = {
 
             await dispatch(
                 localThunks.transaction(async newDb => {
-                    const { agentRows, softwareReferentRows } = newDb;
+                    const { agentRows, softwareReferentRows, softwareUserRows, softwareRows } = newDb;
 
-                    const referent = agentRows.find(row => row.email === email);
+                    const agent = agentRows.find(row => row.email === email);
 
-                    if (referent === undefined) {
+                    if (agent === undefined) {
                         return;
                     }
 
-                    referent.email = newEmail;
+                    agent.email = newEmail;
 
                     softwareReferentRows
                         .filter(({ agentEmail }) => agentEmail === email)
                         .forEach(softwareReferentRow => (softwareReferentRow.agentEmail = newEmail));
+
+                    softwareUserRows
+                        .filter(({ agentEmail }) => agentEmail === email)
+                        .forEach(softwareUserRow => (softwareUserRow.agentEmail = newEmail));
+
+                    softwareRows.filter(({ addedByAgentEmail }) => addedByAgentEmail === newEmail);
 
                     return {
                         "commitMessage": `Updating referent email from ${email} to ${newEmail}`,
