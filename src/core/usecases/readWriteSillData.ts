@@ -557,11 +557,6 @@ export const thunks = {
 
             await dispatch(
                 localThunks.transaction(async newDb => {
-                    await userApi.updateUserOrganization({
-                        "organization": newOrganization,
-                        userId
-                    });
-
                     const { agentRows } = newDb;
 
                     const agentRow = agentRows.find(row => row.email === email);
@@ -581,6 +576,11 @@ export const thunks = {
                     };
                 })
             );
+
+            await userApi.updateUserOrganization({
+                "organization": newOrganization,
+                userId
+            });
         },
     "updateUserEmail":
         (params: { userId: string; email: string; newEmail: string }) =>
@@ -593,11 +593,6 @@ export const thunks = {
 
             await dispatch(
                 localThunks.transaction(async newDb => {
-                    await userApi.updateUserEmail({
-                        "email": newEmail,
-                        userId
-                    });
-
                     const { agentRows, softwareReferentRows } = newDb;
 
                     const referent = agentRows.find(row => row.email === email);
@@ -618,6 +613,11 @@ export const thunks = {
                     };
                 })
             );
+
+            await userApi.updateUserEmail({
+                "email": newEmail,
+                userId
+            });
         }
 } satisfies Thunks;
 
