@@ -555,7 +555,7 @@ export const thunks = {
 
             const { userId, email, newOrganization } = params;
 
-            dispatch(
+            await dispatch(
                 localThunks.transaction(async newDb => {
                     await userApi.updateUserOrganization({
                         "organization": newOrganization,
@@ -591,7 +591,7 @@ export const thunks = {
 
             const { userId, email, newEmail } = params;
 
-            dispatch(
+            await dispatch(
                 localThunks.transaction(async newDb => {
                     await userApi.updateUserEmail({
                         "email": newEmail,
