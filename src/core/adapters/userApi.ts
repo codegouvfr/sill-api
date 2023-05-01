@@ -76,7 +76,7 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
                         let organization: string;
 
                         try {
-                            organization = user.attributes[organizationUserProfileAttributeName][0].toLowerCase();
+                            organization = user.attributes[organizationUserProfileAttributeName][0];
                         } catch {
                             console.log("Strange user: ", user);
 
