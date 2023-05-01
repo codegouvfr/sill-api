@@ -66,7 +66,7 @@ export function createCompileData(params: {
                         ...(() => {
                             const agentRow = agentRows.find(({ email }) => email === agentEmail);
 
-                            assert(agentRow !== undefined);
+                            assert(agentRow !== undefined, `problem with referent ${agentEmail}`);
 
                             return agentRow;
                         })(),
@@ -78,7 +78,7 @@ export function createCompileData(params: {
                         ...(() => {
                             const agentRow = agentRows.find(({ email }) => email === agentEmail);
 
-                            assert(agentRow !== undefined);
+                            assert(agentRow !== undefined, `problem with user ${agentEmail}`);
 
                             const { email, ...rest } = agentRow;
 
