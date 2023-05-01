@@ -3,7 +3,7 @@ import fetch from "node-fetch";
 import deepMerge from "deepmerge";
 import type { KcContext } from "keycloakify/login/kcContext";
 
-type User = {
+export type User = {
     id: string;
     email: string;
     createdTimestamp: number;
