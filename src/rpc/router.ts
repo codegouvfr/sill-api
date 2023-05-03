@@ -128,6 +128,7 @@ export function createRouter(params: {
                     wikidataId
                 });
             }),
+
         "createSoftware": t.procedure
             .input(
                 z.object({
@@ -195,6 +196,28 @@ export function createRouter(params: {
                     }
                 });
             }),
+
+        "removeUserOrReferent": t.procedure
+            .input(
+                z.object({
+                    "softwareName": z.string(),
+                    "declarationType": z.enum(["user", "referent"])
+                })
+            )
+            .mutation(async ({ ctx: { user }, input }) => {
+                if (user === undefined) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+
+                const { softwareName, declarationType } = input;
+
+                await coreApi.functions.readWriteSillData.removeUserOrReferent({
+                    softwareName,
+                    "agentEmail": user.email,
+                    declarationType
+                });
+            }),
+
         "createInstance": t.procedure
             .input(
                 z.object({

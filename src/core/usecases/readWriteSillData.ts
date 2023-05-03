@@ -376,8 +376,6 @@ export const thunks = {
             agent: { email: string; organization: string };
         }) =>
         async (...args): Promise<void> => {
-            console.log(params, args);
-
             const [dispatch] = args;
 
             const { formData, softwareName, agent } = params;
@@ -385,8 +383,6 @@ export const thunks = {
             await dispatch(
                 localThunks.transaction(async newDb => {
                     const { agentRows, softwareReferentRows, softwareUserRows, softwareRows } = newDb;
-
-                    console.log(softwareReferentRows, softwareUserRows);
 
                     const softwareRow = softwareRows.find(row => row.name === softwareName);
 
@@ -442,6 +438,72 @@ export const thunks = {
                     return {
                         newDb,
                         "commitMessage": `Add ${agent.email} as ${formData.declarationType} of ${softwareName}`
+                    };
+                })
+            );
+        },
+    "removeUserOrReferent":
+        (params: { softwareName: string; declarationType: "user" | "referent"; agentEmail: string }) =>
+        async (...args): Promise<void> => {
+            const [dispatch] = args;
+
+            const { softwareName, declarationType, agentEmail } = params;
+
+            await dispatch(
+                localThunks.transaction(async newDb => {
+                    const { agentRows, softwareReferentRows, softwareUserRows, softwareRows, instanceRows } = newDb;
+
+                    const softwareRow = softwareRows.find(row => row.name === softwareName);
+
+                    assert(softwareRow !== undefined, `There is no ${softwareName} in SILL`);
+
+                    const softwareDeclarationRows = ((): { agentEmail: string; softwareId: number }[] => {
+                        switch (declarationType) {
+                            case "referent":
+                                return softwareReferentRows;
+                            case "user":
+                                return softwareUserRows;
+                        }
+                    })();
+
+                    const softwareDeclarationRow = softwareDeclarationRows.find(
+                        row => row.agentEmail === agentEmail && row.softwareId === softwareRow.id
+                    );
+
+                    assert(
+                        softwareDeclarationRow !== undefined,
+                        `There is no ${agentEmail} as ${declarationType} of ${softwareName}`
+                    );
+
+                    softwareDeclarationRows.splice(softwareDeclarationRows.indexOf(softwareDeclarationRow), 1);
+
+                    remove_agent_if_no_longer_referenced_anywhere: {
+                        if (softwareReferentRows.find(row => row.agentEmail === agentEmail) !== undefined) {
+                            break remove_agent_if_no_longer_referenced_anywhere;
+                        }
+
+                        if (softwareUserRows.find(row => row.agentEmail === agentEmail) !== undefined) {
+                            break remove_agent_if_no_longer_referenced_anywhere;
+                        }
+
+                        if (softwareRows.find(row => row.addedByAgentEmail === agentEmail) !== undefined) {
+                            break remove_agent_if_no_longer_referenced_anywhere;
+                        }
+
+                        if (instanceRows.find(row => row.addedByAgentEmail === agentEmail) !== undefined) {
+                            break remove_agent_if_no_longer_referenced_anywhere;
+                        }
+
+                        const agentRow = agentRows.find(row => row.email === agentEmail);
+
+                        assert(agentRow !== undefined, `There is no ${agentEmail} in the database`);
+
+                        agentRows.splice(agentRows.indexOf(agentRow), 1);
+                    }
+
+                    return {
+                        newDb,
+                        "commitMessage": `Remove ${agentEmail} as ${declarationType} of ${softwareName}`
                     };
                 })
             );
