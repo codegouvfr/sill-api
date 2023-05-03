@@ -1610,10 +1610,10 @@ keycloak-backend@^2.0.1:
     axios "^0.21.0"
     jsonwebtoken "^8.5.1"
 
-keycloakify@^7.6.6:
-  version "7.6.6"
-  resolved "https://registry.yarnpkg.com/keycloakify/-/keycloakify-7.6.6.tgz#e44a586fa45893a8988db482e970536ebb5b633f"
-  integrity sha512-e5muv92OjrqofsPTAdHcFtbmX9EWmN1Ef/Y+cpfSrwZBJX/HE7OmhwK1pXtcrIT6+e4gW/dONOKVBVrxxS50Cg==
+keycloakify@^7.11.8:
+  version "7.11.8"
+  resolved "https://registry.yarnpkg.com/keycloakify/-/keycloakify-7.11.8.tgz#3c46be0ae9564d4ec7b76a44447901fcd3e04a6d"
+  integrity sha512-uozDRs4AK0/fQFWTgco0pVtHrk5UmsOY9mA7nsqf3v/vyBwYMJJO19SnZ0k1wepGQ0PR717PI+uG6FqChaX2bw==
   dependencies:
     "@octokit/rest" "^18.12.0"
     "@types/yazl" "^2.4.2"
