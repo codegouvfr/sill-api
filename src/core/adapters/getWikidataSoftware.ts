@@ -7,7 +7,7 @@ import { allEquals } from "evt/tools/reducers/allEquals";
 import { exclude } from "tsafe/exclude";
 import { removeDuplicatesFactory } from "evt/tools/reducers/removeDuplicates";
 import { same } from "evt/tools/inDepth/same";
-import { createResolveLocalizedString } from "i18nifty/LocalizedString";
+import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
 import { id } from "tsafe/id";
 import {
     languages,

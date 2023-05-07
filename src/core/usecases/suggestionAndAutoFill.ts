@@ -3,7 +3,7 @@ import { createSelector } from "@reduxjs/toolkit";
 import { exclude } from "tsafe/exclude";
 import { assert } from "tsafe/assert";
 import { Language } from "../ports/GetWikidataSoftware";
-import { createResolveLocalizedString } from "i18nifty/LocalizedString";
+import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
 import { id } from "tsafe/id";
 
 export type WikidataEntry = {

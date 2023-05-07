@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { LocalizedString as LocalizedString_generic } from "i18nifty/LocalizedString";
+import type { LocalizedString as LocalizedString_generic } from "i18nifty/LocalizedString/reactless";
 import type { PartialNoOptional } from "../../tools/PartialNoOptional";
 import { assert, type Equals } from "tsafe/assert";
 

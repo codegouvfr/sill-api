@@ -14,7 +14,7 @@ import type {
 } from "./old_model/typesx";
 import { getWikidataSoftware } from "../../core/adapters/getWikidataSoftware";
 import { getWikidataSoftwareOptions } from "../../core/adapters/getWikidataSoftwareOptions";
-import { createResolveLocalizedString } from "i18nifty/LocalizedString";
+import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
 import { exclude } from "tsafe/exclude";
 import * as runExclusive from "run-exclusive";
 
