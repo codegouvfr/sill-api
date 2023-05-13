@@ -1,7 +1,4 @@
-export type GetComptoirDuLibre = {
-    (): Promise<ComptoirDuLibre>;
-    clear: () => void;
-};
+export type GetComptoirDuLibre = () => Promise<ComptoirDuLibre>;
 
 export type ComptoirDuLibre = {
     date_of_export: string;

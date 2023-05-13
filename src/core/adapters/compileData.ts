@@ -102,10 +102,17 @@ export function createCompileData(params: {
                             : (() => {
                                   const cdlSoftware = cdlSoftwares.find(({ id }) => comptoirDuLibreId === id);
 
-                                  assert(
-                                      cdlSoftware !== undefined,
-                                      `Comptoir du libre id: ${comptoirDuLibreId} does not match any software`
-                                  );
+                                  if (cdlSoftware === undefined) {
+                                      console.log(
+                                          [
+                                              `Comptoir du libre id: ${comptoirDuLibreId} does not match any software`,
+                                              `it might mean that the software has been recently added to comptoir du libre`,
+                                              `an their API is not yet up to date, ignoring`
+                                          ].join(" ")
+                                      );
+
+                                      return undefined;
+                                  }
 
                                   return cdlSoftware;
                               })(),
