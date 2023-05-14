@@ -102,6 +102,7 @@ export type SoftwareFormData = {
     isFromFrenchPublicService: boolean;
     similarSoftwares: WikidataEntry[];
     softwareLogoUrl: string | undefined;
+    softwareKeywords: string[];
 };
 
 export type DeclarationFormData = DeclarationFormData.User | DeclarationFormData.Referent;
@@ -261,7 +262,7 @@ export const thunks = {
                         "generalInfoMd": undefined,
                         "addedByAgentEmail": agentRow.email,
                         "logoUrl": formData.softwareLogoUrl,
-                        "keywords": []
+                        "keywords": formData.softwareKeywords
                     });
 
                     if (agentRows.find(({ email }) => email === agentRow.email) === undefined) {
@@ -329,6 +330,7 @@ export const thunks = {
                             softwareType,
                             wikidataId,
                             softwareLogoUrl,
+                            softwareKeywords,
                             ...rest
                         } = formData;
 
@@ -348,7 +350,6 @@ export const thunks = {
                             generalInfoMd,
                             testUrls,
                             workshopUrls,
-
                             comptoirDuLibreId,
                             isFromFrenchPublicService,
                             isPresentInSupportContract,
@@ -360,7 +361,7 @@ export const thunks = {
                             "softwareType": softwareType,
                             "wikidataId": wikidataId,
                             "logoUrl": softwareLogoUrl ?? logoUrl,
-                            keywords
+                            "keywords": softwareKeywords ?? keywords
                         };
                     }
 
