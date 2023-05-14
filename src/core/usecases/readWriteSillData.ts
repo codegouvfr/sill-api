@@ -101,6 +101,7 @@ export type SoftwareFormData = {
     isPresentInSupportContract: boolean;
     isFromFrenchPublicService: boolean;
     similarSoftwares: WikidataEntry[];
+    softwareLogoUrl: string | undefined;
 };
 
 export type DeclarationFormData = DeclarationFormData.User | DeclarationFormData.Referent;
@@ -259,7 +260,7 @@ export const thunks = {
                         "categories": [],
                         "generalInfoMd": undefined,
                         "addedByAgentEmail": agentRow.email,
-                        "logoUrl": undefined,
+                        "logoUrl": formData.softwareLogoUrl,
                         "keywords": []
                     });
 
@@ -327,6 +328,7 @@ export const thunks = {
                             softwareName,
                             softwareType,
                             wikidataId,
+                            softwareLogoUrl,
                             ...rest
                         } = formData;
 
@@ -357,7 +359,7 @@ export const thunks = {
                             "name": softwareName,
                             "softwareType": softwareType,
                             "wikidataId": wikidataId,
-                            logoUrl,
+                            "logoUrl": softwareLogoUrl ?? logoUrl,
                             keywords
                         };
                     }

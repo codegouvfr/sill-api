@@ -5,6 +5,8 @@ import { assert } from "tsafe/assert";
 import { Language } from "../ports/GetWikidataSoftware";
 import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
 import { id } from "tsafe/id";
+import fetch from "node-fetch";
+import cheerio from "cheerio";
 
 export type WikidataEntry = {
     wikidataLabel: string;
@@ -76,6 +78,31 @@ export const thunks = {
                 return comptoirDuLibreSoftware?.id;
             })();
 
+            const softwareLogoUrlFromComptoirDuLibre =
+                comptoirDuLibreId === undefined
+                    ? undefined
+                    : await (async () => {
+                          let imgSrc: string | undefined;
+
+                          try {
+                              const body = await fetch(
+                                  `https://comptoir-du-libre.org/fr/softwares/${comptoirDuLibreId}`
+                              ).then(r => r.text());
+
+                              const $ = cheerio.load(body);
+
+                              imgSrc = $(".size-logo-overview img").attr("src");
+                          } catch {
+                              return undefined;
+                          }
+
+                          if (imgSrc === undefined) {
+                              return undefined;
+                          }
+
+                          return `https://comptoir-du-libre.org/${imgSrc}`;
+                      })();
+
             const { resolveLocalizedString } = createResolveLocalizedString<Language>({
                 "currentLanguage": "fr",
                 "fallbackLanguage": "en"
@@ -87,6 +114,7 @@ export const thunks = {
                 softwareDescription: string | undefined;
                 softwareLicense: string | undefined;
                 softwareMinimalVersion: string | undefined;
+                softwareLogoUrl: string | undefined;
             }>({
                 comptoirDuLibreId,
                 "softwareName":
@@ -101,7 +129,8 @@ export const thunks = {
                         ? undefined
                         : await getSoftwareLatestVersion({ "repoUrl": wikidataSoftware.sourceUrl }).then(
                               resp => resp?.semVer
-                          )
+                          ),
+                "softwareLogoUrl": softwareLogoUrlFromComptoirDuLibre ?? wikidataSoftware.logoUrl
             });
         }
 } satisfies Thunks;
