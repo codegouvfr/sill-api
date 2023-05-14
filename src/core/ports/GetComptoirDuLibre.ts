@@ -1,4 +1,7 @@
-export type GetComptoirDuLibre = () => Promise<ComptoirDuLibre>;
+export type ComptoirDuLibreApi = {
+    getComptoirDuLibre: () => Promise<ComptoirDuLibre>;
+    getComptoirDuLibreIconUrl: (params: { comptoirDuLibreId: number }) => Promise<string | undefined>;
+};
 
 export type ComptoirDuLibre = {
     date_of_export: string;

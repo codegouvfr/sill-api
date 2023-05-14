@@ -5,8 +5,6 @@ import { assert } from "tsafe/assert";
 import { Language } from "../ports/GetWikidataSoftware";
 import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
 import { id } from "tsafe/id";
-import fetch from "node-fetch";
-import cheerio from "cheerio";
 
 export type WikidataEntry = {
     wikidataLabel: string;
@@ -42,9 +40,12 @@ export const thunks = {
         async (...args) => {
             const { wikidataId } = params;
 
-            const [, , { getSoftwareLatestVersion, getComptoirDuLibre, getWikidataSoftware }] = args;
+            const [, , { getSoftwareLatestVersion, comptoirDuLibreApi, getWikidataSoftware }] = args;
 
-            const wikidataSoftware = await getWikidataSoftware({ wikidataId });
+            const [wikidataSoftware, comptoirDuLibre] = await Promise.all([
+                getWikidataSoftware({ wikidataId }),
+                comptoirDuLibreApi.getComptoirDuLibre()
+            ]);
 
             assert(wikidataSoftware !== undefined);
 
@@ -54,8 +55,6 @@ export const thunks = {
                 if (wikidataSoftwareLabel === undefined) {
                     return undefined;
                 }
-
-                const comptoirDuLibre = await getComptoirDuLibre();
 
                 const comptoirDuLibreSoftware = comptoirDuLibre.softwares.find(software => {
                     const format = (name: string) =>
@@ -78,30 +77,10 @@ export const thunks = {
                 return comptoirDuLibreSoftware?.id;
             })();
 
-            const softwareLogoUrlFromComptoirDuLibre =
+            const comptoirDuLibreLogoUrl =
                 comptoirDuLibreId === undefined
                     ? undefined
-                    : await (async () => {
-                          let imgSrc: string | undefined;
-
-                          try {
-                              const body = await fetch(
-                                  `https://comptoir-du-libre.org/fr/softwares/${comptoirDuLibreId}`
-                              ).then(r => r.text());
-
-                              const $ = cheerio.load(body);
-
-                              imgSrc = $(".size-logo-overview img").attr("src");
-                          } catch {
-                              return undefined;
-                          }
-
-                          if (imgSrc === undefined) {
-                              return undefined;
-                          }
-
-                          return `https://comptoir-du-libre.org/${imgSrc}`;
-                      })();
+                    : await comptoirDuLibreApi.getComptoirDuLibreIconUrl({ comptoirDuLibreId });
 
             const { resolveLocalizedString } = createResolveLocalizedString<Language>({
                 "currentLanguage": "fr",
@@ -130,7 +109,7 @@ export const thunks = {
                         : await getSoftwareLatestVersion({ "repoUrl": wikidataSoftware.sourceUrl }).then(
                               resp => resp?.semVer
                           ),
-                "softwareLogoUrl": softwareLogoUrlFromComptoirDuLibre ?? wikidataSoftware.logoUrl
+                "softwareLogoUrl": comptoirDuLibreLogoUrl ?? wikidataSoftware.logoUrl
             });
         }
 } satisfies Thunks;

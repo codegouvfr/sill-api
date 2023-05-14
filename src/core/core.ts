@@ -11,7 +11,7 @@ import { createObjectThatThrowsIfAccessed } from "redux-clean-architecture";
 import { createCompileData } from "./adapters/compileData";
 import { getWikidataSoftware } from "./adapters/getWikidataSoftware";
 import { getCnllPrestatairesSill } from "./adapters/getCnllPrestatairesSill";
-import { getComptoirDuLibre } from "./adapters/getComptoirDuLibre";
+import { comptoirDuLibreApi } from "./adapters/getComptoirDuLibre";
 import { getWikidataSoftwareOptions } from "./adapters/getWikidataSoftwareOptions";
 import { createGetSoftwareLatestVersion } from "./adapters/getSoftwareLatestVersion";
 import { objectKeys } from "tsafe/objectKeys";
@@ -37,7 +37,7 @@ export async function createCore(params: {
     const { compileData } = createCompileData({
         getWikidataSoftware,
         getCnllPrestatairesSill,
-        getComptoirDuLibre,
+        comptoirDuLibreApi,
         getSoftwareLatestVersion
     });
 
@@ -51,10 +51,10 @@ export async function createCore(params: {
                     ? createObjectThatThrowsIfAccessed<UserApi>({
                           "debugMessage": "No Keycloak server"
                       })
-                    : await createKeycloakUserApi(keycloakUserApiParams),
+                    : createKeycloakUserApi(keycloakUserApiParams),
             compileData,
             getWikidataSoftwareOptions,
-            getComptoirDuLibre,
+            comptoirDuLibreApi,
             getWikidataSoftware,
             getSoftwareLatestVersion
         }

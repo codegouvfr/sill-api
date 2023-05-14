@@ -11,6 +11,7 @@ import { type CompiledData, compiledDataPrivateToPublic } from "../ports/Compile
 import { same } from "evt/tools/inDepth/same";
 import { removeDuplicates } from "evt/tools/reducers/removeDuplicates";
 import { Deferred } from "evt/tools/Deferred";
+import { thunks as suggestionAndAutoFillThunks } from "./suggestionAndAutoFill";
 
 export type Software = {
     logoUrl: string | undefined;
@@ -186,6 +187,34 @@ export const privateThunks = {
                     4 * 3600 * 1000 //4 hour
                 );
             }
+        },
+    /** Functions that returns logoUrlFromFormData if it's not the same as the one from the automatic suggestions */
+    "getStorableLogo":
+        (params: { logoUrlFromFormData: string | undefined; wikidataId: string | undefined }) =>
+        async (...args): Promise<string | undefined> => {
+            const { logoUrlFromFormData, wikidataId } = params;
+
+            const [dispatch] = args;
+
+            if (logoUrlFromFormData === undefined) {
+                return undefined;
+            }
+
+            if (wikidataId === undefined) {
+                return logoUrlFromFormData;
+            }
+
+            const softwareFormAutoFillData = await dispatch(
+                suggestionAndAutoFillThunks.getSoftwareFormAutoFillDataFromWikidataAndOtherSources({
+                    wikidataId
+                })
+            );
+
+            if (softwareFormAutoFillData.softwareLogoUrl === logoUrlFromFormData) {
+                return undefined;
+            }
+
+            return logoUrlFromFormData;
         }
 } satisfies Thunks;
 
@@ -261,7 +290,12 @@ export const thunks = {
                         "categories": [],
                         "generalInfoMd": undefined,
                         "addedByAgentEmail": agentRow.email,
-                        "logoUrl": formData.softwareLogoUrl,
+                        "logoUrl": await dispatch(
+                            privateThunks.getStorableLogo({
+                                "wikidataId": formData.wikidataId,
+                                "logoUrlFromFormData": formData.softwareLogoUrl
+                            })
+                        ),
                         "keywords": formData.softwareKeywords
                     });
 
@@ -313,9 +347,7 @@ export const thunks = {
                             categories,
                             generalInfoMd,
                             testUrls,
-                            workshopUrls,
-                            logoUrl,
-                            keywords
+                            workshopUrls
                         } = softwareRows[index];
 
                         const {
@@ -360,8 +392,13 @@ export const thunks = {
                             "name": softwareName,
                             "softwareType": softwareType,
                             "wikidataId": wikidataId,
-                            "logoUrl": softwareLogoUrl ?? logoUrl,
-                            "keywords": softwareKeywords ?? keywords
+                            "logoUrl": await dispatch(
+                                privateThunks.getStorableLogo({
+                                    "wikidataId": softwareLogoUrl,
+                                    "logoUrlFromFormData": formData.softwareLogoUrl
+                                })
+                            ),
+                            "keywords": softwareKeywords
                         };
                     }
 
@@ -729,9 +766,13 @@ const localThunks = {
                 const newCompiledData = await compileData({
                     "db": newDb,
                     "cache": Object.fromEntries(
-                        state.compiledData.map(({ id, wikidataSoftware, latestVersion }) => [
+                        state.compiledData.map(({ id, wikidataSoftware, latestVersion, comptoirDuLibreSoftware }) => [
                             id,
-                            { wikidataSoftware, latestVersion }
+                            {
+                                wikidataSoftware,
+                                latestVersion,
+                                "comptoirDuLibreLogoUrl": comptoirDuLibreSoftware?.logoUrl
+                            }
                         ])
                     )
                 });
@@ -822,7 +863,7 @@ export const selectors = (() => {
     const softwares = createSelector(compiledData, compiledData =>
         compiledData.map(
             (o): Software => ({
-                "logoUrl": o.logoUrl ?? o.wikidataSoftware?.logoUrl,
+                "logoUrl": o.logoUrl ?? o.comptoirDuLibreSoftware?.logoUrl ?? o.wikidataSoftware?.logoUrl,
                 "softwareId": o.id,
                 "softwareName": o.name,
                 "softwareDescription": o.description,

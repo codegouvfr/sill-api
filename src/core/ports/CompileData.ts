@@ -9,6 +9,7 @@ export type CompileData = (params: {
         {
             wikidataSoftware: WikidataSoftware | undefined;
             latestVersion: { semVer: string; publicationTime: number } | undefined;
+            comptoirDuLibreLogoUrl: string | undefined;
         }
     >;
 }) => Promise<CompiledData<"private">>;
@@ -20,7 +21,7 @@ export namespace CompiledData {
     export namespace Software {
         export type Common = Omit<Db.SoftwareRow, "wikidataId" | "comptoirDuLibreId"> & {
             wikidataSoftware: WikidataSoftware | undefined;
-            comptoirDuLibreSoftware: ComptoirDuLibre.Software | undefined;
+            comptoirDuLibreSoftware: (ComptoirDuLibre.Software & { logoUrl: string | undefined }) | undefined;
             annuaireCnllServiceProviders:
                 | {
                       name: string;

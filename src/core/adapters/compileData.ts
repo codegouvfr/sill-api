@@ -3,15 +3,15 @@ import type { CompileData, CompiledData } from "../ports/CompileData";
 import type { GetWikidataSoftware, WikidataSoftware } from "../ports/GetWikidataSoftware";
 import type { GetCnllPrestatairesSill } from "../ports/GetCnllPrestatairesSill";
 import type { GetSoftwareLatestVersion } from "../ports/GetSoftwareLatestVersion";
-import type { GetComptoirDuLibre } from "../ports/GetComptoirDuLibre";
+import type { ComptoirDuLibreApi } from "../ports/GetComptoirDuLibre";
 
 export function createCompileData(params: {
     getWikidataSoftware: GetWikidataSoftware;
-    getComptoirDuLibre: GetComptoirDuLibre;
     getCnllPrestatairesSill: GetCnllPrestatairesSill;
+    comptoirDuLibreApi: ComptoirDuLibreApi;
     getSoftwareLatestVersion: GetSoftwareLatestVersion;
 }) {
-    const { getWikidataSoftware, getComptoirDuLibre, getCnllPrestatairesSill, getSoftwareLatestVersion } = params;
+    const { getWikidataSoftware, comptoirDuLibreApi, getCnllPrestatairesSill, getSoftwareLatestVersion } = params;
 
     const compileData: CompileData = async params => {
         const {
@@ -20,42 +20,50 @@ export function createCompileData(params: {
         } = params;
 
         const [{ softwares: cdlSoftwares }, cnllPrestatairesSill] = await Promise.all([
-            getComptoirDuLibre(),
+            comptoirDuLibreApi.getComptoirDuLibre(),
             getCnllPrestatairesSill()
         ]);
 
-        const { wikidataSoftwareBySillId, softwareLatestVersionBySillId } = await (async () => {
-            const wikidataSoftwareBySillId: Record<number, WikidataSoftware | undefined> = {};
-            const softwareLatestVersionBySillId: Record<
-                number,
-                { semVer: string; publicationTime: number } | undefined
-            > = {};
+        const { wikidataSoftwareBySillId, softwareLatestVersionBySillId, comptoirDuLibreLogoUrlBySillId } =
+            await (async () => {
+                const wikidataSoftwareBySillId: Record<number, WikidataSoftware | undefined> = {};
+                const softwareLatestVersionBySillId: Record<
+                    number,
+                    { semVer: string; publicationTime: number } | undefined
+                > = {};
+                const comptoirDuLibreLogoUrlBySillId: Record<number, string | undefined> = {};
 
-            {
-                for (const { id: sillId, name, wikidataId } of softwareRows) {
-                    console.log(`Scrapping the web for info about ${name}`);
+                {
+                    for (const { id: sillId, name, wikidataId, comptoirDuLibreId } of softwareRows) {
+                        console.log(`Scrapping the web for info about ${name}`);
 
-                    const cacheEntry = cache[sillId];
+                        const cacheEntry = cache[sillId];
 
-                    if (cacheEntry !== undefined) {
-                        wikidataSoftwareBySillId[sillId] = cacheEntry.wikidataSoftware;
-                        softwareLatestVersionBySillId[sillId] = cacheEntry.latestVersion;
-                        continue;
+                        if (cacheEntry !== undefined) {
+                            wikidataSoftwareBySillId[sillId] = cacheEntry.wikidataSoftware;
+                            softwareLatestVersionBySillId[sillId] = cacheEntry.latestVersion;
+                            comptoirDuLibreLogoUrlBySillId[sillId] = cacheEntry.comptoirDuLibreLogoUrl;
+                            continue;
+                        }
+
+                        const wikidataSoftware =
+                            wikidataId === undefined ? undefined : await getWikidataSoftware({ wikidataId });
+
+                        wikidataSoftwareBySillId[sillId] = wikidataSoftware;
+                        softwareLatestVersionBySillId[sillId] =
+                            wikidataSoftware?.sourceUrl === undefined
+                                ? undefined
+                                : await getSoftwareLatestVersion({ "repoUrl": wikidataSoftware.sourceUrl });
+
+                        comptoirDuLibreLogoUrlBySillId[sillId] =
+                            comptoirDuLibreId === undefined
+                                ? undefined
+                                : await comptoirDuLibreApi.getComptoirDuLibreIconUrl({ comptoirDuLibreId });
                     }
-
-                    const wikidataSoftware =
-                        wikidataId === undefined ? undefined : await getWikidataSoftware({ wikidataId });
-
-                    wikidataSoftwareBySillId[sillId] = wikidataSoftware;
-                    softwareLatestVersionBySillId[sillId] =
-                        wikidataSoftware?.sourceUrl === undefined
-                            ? undefined
-                            : await getSoftwareLatestVersion({ "repoUrl": wikidataSoftware.sourceUrl });
                 }
-            }
 
-            return { wikidataSoftwareBySillId, softwareLatestVersionBySillId };
-        })();
+                return { wikidataSoftwareBySillId, softwareLatestVersionBySillId, comptoirDuLibreLogoUrlBySillId };
+            })();
 
         const compiledData = softwareRows
             .map(softwareRow => ({
@@ -114,7 +122,9 @@ export function createCompileData(params: {
                                       return undefined;
                                   }
 
-                                  return cdlSoftware;
+                                  const logoUrl = comptoirDuLibreLogoUrlBySillId[sillId];
+
+                                  return { ...cdlSoftware, logoUrl };
                               })(),
                     "annuaireCnllServiceProviders": cnllPrestatairesSill
                         .find(({ sill_id }) => sill_id === sillId)
