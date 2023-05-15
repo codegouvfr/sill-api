@@ -863,7 +863,7 @@ export const selectors = (() => {
     const softwares = createSelector(compiledData, compiledData =>
         compiledData.map(
             (o): Software => ({
-                "logoUrl": o.logoUrl ?? o.comptoirDuLibreSoftware?.logoUrl ?? o.wikidataSoftware?.logoUrl,
+                "logoUrl": o.logoUrl ?? o.wikidataSoftware?.logoUrl ?? o.comptoirDuLibreSoftware?.logoUrl,
                 "softwareId": o.id,
                 "softwareName": o.name,
                 "softwareDescription": o.description,

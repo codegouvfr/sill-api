@@ -109,7 +109,7 @@ export const thunks = {
                         : await getSoftwareLatestVersion({ "repoUrl": wikidataSoftware.sourceUrl }).then(
                               resp => resp?.semVer
                           ),
-                "softwareLogoUrl": comptoirDuLibreLogoUrl ?? wikidataSoftware.logoUrl
+                "softwareLogoUrl": wikidataSoftware.logoUrl ?? comptoirDuLibreLogoUrl
             });
         }
 } satisfies Thunks;
