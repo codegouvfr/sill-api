@@ -58,9 +58,17 @@ export function createCompileData(params: {
                     wikidataSoftwareBySillId[sillId] = wikidataSoftware;
 
                     const [softwareLatestVersion, comptoirDuLibreLogoUrl, comptoirDuLibreKeywords] = await Promise.all([
-                        wikidataSoftware?.sourceUrl === undefined
-                            ? undefined
-                            : getSoftwareLatestVersion({ "repoUrl": wikidataSoftware.sourceUrl }),
+                        (async () => {
+                            const repoUrl =
+                                wikidataSoftware?.sourceUrl ??
+                                cdlSoftwares.find(({ id }) => id === comptoirDuLibreId)?.external_resources?.repository;
+
+                            if (repoUrl === undefined) {
+                                return undefined;
+                            }
+
+                            return getSoftwareLatestVersion({ repoUrl });
+                        })(),
                         comptoirDuLibreId === undefined
                             ? undefined
                             : comptoirDuLibreApi.getIconUrl({ comptoirDuLibreId }),
