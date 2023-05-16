@@ -771,7 +771,8 @@ const localThunks = {
                             {
                                 wikidataSoftware,
                                 latestVersion,
-                                "comptoirDuLibreLogoUrl": comptoirDuLibreSoftware?.logoUrl
+                                "comptoirDuLibreLogoUrl": comptoirDuLibreSoftware?.logoUrl,
+                                "comptoirDuLibreKeywords": comptoirDuLibreSoftware?.keywords
                             }
                         ])
                     )
@@ -908,7 +909,9 @@ export const selectors = (() => {
                 "wikidataId": o.wikidataSoftware?.id,
                 "softwareType": o.softwareType,
                 "similarSoftwares": o.similarSoftwares,
-                "keywords": o.keywords
+                "keywords": [...o.keywords, ...(o.comptoirDuLibreSoftware?.keywords ?? [])].reduce(
+                    ...removeDuplicates<string>((k1, k2) => k1.toLowerCase() === k2.toLowerCase())
+                )
             })
         )
     );

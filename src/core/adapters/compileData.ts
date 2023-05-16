@@ -24,46 +24,64 @@ export function createCompileData(params: {
             getCnllPrestatairesSill()
         ]);
 
-        const { wikidataSoftwareBySillId, softwareLatestVersionBySillId, comptoirDuLibreLogoUrlBySillId } =
-            await (async () => {
-                const wikidataSoftwareBySillId: Record<number, WikidataSoftware | undefined> = {};
-                const softwareLatestVersionBySillId: Record<
-                    number,
-                    { semVer: string; publicationTime: number } | undefined
-                > = {};
-                const comptoirDuLibreLogoUrlBySillId: Record<number, string | undefined> = {};
+        const {
+            wikidataSoftwareBySillId,
+            softwareLatestVersionBySillId,
+            comptoirDuLibreLogoUrlBySillId,
+            comptoirDuLibreKeywordsBySillId
+        } = await (async () => {
+            const wikidataSoftwareBySillId: Record<number, WikidataSoftware | undefined> = {};
+            const softwareLatestVersionBySillId: Record<
+                number,
+                { semVer: string; publicationTime: number } | undefined
+            > = {};
+            const comptoirDuLibreLogoUrlBySillId: Record<number, string | undefined> = {};
+            const comptoirDuLibreKeywordsBySillId: Record<number, string[] | undefined> = {};
 
-                {
-                    for (const { id: sillId, name, wikidataId, comptoirDuLibreId } of softwareRows) {
-                        console.log(`Scrapping the web for info about ${name}`);
+            {
+                for (const { id: sillId, name, wikidataId, comptoirDuLibreId } of softwareRows) {
+                    console.log(`Scrapping the web for info about ${name}`);
 
-                        const cacheEntry = cache[sillId];
+                    const cacheEntry = cache[sillId];
 
-                        if (cacheEntry !== undefined) {
-                            wikidataSoftwareBySillId[sillId] = cacheEntry.wikidataSoftware;
-                            softwareLatestVersionBySillId[sillId] = cacheEntry.latestVersion;
-                            comptoirDuLibreLogoUrlBySillId[sillId] = cacheEntry.comptoirDuLibreLogoUrl;
-                            continue;
-                        }
-
-                        const wikidataSoftware =
-                            wikidataId === undefined ? undefined : await getWikidataSoftware({ wikidataId });
-
-                        wikidataSoftwareBySillId[sillId] = wikidataSoftware;
-                        softwareLatestVersionBySillId[sillId] =
-                            wikidataSoftware?.sourceUrl === undefined
-                                ? undefined
-                                : await getSoftwareLatestVersion({ "repoUrl": wikidataSoftware.sourceUrl });
-
-                        comptoirDuLibreLogoUrlBySillId[sillId] =
-                            comptoirDuLibreId === undefined
-                                ? undefined
-                                : await comptoirDuLibreApi.getIconUrl({ comptoirDuLibreId });
+                    if (cacheEntry !== undefined) {
+                        wikidataSoftwareBySillId[sillId] = cacheEntry.wikidataSoftware;
+                        softwareLatestVersionBySillId[sillId] = cacheEntry.latestVersion;
+                        comptoirDuLibreLogoUrlBySillId[sillId] = cacheEntry.comptoirDuLibreLogoUrl;
+                        comptoirDuLibreKeywordsBySillId[sillId] = cacheEntry.comptoirDuLibreKeywords;
+                        continue;
                     }
-                }
 
-                return { wikidataSoftwareBySillId, softwareLatestVersionBySillId, comptoirDuLibreLogoUrlBySillId };
-            })();
+                    const wikidataSoftware =
+                        wikidataId === undefined ? undefined : await getWikidataSoftware({ wikidataId });
+
+                    wikidataSoftwareBySillId[sillId] = wikidataSoftware;
+
+                    const [softwareLatestVersion, comptoirDuLibreLogoUrl, comptoirDuLibreKeywords] = await Promise.all([
+                        wikidataSoftware?.sourceUrl === undefined
+                            ? undefined
+                            : getSoftwareLatestVersion({ "repoUrl": wikidataSoftware.sourceUrl }),
+                        comptoirDuLibreId === undefined
+                            ? undefined
+                            : comptoirDuLibreApi.getIconUrl({ comptoirDuLibreId }),
+                        comptoirDuLibreId === undefined
+                            ? undefined
+                            : comptoirDuLibreApi.getKeywords({ comptoirDuLibreId })
+                    ] as const);
+
+                    softwareLatestVersionBySillId[sillId] = softwareLatestVersion;
+                    comptoirDuLibreLogoUrlBySillId[sillId] = comptoirDuLibreLogoUrl;
+                    comptoirDuLibreKeywordsBySillId[sillId] = comptoirDuLibreKeywords;
+                }
+            }
+
+            return {
+                wikidataSoftwareBySillId,
+                softwareLatestVersionBySillId,
+                comptoirDuLibreLogoUrlBySillId,
+                comptoirDuLibreKeywordsBySillId
+            };
+        })();
 
         const compiledData = softwareRows
             .map(softwareRow => ({
@@ -123,8 +141,9 @@ export function createCompileData(params: {
                                   }
 
                                   const logoUrl = comptoirDuLibreLogoUrlBySillId[sillId];
+                                  const keywords = comptoirDuLibreKeywordsBySillId[sillId];
 
-                                  return { ...cdlSoftware, logoUrl };
+                                  return { ...cdlSoftware, logoUrl, keywords };
                               })(),
                     "annuaireCnllServiceProviders": cnllPrestatairesSill
                         .find(({ sill_id }) => sill_id === sillId)
