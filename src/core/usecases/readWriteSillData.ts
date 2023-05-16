@@ -897,8 +897,10 @@ export const selectors = (() => {
                         "authorName": developer.name,
                         "authorUrl": `https://www.wikidata.org/wiki/${developer.id}`
                     })) ?? [],
-                "officialWebsiteUrl": o.wikidataSoftware?.websiteUrl,
-                "codeRepositoryUrl": o.wikidataSoftware?.sourceUrl,
+                "officialWebsiteUrl":
+                    o.wikidataSoftware?.websiteUrl ?? o.comptoirDuLibreSoftware?.external_resources.website,
+                "codeRepositoryUrl":
+                    o.wikidataSoftware?.sourceUrl ?? o.comptoirDuLibreSoftware?.external_resources.repository,
                 "versionMin": o.versionMin,
                 "license": o.license,
                 "serviceProviderCount": o.comptoirDuLibreSoftware?.providers.length ?? 0,

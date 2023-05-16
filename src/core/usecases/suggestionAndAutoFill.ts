@@ -51,9 +51,9 @@ export const thunks = {
 
             const { label: wikidataSoftwareLabel } = wikidataSoftware;
 
-            const comptoirDuLibreId = await (async () => {
+            const { comptoirDuLibreSoftware } = await (async () => {
                 if (wikidataSoftwareLabel === undefined) {
-                    return undefined;
+                    return { "comptoirDuLibreSoftware": undefined };
                 }
 
                 const comptoirDuLibreSoftware = comptoirDuLibre.softwares.find(software => {
@@ -74,13 +74,15 @@ export const thunks = {
                     );
                 });
 
-                return comptoirDuLibreSoftware?.id;
+                return { comptoirDuLibreSoftware };
             })();
 
             const comptoirDuLibreLogoUrl =
-                comptoirDuLibreId === undefined
+                comptoirDuLibreSoftware === undefined
                     ? undefined
-                    : await comptoirDuLibreApi.getComptoirDuLibreIconUrl({ comptoirDuLibreId });
+                    : await comptoirDuLibreApi.getComptoirDuLibreIconUrl({
+                          "comptoirDuLibreId": comptoirDuLibreSoftware.id
+                      });
 
             const { resolveLocalizedString } = createResolveLocalizedString<Language>({
                 "currentLanguage": "fr",
@@ -95,14 +97,14 @@ export const thunks = {
                 softwareMinimalVersion: string | undefined;
                 softwareLogoUrl: string | undefined;
             }>({
-                comptoirDuLibreId,
+                "comptoirDuLibreId": comptoirDuLibreSoftware?.id,
                 "softwareName":
                     wikidataSoftwareLabel === undefined ? undefined : resolveLocalizedString(wikidataSoftwareLabel),
                 "softwareDescription":
                     wikidataSoftware.description === undefined
                         ? undefined
                         : resolveLocalizedString(wikidataSoftware.description),
-                "softwareLicense": wikidataSoftware.license,
+                "softwareLicense": wikidataSoftware.license ?? comptoirDuLibreSoftware?.licence,
                 "softwareMinimalVersion":
                     wikidataSoftware.sourceUrl === undefined
                         ? undefined
