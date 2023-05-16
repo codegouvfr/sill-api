@@ -58,7 +58,7 @@ export function createCompileData(params: {
                         comptoirDuLibreLogoUrlBySillId[sillId] =
                             comptoirDuLibreId === undefined
                                 ? undefined
-                                : await comptoirDuLibreApi.getComptoirDuLibreIconUrl({ comptoirDuLibreId });
+                                : await comptoirDuLibreApi.getIconUrl({ comptoirDuLibreId });
                     }
                 }
 

@@ -77,12 +77,13 @@ export const thunks = {
                 return { comptoirDuLibreSoftware };
             })();
 
-            const comptoirDuLibreLogoUrl =
+            const [comptoirDuLibreLogoUrl, comptoirDuLibreKeywords] =
                 comptoirDuLibreSoftware === undefined
-                    ? undefined
-                    : await comptoirDuLibreApi.getComptoirDuLibreIconUrl({
-                          "comptoirDuLibreId": comptoirDuLibreSoftware.id
-                      });
+                    ? [undefined, undefined]
+                    : await Promise.all([
+                          comptoirDuLibreApi.getIconUrl({ "comptoirDuLibreId": comptoirDuLibreSoftware.id }),
+                          comptoirDuLibreApi.getKeywords({ "comptoirDuLibreId": comptoirDuLibreSoftware.id })
+                      ]);
 
             const { resolveLocalizedString } = createResolveLocalizedString<Language>({
                 "currentLanguage": "fr",
@@ -96,6 +97,7 @@ export const thunks = {
                 softwareLicense: string | undefined;
                 softwareMinimalVersion: string | undefined;
                 softwareLogoUrl: string | undefined;
+                keywords: string[];
             }>({
                 "comptoirDuLibreId": comptoirDuLibreSoftware?.id,
                 "softwareName":
@@ -112,7 +114,8 @@ export const thunks = {
                               "repoUrl":
                                   wikidataSoftware.sourceUrl ?? comptoirDuLibreSoftware?.external_resources.repository
                           }).then(resp => resp?.semVer),
-                "softwareLogoUrl": wikidataSoftware.logoUrl ?? comptoirDuLibreLogoUrl
+                "softwareLogoUrl": wikidataSoftware.logoUrl ?? comptoirDuLibreLogoUrl,
+                "keywords": comptoirDuLibreKeywords ?? []
             });
         }
 } satisfies Thunks;
