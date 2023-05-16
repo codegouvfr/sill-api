@@ -108,9 +108,10 @@ export const thunks = {
                 "softwareMinimalVersion":
                     wikidataSoftware.sourceUrl === undefined
                         ? undefined
-                        : await getSoftwareLatestVersion({ "repoUrl": wikidataSoftware.sourceUrl }).then(
-                              resp => resp?.semVer
-                          ),
+                        : await getSoftwareLatestVersion({
+                              "repoUrl":
+                                  wikidataSoftware.sourceUrl ?? comptoirDuLibreSoftware?.external_resources.repository
+                          }).then(resp => resp?.semVer),
                 "softwareLogoUrl": wikidataSoftware.logoUrl ?? comptoirDuLibreLogoUrl
             });
         }
