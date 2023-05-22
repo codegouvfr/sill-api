@@ -39,7 +39,7 @@ export type Software = {
     codeRepositoryUrl: string | undefined;
     versionMin: string;
     license: string;
-    serviceProviderCount: number;
+    comptoirDuLibreServiceProviderCount: number;
     annuaireCnllServiceProviders:
         | {
               name: string;
@@ -911,8 +911,7 @@ export const selectors = (() => {
                     o.wikidataSoftware?.sourceUrl ?? o.comptoirDuLibreSoftware?.external_resources.repository,
                 "versionMin": o.versionMin,
                 "license": o.license,
-                "serviceProviderCount":
-                    (o.comptoirDuLibreSoftware?.providers.length ?? 0) + (o.annuaireCnllServiceProviders?.length ?? 0),
+                "comptoirDuLibreServiceProviderCount": o.comptoirDuLibreSoftware?.providers.length ?? 0,
                 "annuaireCnllServiceProviders": o.annuaireCnllServiceProviders,
                 "compotoirDuLibreId": o.comptoirDuLibreSoftware?.id,
                 "wikidataId": o.wikidataSoftware?.id,
