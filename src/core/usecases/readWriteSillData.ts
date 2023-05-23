@@ -401,7 +401,7 @@ export const thunks = {
                             "wikidataId": wikidataId,
                             "logoUrl": await dispatch(
                                 privateThunks.getStorableLogo({
-                                    "wikidataId": softwareLogoUrl,
+                                    wikidataId,
                                     "logoUrlFromFormData": formData.softwareLogoUrl
                                 })
                             ),
