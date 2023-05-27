@@ -83,6 +83,11 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
                             return;
                         }
 
+                        //NOTE: Hack, we had a bug so some organization are under
+                        //"MESRI: Ministry of Higher Education, Research and Innovation" instead of "MESRI"
+                        //(for example)
+                        organization = organization.split(":")[0];
+
                         organizations.add(organization);
                     });
 
