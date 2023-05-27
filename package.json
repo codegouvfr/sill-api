@@ -1,6 +1,6 @@
 {
     "name": "@codegouvfr/sill",
-    "version": "1.9.1",
+    "version": "1.9.2",
     "description": "The backend of sill.etalab.gouv.fr",
     "repository": {
         "type": "git",
