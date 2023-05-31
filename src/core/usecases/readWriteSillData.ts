@@ -28,6 +28,13 @@ export type Software = {
     testUrl: string | undefined;
     addedTime: number;
     updateTime: number;
+    dereferencing?:
+        | {
+              reason: string | undefined;
+              time: number;
+              lastRecommendedVersion?: string;
+          }
+        | undefined;
     categories: string[];
     prerogatives: Record<Prerogative, boolean>;
     userAndReferentCountByOrganization: Record<string, { userCount: number; referentCount: number }>;
