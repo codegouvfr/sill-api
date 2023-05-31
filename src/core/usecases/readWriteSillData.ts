@@ -28,9 +28,9 @@ export type Software = {
     testUrl: string | undefined;
     addedTime: number;
     updateTime: number;
-    dereferencing?:
+    dereferencing:
         | {
-              reason: string | undefined;
+              reason?: string;
               time: number;
               lastRecommendedVersion?: string;
           }
@@ -887,6 +887,7 @@ export const selectors = (() => {
                 "testUrl": o.testUrls[0]?.url,
                 "addedTime": o.referencedSinceTime,
                 "updateTime": o.updateTime,
+                "dereferencing": o.dereferencing,
                 "categories": o.categories,
                 "prerogatives": {
                     "doRespectRgaa": o.doRespectRgaa ?? false,
