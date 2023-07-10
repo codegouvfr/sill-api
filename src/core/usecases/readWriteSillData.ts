@@ -179,13 +179,7 @@ export const privateThunks = {
 
             const { dbApi } = extraArg;
 
-            console.log("start fetch db");
-
-            //const [db, compiledData] = await Promise.all([dbApi.fetchDb(), dbApi.fetchCompiledData()]);
-            const db = await dbApi.fetchDb();
-            const compiledData = await dbApi.fetchCompiledData();
-
-            console.log("done fetch db");
+            const [db, compiledData] = await Promise.all([dbApi.fetchDb(), dbApi.fetchCompiledData()]);
 
             dispatch(
                 actions.updated({
