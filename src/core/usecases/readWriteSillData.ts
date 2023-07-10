@@ -103,7 +103,7 @@ export type WikidataEntry = {
     wikidataId: string;
 };
 
-export type Os = "windows" | "linux" | "mac";
+export type Os = "windows" | "linux" | "mac" | "android" | "ios";
 
 export type SoftwareFormData = {
     softwareType: SoftwareType;
@@ -179,7 +179,13 @@ export const privateThunks = {
 
             const { dbApi } = extraArg;
 
-            const [db, compiledData] = await Promise.all([dbApi.fetchDb(), dbApi.fetchCompiledData()]);
+            console.log("start fetch db");
+
+            //const [db, compiledData] = await Promise.all([dbApi.fetchDb(), dbApi.fetchCompiledData()]);
+            const db = await dbApi.fetchDb();
+            const compiledData = await dbApi.fetchCompiledData();
+
+            console.log("done fetch db");
 
             dispatch(
                 actions.updated({
@@ -193,6 +199,8 @@ export const privateThunks = {
                     console.log("Periodical update disabled");
                     break periodical_update;
                 }
+
+                console.log("Periodical update enabled");
 
                 dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "initial" }));
 
@@ -774,6 +782,8 @@ const localThunks = {
                     return;
                 }
 
+                console.log("Incremental compilation started");
+
                 //NOTE: It's important to call compileData first as it may crash
                 //and if it does it mean that if we have committed we'll end up with
                 //inconsistent state.
@@ -819,6 +829,8 @@ const localThunks = {
             const { mutex } = getContext(extraArg);
 
             const dbBefore = structuredClone(getState()[name].db);
+
+            console.log("Non incremental compilation started");
 
             const newCompiledData = await compileData({
                 "db": dbBefore,

@@ -26,7 +26,7 @@ export const zWikidataEntry = z.object({
     assert<Equals<Got, Expected>>();
 }
 
-const zOs = z.enum(["windows", "linux", "mac"]);
+const zOs = z.enum(["windows", "linux", "mac", "android", "ios"]);
 
 {
     type Got = ReturnType<(typeof zOs)["parse"]>;
@@ -41,7 +41,9 @@ const zSoftwareType = z.union([
         "os": z.object({
             "windows": z.boolean(),
             "linux": z.boolean(),
-            "mac": z.boolean()
+            "mac": z.boolean(),
+            "android": z.boolean(),
+            "ios": z.boolean()
         })
     }),
     z.object({

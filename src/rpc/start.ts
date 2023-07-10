@@ -47,6 +47,8 @@ export async function startRpcService(params: {
 
     assert<Equals<typeof rest, {}>>();
 
+    console.log({ isDevEnvironnement });
+
     const coreApi = await createCoreApi({
         "gitDbApiParams": {
             dataRepoSshUrl,
@@ -65,6 +67,8 @@ export async function startRpcService(params: {
         githubPersonalAccessTokenForApiRateLimit,
         "doPerformPeriodicalUpdate": !isDevEnvironnement
     });
+
+    console.log("Core API initialized");
 
     const { createContext } = createContextFactory({
         jwtClaimByUserKey,

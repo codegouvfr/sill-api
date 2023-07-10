@@ -100,7 +100,7 @@ export type WikidataEntry = {
     wikidataId: string;
 };
 
-export type Os = "windows" | "linux" | "mac";
+export type Os = "windows" | "linux" | "mac" | "android" | "ios";
 
 export type SoftwareType = SoftwareType.Desktop | SoftwareType.CloudNative | SoftwareType.Stack;
 
