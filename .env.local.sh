@@ -9,7 +9,7 @@ export CONFIGURATION=$(cat << EOF
     "adminPassword": "$KEYCLOAK_CODEGOUV_ADMIN_PASSWORD",
     "organizationUserProfileAttributeName": "agencyName"
   },
-  "readmeUrl": "https://git.sr.ht/~etalab/logiciels-libres/blob/master/sill.md",
+  "readmeUrl": "https://git.sr.ht/~codegouvfr/logiciels-libres/blob/main/sill.md",
   "termsOfServiceUrl": "https://sill.code.gouv.fr/tos_fr.md",
   "jwtClaimByUserKey": {
     "id": "sub",
