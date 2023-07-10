@@ -35,15 +35,29 @@ export const gitSsh = runExclusive.build(
             "cwd": workingDirectoryPath
         });
 
-        await exec(`git clone ${shaish === undefined ? "--depth 1 " : ""}${sshUrl} ${repoDirBasename}`, {
-            "cwd": workingDirectoryPath
-        });
+        if (shaish === undefined) {
+            await exec(`git clone --depth 1 ${sshUrl} ${repoDirBasename}`, { "cwd": workingDirectoryPath });
+        } else {
+            if (isSha(shaish)) {
+                await exec(`git clone ${sshUrl} ${repoDirBasename}`, { "cwd": workingDirectoryPath });
 
-        if (shaish !== undefined) {
-            try {
-                await exec(`git checkout ${shaish}`, { "cwd": repoPath });
-            } catch (e) {
-                throw new ErrorNoBranch((e as Error).message);
+                try {
+                    await exec(`git checkout ${shaish}`, { "cwd": repoPath });
+                } catch (e) {
+                    throw new ErrorNoBranch(String(e));
+                }
+            } else {
+                try {
+                    await exec(`git clone --branch ${shaish} --depth 1 ${sshUrl} ${repoDirBasename}`, {
+                        "cwd": workingDirectoryPath
+                    });
+                } catch (e) {
+                    if (String(e).includes(shaish)) {
+                        throw new ErrorNoBranch(String(e));
+                    }
+
+                    throw e;
+                }
             }
         }
 
@@ -116,4 +130,8 @@ async function configureOpenSshClient(params: { sshPrivateKeyName: string; sshPr
     }
 
     await fs.promises.writeFile(sshConfigFilePath, Buffer.from("StrictHostKeyChecking=no\n", "utf8"));
+}
+
+function isSha(shaish: string): boolean {
+    return /^[0-9a-f]{7,40}$/i.test(shaish);
 }
