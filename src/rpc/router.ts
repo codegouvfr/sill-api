@@ -381,7 +381,7 @@ export type TrpcRouter = ReturnType<typeof createRouter>["router"];
 
 const zSoftwareType = z.union([
     z.object({
-        "type": z.literal("desktop"),
+        "type": z.literal("desktop/mobile"),
         "os": z.object({
             "windows": z.boolean(),
             "linux": z.boolean(),

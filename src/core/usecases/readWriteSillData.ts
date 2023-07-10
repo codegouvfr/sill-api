@@ -82,7 +82,7 @@ export type SoftwareType = SoftwareType.Desktop | SoftwareType.CloudNative | Sof
 
 export namespace SoftwareType {
     export type Desktop = {
-        type: "desktop";
+        type: "desktop/mobile";
         os: Record<Os, boolean>;
     };
 
@@ -126,7 +126,7 @@ export namespace DeclarationFormData {
     export type User = {
         declarationType: "user";
         usecaseDescription: string;
-        /** NOTE: undefined if the software is not of type desktop */
+        /** NOTE: undefined if the software is not of type desktop/mobile */
         os: Os | undefined;
         version: string;
         /** NOTE: Defined only when software is cloud */

@@ -106,7 +106,7 @@ export type SoftwareType = SoftwareType.Desktop | SoftwareType.CloudNative | Sof
 
 export namespace SoftwareType {
     export type Desktop = {
-        type: "desktop";
+        type: "desktop/mobile";
         os: Record<Os, boolean>;
     };
 

@@ -37,7 +37,7 @@ const zOs = z.enum(["windows", "linux", "mac", "android", "ios"]);
 
 const zSoftwareType = z.union([
     z.object({
-        "type": z.literal("desktop"),
+        "type": z.literal("desktop/mobile"),
         "os": z.object({
             "windows": z.boolean(),
             "linux": z.boolean(),
