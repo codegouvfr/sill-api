@@ -12,6 +12,9 @@ import { same } from "evt/tools/inDepth/same";
 import { removeDuplicates } from "evt/tools/reducers/removeDuplicates";
 import { Deferred } from "evt/tools/Deferred";
 import { thunks as suggestionAndAutoFillThunks } from "./suggestionAndAutoFill";
+import { exclude } from "tsafe/exclude";
+import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
+import { Language } from "../ports/GetWikidataSoftware";
 
 export type Software = {
     logoUrl: string | undefined;
@@ -930,7 +933,77 @@ export const selectors = (() => {
                 "compotoirDuLibreId": o.comptoirDuLibreSoftware?.id,
                 "wikidataId": o.wikidataSoftware?.id,
                 "softwareType": o.softwareType,
-                "similarSoftwares": o.similarSoftwares,
+                "similarSoftwares": (() => {
+                    const wikiDataIdAlreadySeen = new Set<string>();
+
+                    if (o.wikidataSoftware?.id !== undefined) {
+                        wikiDataIdAlreadySeen.add(o.wikidataSoftware.id);
+                    }
+
+                    function recursiveWalk(wikidataEntry: WikidataEntry | undefined): WikidataEntry[] {
+                        if (wikidataEntry !== undefined) {
+                            if (wikiDataIdAlreadySeen.has(wikidataEntry.wikidataId)) {
+                                return [];
+                            }
+
+                            wikiDataIdAlreadySeen.add(wikidataEntry.wikidataId);
+                        }
+
+                        return [
+                            ...(wikidataEntry === undefined ? [] : [wikidataEntry]),
+                            ...(() => {
+                                const software =
+                                    wikidataEntry === undefined
+                                        ? o
+                                        : compiledData.find(o => o.wikidataSoftware?.id === wikidataEntry.wikidataId);
+
+                                if (software === undefined) {
+                                    return [];
+                                }
+
+                                return software.similarSoftwares.map(recursiveWalk).flat();
+                            })(),
+                            ...compiledData
+                                .map(software => {
+                                    const isFound =
+                                        software.similarSoftwares.find(({ wikidataId }) => {
+                                            if (wikidataEntry === undefined) {
+                                                return o.wikidataSoftware?.id === wikidataId;
+                                            }
+
+                                            return wikidataEntry.wikidataId === wikidataId;
+                                        }) !== undefined;
+
+                                    if (!isFound) {
+                                        return undefined;
+                                    }
+                                    const { wikidataSoftware } = software;
+
+                                    if (wikidataSoftware === undefined) {
+                                        console.log(`WARN: ${software.name} does not have a Wikidata entry`);
+                                        return undefined;
+                                    }
+
+                                    const { resolveLocalizedString } = createResolveLocalizedString<Language>({
+                                        "currentLanguage": "fr",
+                                        "fallbackLanguage": "en"
+                                    });
+
+                                    return recursiveWalk({
+                                        "wikidataId": wikidataSoftware.id,
+                                        "wikidataDescription": resolveLocalizedString(
+                                            wikidataSoftware.description ?? ""
+                                        ),
+                                        "wikidataLabel": resolveLocalizedString(wikidataSoftware.label ?? "")
+                                    });
+                                })
+                                .filter(exclude(undefined))
+                                .flat()
+                        ];
+                    }
+
+                    return recursiveWalk(undefined);
+                })(),
                 "keywords": [...o.keywords, ...(o.comptoirDuLibreSoftware?.keywords ?? [])].reduce(
                     ...removeDuplicates<string>((k1, k2) => k1.toLowerCase() === k2.toLowerCase())
                 )
