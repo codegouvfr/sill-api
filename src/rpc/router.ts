@@ -142,13 +142,17 @@ export function createRouter(params: {
 
                 const { formData } = input;
 
-                await coreApi.functions.readWriteSillData.createSoftware({
-                    formData,
-                    "agent": {
-                        "email": user.email,
-                        "organization": user.organization
-                    }
-                });
+                try {
+                    await coreApi.functions.readWriteSillData.createSoftware({
+                        formData,
+                        "agent": {
+                            "email": user.email,
+                            "organization": user.organization
+                        }
+                    });
+                } catch (e) {
+                    throw new TRPCError({ "code": "INTERNAL_SERVER_ERROR", "message": String(e) });
+                }
             }),
         "updateSoftware": t.procedure
             .input(
