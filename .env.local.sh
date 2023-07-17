@@ -10,7 +10,7 @@ export CONFIGURATION=$(cat << EOF
     "organizationUserProfileAttributeName": "agencyName"
   },
   "readmeUrl": "https://git.sr.ht/~codegouvfr/logiciels-libres/blob/main/sill.md",
-  "termsOfServiceUrl": "https://sill.code.gouv.fr/tos_fr.md",
+  "termsOfServiceUrl": "https://code.gouv.fr/sill/tos_fr.md",
   "jwtClaimByUserKey": {
     "id": "sub",
     "email": "email",
