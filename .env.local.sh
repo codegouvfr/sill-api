@@ -20,6 +20,7 @@ export CONFIGURATION=$(cat << EOF
   "sshPrivateKeyForGitName": "$SSH_PRIVATE_KEY_FOR_GIT_NAME",
   "sshPrivateKeyForGit": "$SSH_PRIVATE_KEY_FOR_GIT",
   "githubPersonalAccessTokenForApiRateLimit": "$GITHUB_TOKEN",
+  "githubWebhookSecret": "$GITHUB_SILL_WEBHOOK_SECRET",
   "port": 8080,
   "isDevEnvironnement": true
 }

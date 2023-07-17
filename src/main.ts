@@ -69,5 +69,6 @@ const { parsedCONFIGURATION } = (() => {
 startRpcService({
     ...parsedCONFIGURATION,
     "port": parsedCONFIGURATION.port ?? 8080,
-    "isDevEnvironnement": parsedCONFIGURATION.isDevEnvironnement ?? false
+    "isDevEnvironnement": parsedCONFIGURATION.isDevEnvironnement ?? false,
+    "githubWebhookSecret": parsedCONFIGURATION.githubWebhookSecret || undefined
 });
