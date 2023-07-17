@@ -21,7 +21,7 @@ export CONFIGURATION=$(cat << EOF
   "sshPrivateKeyForGit": "$SSH_PRIVATE_KEY_FOR_GIT",
   "githubPersonalAccessTokenForApiRateLimit": "$GITHUB_TOKEN",
   "githubWebhookSecret": "$GITHUB_SILL_WEBHOOK_SECRET",
-  "port": 8080,
+  "port": 3084,
   "isDevEnvironnement": true
 }
 EOF
