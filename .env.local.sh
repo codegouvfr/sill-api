@@ -3,26 +3,26 @@
 export CONFIGURATION=$(cat << EOF
 {
   "keycloakParams": {
-    "url": "https://auth.code.gouv.fr/auth",
-    "realm": "codegouv",
-    "clientId": "sill",
+    "url": "$SILL_KEYCLOAK_URL",
+    "realm": "$SILL_KEYCLOAK_REALM",
+    "clientId": "$SILL_KEYCLOAK_CLIENT_ID",
     "adminPassword": "$KEYCLOAK_CODEGOUV_ADMIN_PASSWORD",
-    "organizationUserProfileAttributeName": "agencyName"
+    "organizationUserProfileAttributeName": "$SILL_KEYCLOAK_ORGANIZATION_USER_PROFILE_ATTRIBUTE_NAME"
   },
-  "readmeUrl": "https://git.sr.ht/~codegouvfr/logiciels-libres/blob/main/sill.md",
-  "termsOfServiceUrl": "https://code.gouv.fr/sill/tos_fr.md",
+  "readmeUrl": "$SILL_README_URL",
+  "termsOfServiceUrl": "$SILL_TERMS_OF_SERVICE_URL",
   "jwtClaimByUserKey": {
-    "id": "sub",
-    "email": "email",
-    "organization": "organization"
+    "id": "$SILL_JWT_ID",
+    "email": "$SILL_JWT_EMAIL",
+    "organization": "$SILL_JWT_ORGANIZATION"
   },
-  "dataRepoSshUrl": "git@github.com:codegouvfr/sill-data-test.git",
-  "sshPrivateKeyForGitName": "$SSH_PRIVATE_KEY_FOR_GIT_NAME",
-  "sshPrivateKeyForGit": "$SSH_PRIVATE_KEY_FOR_GIT",
-  "githubPersonalAccessTokenForApiRateLimit": "$GITHUB_TOKEN",
-  "githubWebhookSecret": "$GITHUB_SILL_WEBHOOK_SECRET",
-  "port": 3084,
-  "isDevEnvironnement": true
+  "dataRepoSshUrl": "$SILL_DATA_REPO_SSH_URL",
+  "sshPrivateKeyForGitName": "$SILL_SSH_NAME",
+  "sshPrivateKeyForGit": "$SILL_SSH_PRIVATE_KEY",
+  "githubPersonalAccessTokenForApiRateLimit": "$SILL_GITHUB_TOKEN",
+  "githubWebhookSecret": "$SILL_WEBHOOK_SECRET",
+  "port": $SILL_API_PORT,
+  "isDevEnvironnement": $SILL_IS_DEV_ENVIRONNEMENT
 }
 EOF
 ) 

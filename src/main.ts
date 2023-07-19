@@ -9,30 +9,30 @@ import { is } from "tsafe/is";
 const zParsedCONFIGURATION = z.object({
     "keycloakParams": z
         .object({
-            "url": z.string(), //Example: https://auth.code.gouv.fr/auth (with the /auth at the end)
-            "realm": z.string(),
-            "clientId": z.string(),
-            "adminPassword": z.string(),
-            "organizationUserProfileAttributeName": z.string()
+            "url": z.string().nonempty(), //Example: https://auth.code.gouv.fr/auth (with the /auth at the end)
+            "realm": z.string().nonempty(),
+            "clientId": z.string().nonempty(),
+            "adminPassword": z.string().nonempty(),
+            "organizationUserProfileAttributeName": z.string().nonempty()
         })
         .optional(),
     "termsOfServiceUrl": zLocalizedString,
     "readmeUrl": zLocalizedString,
     "jwtClaimByUserKey": z.object({
-        "id": z.string(),
-        "email": z.string(),
-        "organization": z.string()
+        "id": z.string().nonempty(),
+        "email": z.string().nonempty(),
+        "organization": z.string().nonempty()
     }),
-    "dataRepoSshUrl": z.string(),
+    "dataRepoSshUrl": z.string().nonempty(),
     // Like id_ed25537
-    "sshPrivateKeyForGitName": z.string(),
+    "sshPrivateKeyForGitName": z.string().nonempty(),
     // Like -----BEGIN OPENSSH PRIVATE KEY-----\nxxx ... xxx\n-----END OPENSSH PRIVATE KEY-----\n
     // You can a fake key in .env.local.sh for running yarn dev
-    "sshPrivateKeyForGit": z.string(),
-    "githubWebhookSecret": z.string().optional(),
+    "sshPrivateKeyForGit": z.string().nonempty(),
+    "githubWebhookSecret": z.string().nonempty().optional(),
     // Only for increasing the rate limit on GitHub API
     // we use the GitHub API for pre filling the version when adding a software
-    "githubPersonalAccessTokenForApiRateLimit": z.string(),
+    "githubPersonalAccessTokenForApiRateLimit": z.string().nonempty(),
     //Port we listen to, default 8080
     "port": z.number().optional(),
     "isDevEnvironnement": z.boolean().optional()
