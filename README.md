@@ -9,7 +9,7 @@
       <img src="https://img.shields.io/npm/l/sillfr">
     </a>
     <br/>
-    <a href="https://etalab-2.gitbook.io/sill/">Documentation</a>
+    <a href="https://github.com/codegouvfr/sill-docs/">Documentation</a>
 </p>
 
 # Licences
