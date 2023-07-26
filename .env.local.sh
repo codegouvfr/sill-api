@@ -6,7 +6,7 @@ export CONFIGURATION=$(cat << EOF
     "url": "$SILL_KEYCLOAK_URL",
     "realm": "$SILL_KEYCLOAK_REALM",
     "clientId": "$SILL_KEYCLOAK_CLIENT_ID",
-    "adminPassword": "$KEYCLOAK_CODEGOUV_ADMIN_PASSWORD",
+    "adminPassword": "$SILL_KEYCLOAK_ADMIN_PASSWORD",
     "organizationUserProfileAttributeName": "$SILL_KEYCLOAK_ORGANIZATION_USER_PROFILE_ATTRIBUTE_NAME"
   },
   "readmeUrl": "$SILL_README_URL",
