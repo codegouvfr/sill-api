@@ -1,27 +1,43 @@
-import type { Db, WikidataEntry } from "./DbApi";
+import type { Db } from "./DbApi";
 import type { WikidataSoftware } from "./GetWikidataSoftware";
 import type { ComptoirDuLibre } from "./GetComptoirDuLibre";
 
 export type CompileData = (params: {
     db: Db;
-    cache: Record<
-        number /** softwareSillId */,
-        {
-            wikidataSoftware: WikidataSoftware | undefined;
-            latestVersion: { semVer: string; publicationTime: number } | undefined;
-            comptoirDuLibreLogoUrl: string | undefined;
-            comptoirDuLibreKeywords: string[] | undefined;
-        }
-    >;
+    getCachedSoftware: ((params: { sillSoftwareId: number }) => CompileData.PartialSoftware | undefined) | undefined;
 }) => Promise<CompiledData<"private">>;
+
+export namespace CompileData {
+    export type PartialSoftware = Pick<
+        CompiledData.Software<"private">,
+        "wikidataSoftware" | "latestVersion" | "similarWikidataSoftwares" | "parentWikidataSoftware"
+    > & {
+        comptoirDuLibreSoftware:
+            | {
+                  id: number;
+                  logoUrl: string | undefined;
+                  keywords: string[] | undefined;
+              }
+            | undefined;
+        instances: Pick<CompiledData.Instance, "id" | "otherWikidataSoftwares">[];
+    };
+}
 
 export type CompiledData<T extends "private" | "public"> = CompiledData.Software<T>[];
 
 export namespace CompiledData {
     export type Software<T extends "private" | "public"> = T extends "private" ? Software.Private : Software.Public;
     export namespace Software {
-        export type Common = Omit<Db.SoftwareRow, "wikidataId" | "comptoirDuLibreId"> & {
+        export type Common = Omit<
+            Db.SoftwareRow,
+            "wikidataId" | "comptoirDuLibreId" | "similarSoftwareWikidataIds" | "parentSoftwareWikidataId"
+        > & {
             wikidataSoftware: WikidataSoftware | undefined;
+            similarWikidataSoftwares: Pick<
+                WikidataSoftware,
+                "wikidataId" | "label" | "description" | "isLibreSoftware"
+            >[];
+            parentWikidataSoftware: Pick<WikidataSoftware, "wikidataId" | "label" | "description"> | undefined;
             comptoirDuLibreSoftware:
                 | (ComptoirDuLibre.Software & { logoUrl: string | undefined; keywords: string[] | undefined })
                 | undefined;
@@ -58,7 +74,7 @@ export namespace CompiledData {
         organization: string;
         targetAudience: string;
         publicUrl: string | undefined;
-        otherSoftwares: WikidataEntry[];
+        otherWikidataSoftwares: Pick<WikidataSoftware, "wikidataId" | "label" | "description">[];
     };
 }
 

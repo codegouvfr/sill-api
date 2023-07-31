@@ -15,7 +15,6 @@ import type {
     SoftwareType,
     Os,
     SoftwareFormData,
-    WikidataEntry,
     DeclarationFormData,
     InstanceFormData
 } from "../core/usecases/readWriteSillData";
@@ -128,7 +127,6 @@ export function createRouter(params: {
                     wikidataId
                 });
             }),
-
         "createSoftware": t.procedure
             .input(
                 z.object({
@@ -418,19 +416,6 @@ const zOs = z.enum(["windows", "linux", "mac", "android", "ios"]);
     assert<Equals<Got, Expected>>();
 }
 
-export const zWikidataEntry = z.object({
-    "wikidataLabel": z.string(),
-    "wikidataDescription": z.string(),
-    "wikidataId": z.string()
-});
-
-{
-    type Got = ReturnType<(typeof zWikidataEntry)["parse"]>;
-    type Expected = WikidataEntry;
-
-    assert<Equals<Got, Expected>>();
-}
-
 const zSoftwareFormData = (() => {
     const zOut = z.object({
         "softwareType": zSoftwareType,
@@ -442,7 +427,7 @@ const zSoftwareFormData = (() => {
         "softwareMinimalVersion": z.string(),
         "isPresentInSupportContract": z.boolean(),
         "isFromFrenchPublicService": z.boolean(),
-        "similarSoftwares": z.array(zWikidataEntry),
+        "similarSoftwareWikidataIds": z.array(z.string()),
         "softwareLogoUrl": z.string().optional(),
         "softwareKeywords": z.array(z.string())
     });
@@ -496,7 +481,7 @@ const zInstanceFormData = (() => {
         "organization": z.string(),
         "targetAudience": z.string(),
         "publicUrl": z.string().optional(),
-        "otherSoftwares": z.array(zWikidataEntry)
+        "otherSoftwareWikidataIds": z.array(z.string())
     });
 
     {

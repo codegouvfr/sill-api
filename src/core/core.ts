@@ -21,13 +21,15 @@ export async function createCore(params: {
     gitDbApiParams: GitDbApiParams;
     keycloakUserApiParams: KeycloakUserApiParams | undefined;
     githubPersonalAccessTokenForApiRateLimit: string;
-    doPerformPeriodicalUpdate: boolean;
+    doPerPerformPeriodicalCompilation: boolean;
+    doPerformCacheInitialization: boolean;
 }) {
     const {
         gitDbApiParams,
         keycloakUserApiParams,
         githubPersonalAccessTokenForApiRateLimit,
-        doPerformPeriodicalUpdate
+        doPerPerformPeriodicalCompilation,
+        doPerformCacheInitialization
     } = params;
 
     const { getSoftwareLatestVersion } = createGetSoftwareLatestVersion({
@@ -62,20 +64,22 @@ export async function createCore(params: {
 
     await core.dispatch(
         usecases.readWriteSillData.privateThunks.initialize({
-            doPerformPeriodicalUpdate
+            doPerPerformPeriodicalCompilation
         })
     );
 
-    //NOTE: Cache initialization so that the first user do not get slow response.
-    objectKeys(usecases)
-        .map(usecaseName => usecases[usecaseName])
-        .map(usecase => ("selectors" in usecase ? usecase.selectors : undefined))
-        .filter(exclude(undefined))
-        .forEach(selectors =>
-            objectKeys(selectors)
-                .map(selectorName => selectors[selectorName])
-                .forEach(selector => selector(core.getState()))
-        );
+    if (doPerformCacheInitialization) {
+        //NOTE: Cache initialization so that the first user do not get slow response.
+        objectKeys(usecases)
+            .map(usecaseName => usecases[usecaseName])
+            .map(usecase => ("selectors" in usecase ? usecase.selectors : undefined))
+            .filter(exclude(undefined))
+            .forEach(selectors =>
+                objectKeys(selectors)
+                    .map(selectorName => selectors[selectorName])
+                    .forEach(selector => selector(core.getState()))
+            );
+    }
 
     return core;
 }

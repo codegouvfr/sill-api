@@ -4,7 +4,6 @@ import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
-import { zWikidataEntry } from "../../rpc/router";
 import { id as tsafeId } from "tsafe/id";
 import type { OptionalIfCanBeUndefined } from "../../tools/OptionalIfCanBeUndefined";
 
@@ -16,7 +15,7 @@ const zInstanceRow = z.object({
     "organization": z.string(),
     "targetAudience": z.string(),
     "publicUrl": z.string().optional(),
-    "otherSoftwares": z.array(zWikidataEntry),
+    "otherSoftwareWikidataIds": z.array(z.string()),
     "addedByAgentEmail": z.string(),
     "referencedSinceTime": z.number(),
     "updateTime": z.number()
@@ -44,7 +43,7 @@ fs.writeFileSync(
                     id,
                     mainSoftwareSillId,
                     organization,
-                    otherSoftwares,
+                    otherSoftwareWikidataIds,
                     publicUrl,
                     targetAudience,
                     addedByAgentEmail,
@@ -59,7 +58,7 @@ fs.writeFileSync(
                     id,
                     mainSoftwareSillId,
                     organization,
-                    otherSoftwares,
+                    otherSoftwareWikidataIds,
                     publicUrl,
                     targetAudience,
                     addedByAgentEmail,

@@ -1,15 +1,15 @@
 import { createCoreApi } from "../core";
 import { assert } from "tsafe/assert";
 
-const sshPrivateKeyName = process.env["SSH_PRIVATE_KEY_FOR_GIT_NAME"];
+const sshPrivateKeyName = process.env["SILL_SSH_NAME"];
 
 assert(sshPrivateKeyName !== undefined);
 
-const sshPrivateKey = process.env["SSH_PRIVATE_KEY_FOR_GIT"];
+const sshPrivateKey = process.env["SILL_SSH_PRIVATE_KEY"];
 
 assert(sshPrivateKey !== undefined);
 
-const githubPersonalAccessTokenForApiRateLimit = process.env["GITHUB_TOKEN"];
+const githubPersonalAccessTokenForApiRateLimit = process.env["SILL_GITHUB_TOKEN"];
 
 assert(githubPersonalAccessTokenForApiRateLimit !== undefined);
 
@@ -22,7 +22,8 @@ assert(githubPersonalAccessTokenForApiRateLimit !== undefined);
             sshPrivateKeyName
         },
         githubPersonalAccessTokenForApiRateLimit,
-        "doPerformPeriodicalUpdate": false
+        "doPerPerformPeriodicalCompilation": false,
+        "doPerformCacheInitialization": false
     });
 
     await coreApi.functions.readWriteSillData.manuallyTriggerNonIncrementalCompilation();

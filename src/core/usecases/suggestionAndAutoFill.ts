@@ -6,12 +6,6 @@ import { Language } from "../ports/GetWikidataSoftware";
 import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
 import { id } from "tsafe/id";
 
-export type WikidataEntry = {
-    wikidataLabel: string;
-    wikidataDescription: string;
-    wikidataId: string;
-};
-
 export const name = "suggestionAndAutoFill";
 
 export const reducer = null;
@@ -28,11 +22,12 @@ export const thunks = {
 
             const sillWikidataIds = privateSelector.sillWikidataIds(getState());
 
-            return queryResults.map(({ id, description, label }): WikidataEntry & { isInSill: boolean } => ({
+            return queryResults.map(({ id, description, label, isLibreSoftware }) => ({
                 "wikidataId": id,
-                "wikidataDescription": description,
-                "wikidataLabel": label,
-                "isInSill": sillWikidataIds.includes(id)
+                "description": description,
+                "label": label,
+                "isInSill": sillWikidataIds.includes(id),
+                isLibreSoftware
             }));
         },
     "getSoftwareFormAutoFillDataFromWikidataAndOtherSources":
@@ -124,7 +119,7 @@ const privateSelector = (() => {
     const compiledData = (state: RootState) => state.readWriteSillData.compiledData;
 
     const sillWikidataIds = createSelector(compiledData, compiledData =>
-        compiledData.map(software => software.wikidataSoftware?.id).filter(exclude(undefined))
+        compiledData.map(software => software.wikidataSoftware?.wikidataId).filter(exclude(undefined))
     );
 
     return { sillWikidataIds };

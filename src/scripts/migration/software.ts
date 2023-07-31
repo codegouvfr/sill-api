@@ -1,4 +1,4 @@
-import type { Db, WikidataEntry, Os, SoftwareType } from "../../core/ports/DbApi";
+import type { Db, Os, SoftwareType } from "../../core/ports/DbApi";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { assert } from "tsafe/assert";
@@ -12,19 +12,6 @@ npm -g install ts-node
 cd ~/github/sill/sill-data
 ts-node --skipProject ../sill-api/src/scripts/migration/software.ts
 */
-
-export const zWikidataEntry = z.object({
-    "wikidataLabel": z.string(),
-    "wikidataDescription": z.string(),
-    "wikidataId": z.string()
-});
-
-{
-    type Got = ReturnType<(typeof zWikidataEntry)["parse"]>;
-    type Expected = WikidataEntry;
-
-    assert<Equals<Got, Expected>>();
-}
 
 const zOs = z.enum(["windows", "linux", "mac", "android", "ios"]);
 
@@ -75,11 +62,11 @@ const zSoftwareRow = z.object({
         })
         .optional(),
     "isStillInObservation": z.boolean(),
-    "parentSoftware": zWikidataEntry.optional(),
+    "parentSoftwareWikidataId": z.string().optional(),
     "doRespectRgaa": z.boolean(),
     "isFromFrenchPublicService": z.boolean(),
     "isPresentInSupportContract": z.boolean(),
-    "similarSoftwares": z.array(zWikidataEntry),
+    "similarSoftwareWikidataIds": z.array(z.string()),
     "wikidataId": z.string().optional(),
     "comptoirDuLibreId": z.number().optional(),
     "license": z.string(),
@@ -129,7 +116,7 @@ fs.writeFileSync(
                     referencedSinceTime,
                     dereferencing,
                     isStillInObservation,
-                    parentSoftware,
+                    parentSoftwareWikidataId,
                     isFromFrenchPublicService,
                     isPresentInSupportContract,
                     wikidataId,
@@ -142,7 +129,7 @@ fs.writeFileSync(
                     generalInfoMd,
                     updateTime,
                     doRespectRgaa,
-                    similarSoftwares,
+                    similarSoftwareWikidataIds,
                     softwareType,
                     categories,
                     addedByAgentEmail,
@@ -169,7 +156,7 @@ fs.writeFileSync(
                     referencedSinceTime,
                     dereferencing,
                     isStillInObservation,
-                    parentSoftware,
+                    parentSoftwareWikidataId,
                     isFromFrenchPublicService,
                     isPresentInSupportContract,
                     wikidataId,
@@ -182,7 +169,7 @@ fs.writeFileSync(
                     generalInfoMd,
                     updateTime,
                     doRespectRgaa,
-                    similarSoftwares,
+                    similarSoftwareWikidataIds,
                     softwareType,
                     categories,
                     addedByAgentEmail,

@@ -66,7 +66,8 @@ export async function startRpcService(params: {
                       "organizationUserProfileAttributeName": keycloakParams.organizationUserProfileAttributeName
                   },
         githubPersonalAccessTokenForApiRateLimit,
-        "doPerformPeriodicalUpdate": !isDevEnvironnement
+        "doPerPerformPeriodicalCompilation": !isDevEnvironnement,
+        "doPerformCacheInitialization": true
     });
 
     console.log("Core API initialized");

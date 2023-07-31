@@ -3,7 +3,9 @@ import type { CompileData, CompiledData } from "../ports/CompileData";
 import type { GetWikidataSoftware, WikidataSoftware } from "../ports/GetWikidataSoftware";
 import type { GetCnllPrestatairesSill } from "../ports/GetCnllPrestatairesSill";
 import type { GetSoftwareLatestVersion } from "../ports/GetSoftwareLatestVersion";
-import type { ComptoirDuLibreApi } from "../ports/GetComptoirDuLibre";
+import type { ComptoirDuLibreApi, ComptoirDuLibre } from "../ports/GetComptoirDuLibre";
+import { exclude } from "tsafe/exclude";
+import memoize from "memoizee";
 
 export function createCompileData(params: {
     getWikidataSoftware: GetWikidataSoftware;
@@ -11,12 +13,17 @@ export function createCompileData(params: {
     comptoirDuLibreApi: ComptoirDuLibreApi;
     getSoftwareLatestVersion: GetSoftwareLatestVersion;
 }) {
-    const { getWikidataSoftware, comptoirDuLibreApi, getCnllPrestatairesSill, getSoftwareLatestVersion } = params;
+    const {
+        getWikidataSoftware: getWikidataSoftware_notMemoized,
+        comptoirDuLibreApi,
+        getCnllPrestatairesSill,
+        getSoftwareLatestVersion
+    } = params;
 
     const compileData: CompileData = async params => {
-        const {
+        let {
             db: { softwareRows, agentRows, softwareReferentRows, softwareUserRows, instanceRows },
-            cache
+            getCachedSoftware
         } = params;
 
         const [{ softwares: cdlSoftwares }, cnllPrestatairesSill] = await Promise.all([
@@ -24,71 +31,189 @@ export function createCompileData(params: {
             getCnllPrestatairesSill()
         ]);
 
-        const {
-            wikidataSoftwareBySillId,
-            softwareLatestVersionBySillId,
-            comptoirDuLibreLogoUrlBySillId,
-            comptoirDuLibreKeywordsBySillId
-        } = await (async () => {
-            const wikidataSoftwareBySillId: Record<number, WikidataSoftware | undefined> = {};
-            const softwareLatestVersionBySillId: Record<
-                number,
-                { semVer: string; publicationTime: number } | undefined
-            > = {};
-            const comptoirDuLibreLogoUrlBySillId: Record<number, string | undefined> = {};
-            const comptoirDuLibreKeywordsBySillId: Record<number, string[] | undefined> = {};
+        const { partialSoftwareBySillId } = await (async () => {
+            const partialSoftwareBySillId: Record<number, CompileData.PartialSoftware> = {};
 
-            {
-                for (const { id: sillId, name, wikidataId, comptoirDuLibreId } of softwareRows) {
-                    console.log(`Scrapping the web for info about ${name}`);
+            const getWikidataSoftware = memoize(
+                (wikidataId: string) => getWikidataSoftware_notMemoized({ wikidataId }),
+                { "promise": true }
+            );
 
-                    const cacheEntry = cache[sillId];
+            for (const {
+                id: sillId,
+                name,
+                wikidataId,
+                comptoirDuLibreId,
+                parentSoftwareWikidataId,
+                similarSoftwareWikidataIds
+            } of softwareRows) {
+                console.log(`Scrapping the web for info about ${name}`);
 
-                    if (cacheEntry !== undefined) {
-                        wikidataSoftwareBySillId[sillId] = cacheEntry.wikidataSoftware;
-                        softwareLatestVersionBySillId[sillId] = cacheEntry.latestVersion;
-                        comptoirDuLibreLogoUrlBySillId[sillId] = cacheEntry.comptoirDuLibreLogoUrl;
-                        comptoirDuLibreKeywordsBySillId[sillId] = cacheEntry.comptoirDuLibreKeywords;
-                        continue;
-                    }
+                const cache = getCachedSoftware?.({ "sillSoftwareId": sillId });
 
-                    const wikidataSoftware =
-                        wikidataId === undefined ? undefined : await getWikidataSoftware({ wikidataId });
+                const wikidataSoftware_prev = cache?.wikidataSoftware;
 
-                    wikidataSoftwareBySillId[sillId] = wikidataSoftware;
+                const wikidataSoftware =
+                    wikidataId === undefined
+                        ? undefined
+                        : cache?.wikidataSoftware?.wikidataId === wikidataId
+                        ? cache.wikidataSoftware
+                        : await getWikidataSoftware(wikidataId);
 
-                    const [softwareLatestVersion, comptoirDuLibreLogoUrl, comptoirDuLibreKeywords] = await Promise.all([
-                        (async () => {
-                            const repoUrl =
-                                wikidataSoftware?.sourceUrl ??
-                                cdlSoftwares.find(({ id }) => id === comptoirDuLibreId)?.external_resources?.repository;
+                const cdlSoftware_prev = cdlSoftwares.find(({ id }) => cache?.comptoirDuLibreSoftware?.id === id);
 
-                            if (repoUrl === undefined) {
+                const cdlSoftware = cdlSoftwares.find(({ id }) => comptoirDuLibreId === id);
+
+                const [
+                    latestVersion,
+                    comptoirDuLibreLogoUrl,
+                    comptoirDuLibreKeywords,
+                    parentWikidataSoftware,
+                    similarWikidataSoftwares,
+                    instances
+                ] = await Promise.all([
+                    (async () => {
+                        const getRepoUrl = (
+                            wikidataSoftware: WikidataSoftware | undefined,
+                            cdlSoftware: ComptoirDuLibre.Software | undefined
+                        ) => wikidataSoftware?.sourceUrl ?? cdlSoftware?.external_resources?.repository;
+
+                        const repoUrl_prev = getRepoUrl(wikidataSoftware_prev, cdlSoftware_prev);
+                        const repoUrl = getRepoUrl(wikidataSoftware, cdlSoftware);
+
+                        if (repoUrl_prev === repoUrl) {
+                            return cache?.latestVersion;
+                        }
+
+                        if (repoUrl === undefined) {
+                            return undefined;
+                        }
+
+                        return getSoftwareLatestVersion({ repoUrl });
+                    })(),
+                    (() => {
+                        if (cdlSoftware_prev?.id === cdlSoftware?.id) {
+                            return cache?.comptoirDuLibreSoftware?.logoUrl;
+                        }
+
+                        if (cdlSoftware === undefined) {
+                            return undefined;
+                        }
+
+                        return comptoirDuLibreApi.getIconUrl({ "comptoirDuLibreId": cdlSoftware.id });
+                    })(),
+                    (() => {
+                        if (cdlSoftware_prev?.id === cdlSoftware?.id) {
+                            return cache?.comptoirDuLibreSoftware?.keywords;
+                        }
+
+                        if (cdlSoftware === undefined) {
+                            return undefined;
+                        }
+
+                        return comptoirDuLibreApi.getKeywords({ "comptoirDuLibreId": cdlSoftware.id });
+                    })(),
+                    (async () => {
+                        if (cache?.parentWikidataSoftware?.wikidataId === parentSoftwareWikidataId) {
+                            return cache?.parentWikidataSoftware;
+                        }
+
+                        if (parentSoftwareWikidataId === undefined) {
+                            return undefined;
+                        }
+
+                        const parentWikidataSoftware = await getWikidataSoftware(parentSoftwareWikidataId);
+
+                        if (parentWikidataSoftware === undefined) {
+                            return undefined;
+                        }
+
+                        return {
+                            "wikidataId": parentWikidataSoftware.wikidataId,
+                            "label": parentWikidataSoftware.label,
+                            "description": parentWikidataSoftware.description
+                        };
+                    })(),
+                    Promise.all(
+                        similarSoftwareWikidataIds.map(async wikidataId => {
+                            {
+                                const similarSoftware_cache = cache?.similarWikidataSoftwares?.find(
+                                    similarSoftware => similarSoftware.wikidataId === wikidataId
+                                );
+
+                                if (similarSoftware_cache !== undefined) {
+                                    return similarSoftware_cache;
+                                }
+                            }
+
+                            const wikidataSoftware = await getWikidataSoftware(wikidataId);
+
+                            if (wikidataSoftware === undefined) {
                                 return undefined;
                             }
 
-                            return getSoftwareLatestVersion({ repoUrl });
-                        })(),
-                        comptoirDuLibreId === undefined
-                            ? undefined
-                            : comptoirDuLibreApi.getIconUrl({ comptoirDuLibreId }),
-                        comptoirDuLibreId === undefined
-                            ? undefined
-                            : comptoirDuLibreApi.getKeywords({ comptoirDuLibreId })
-                    ] as const);
+                            return {
+                                "wikidataId": wikidataSoftware.wikidataId,
+                                "label": wikidataSoftware.label,
+                                "description": wikidataSoftware.description,
+                                "isLibreSoftware": wikidataSoftware.isLibreSoftware
+                            };
+                        })
+                    ).then(similarWikidataSoftwares => similarWikidataSoftwares.filter(exclude(undefined))),
+                    Promise.all(
+                        instanceRows
+                            .filter(({ mainSoftwareSillId }) => mainSoftwareSillId === sillId)
+                            .map(async ({ id, otherSoftwareWikidataIds }) => {
+                                const instance_cache = cache?.instances.find(instance => instance.id === id);
 
-                    softwareLatestVersionBySillId[sillId] = softwareLatestVersion;
-                    comptoirDuLibreLogoUrlBySillId[sillId] = comptoirDuLibreLogoUrl;
-                    comptoirDuLibreKeywordsBySillId[sillId] = comptoirDuLibreKeywords;
-                }
+                                return {
+                                    "id": id,
+                                    "otherWikidataSoftwares": await Promise.all(
+                                        otherSoftwareWikidataIds.map(async wikidataId => {
+                                            const otherWikidataSoftware_cache =
+                                                instance_cache?.otherWikidataSoftwares.find(
+                                                    wikidataSoftware => wikidataSoftware.wikidataId === wikidataId
+                                                );
+
+                                            if (otherWikidataSoftware_cache !== undefined) {
+                                                return otherWikidataSoftware_cache;
+                                            }
+
+                                            const wikidataSoftware = await getWikidataSoftware(wikidataId);
+
+                                            if (wikidataSoftware === undefined) {
+                                                return undefined;
+                                            }
+
+                                            return {
+                                                "wikidataId": wikidataSoftware.wikidataId,
+                                                "label": wikidataSoftware.label,
+                                                "description": wikidataSoftware.description
+                                            };
+                                        })
+                                    ).then(otherWikidataSoftwares => otherWikidataSoftwares.filter(exclude(undefined)))
+                                };
+                            })
+                    )
+                ] as const);
+
+                partialSoftwareBySillId[sillId] = {
+                    wikidataSoftware,
+                    latestVersion,
+                    comptoirDuLibreSoftware:
+                        cdlSoftware === undefined
+                            ? undefined
+                            : {
+                                  "id": cdlSoftware.id,
+                                  "logoUrl": comptoirDuLibreLogoUrl,
+                                  "keywords": comptoirDuLibreKeywords
+                              },
+                    parentWikidataSoftware,
+                    similarWikidataSoftwares,
+                    instances
+                };
             }
-
-            return {
-                wikidataSoftwareBySillId,
-                softwareLatestVersionBySillId,
-                comptoirDuLibreLogoUrlBySillId,
-                comptoirDuLibreKeywordsBySillId
-            };
+            return { partialSoftwareBySillId };
         })();
 
         const compiledData = softwareRows
@@ -123,13 +248,57 @@ export function createCompileData(params: {
             }))
             .map(
                 ({
-                    softwareRow: { wikidataId, comptoirDuLibreId, id: sillId, ...rest },
+                    softwareRow: {
+                        id: sillId,
+                        name,
+                        description,
+                        referencedSinceTime,
+                        updateTime,
+                        dereferencing,
+                        isStillInObservation,
+                        doRespectRgaa,
+                        isFromFrenchPublicService,
+                        isPresentInSupportContract,
+                        comptoirDuLibreId,
+                        license,
+                        softwareType,
+                        catalogNumeriqueGouvFrId,
+                        versionMin,
+                        workshopUrls,
+                        testUrls,
+                        categories,
+                        generalInfoMd,
+                        addedByAgentEmail,
+                        logoUrl,
+                        keywords
+                    },
                     referents,
                     users
                 }): CompiledData.Software<"private"> => ({
-                    ...rest,
                     "id": sillId,
-                    "wikidataSoftware": wikidataSoftwareBySillId[sillId],
+                    name,
+                    description,
+                    referencedSinceTime,
+                    updateTime,
+                    dereferencing,
+                    isStillInObservation,
+                    doRespectRgaa,
+                    isFromFrenchPublicService,
+                    isPresentInSupportContract,
+                    license,
+                    softwareType,
+                    catalogNumeriqueGouvFrId,
+                    versionMin,
+                    workshopUrls,
+                    testUrls,
+                    categories,
+                    generalInfoMd,
+                    addedByAgentEmail,
+                    logoUrl,
+                    keywords,
+                    "wikidataSoftware": partialSoftwareBySillId[sillId].wikidataSoftware,
+                    "similarWikidataSoftwares": partialSoftwareBySillId[sillId].similarWikidataSoftwares,
+                    "parentWikidataSoftware": partialSoftwareBySillId[sillId].parentWikidataSoftware,
                     "comptoirDuLibreSoftware":
                         comptoirDuLibreId === undefined
                             ? undefined
@@ -148,8 +317,8 @@ export function createCompileData(params: {
                                       return undefined;
                                   }
 
-                                  const logoUrl = comptoirDuLibreLogoUrlBySillId[sillId];
-                                  const keywords = comptoirDuLibreKeywordsBySillId[sillId];
+                                  const logoUrl = partialSoftwareBySillId[sillId].comptoirDuLibreSoftware?.logoUrl;
+                                  const keywords = partialSoftwareBySillId[sillId].comptoirDuLibreSoftware?.keywords;
 
                                   return { ...cdlSoftware, logoUrl, keywords };
                               })(),
@@ -160,12 +329,27 @@ export function createCompileData(params: {
                             siren,
                             url
                         })),
-                    "latestVersion": softwareLatestVersionBySillId[sillId],
-                    referents,
+                    "latestVersion": partialSoftwareBySillId[sillId].latestVersion,
                     users,
+                    referents,
                     "instances": instanceRows
                         .filter(row => row.mainSoftwareSillId === sillId)
-                        .map(({ mainSoftwareSillId, ...rest }) => rest)
+                        .map(({ id: instanceId, organization, targetAudience, publicUrl, addedByAgentEmail }) => ({
+                            "id": instanceId,
+                            organization,
+                            targetAudience,
+                            publicUrl,
+                            "otherWikidataSoftwares": (() => {
+                                const instance = partialSoftwareBySillId[sillId].instances.find(
+                                    ({ id }) => id === instanceId
+                                );
+
+                                assert(instance !== undefined);
+
+                                return instance.otherWikidataSoftwares;
+                            })(),
+                            addedByAgentEmail
+                        }))
                 })
             );
 

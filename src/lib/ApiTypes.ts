@@ -7,6 +7,5 @@ export type {
     SoftwareFormData,
     DeclarationFormData,
     InstanceFormData,
-    SoftwareType,
-    WikidataEntry
+    SoftwareType
 } from "../core/usecases/readWriteSillData";

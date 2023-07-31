@@ -13,8 +13,8 @@ import { removeDuplicates } from "evt/tools/reducers/removeDuplicates";
 import { Deferred } from "evt/tools/Deferred";
 import { thunks as suggestionAndAutoFillThunks } from "./suggestionAndAutoFill";
 import { exclude } from "tsafe/exclude";
-import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
-import { Language } from "../ports/GetWikidataSoftware";
+import { id } from "tsafe/id";
+import { WikidataSoftware } from "../ports/GetWikidataSoftware";
 
 export type Software = {
     logoUrl: string | undefined;
@@ -27,7 +27,6 @@ export type Software = {
               publicationTime: number;
           }
         | undefined;
-    parentSoftware: WikidataEntry | undefined;
     testUrl: string | undefined;
     addedTime: number;
     updateTime: number;
@@ -60,9 +59,23 @@ export type Software = {
     compotoirDuLibreId: number | undefined;
     wikidataId: string | undefined;
     softwareType: SoftwareType;
-    similarSoftwares: WikidataEntry[];
+    parentWikidataSoftware: Pick<WikidataSoftware, "wikidataId" | "label" | "description"> | undefined;
+    similarSoftwares: Software.SimilarSoftware[];
     keywords: string[];
 };
+
+export namespace Software {
+    export type SimilarSoftware = SimilarSoftware.Wikidata | SimilarSoftware.Sill;
+
+    export namespace SimilarSoftware {
+        export type Wikidata = { isInSill: false } & Pick<
+            WikidataSoftware,
+            "wikidataId" | "label" | "description" | "isLibreSoftware"
+        >;
+
+        export type Sill = { isInSill: true; softwareName: string; softwareDescription: string };
+    }
+}
 
 export type Agent = {
     //NOTE: Undefined if the agent isn't referent of at least one software
@@ -78,7 +91,7 @@ export type Instance = {
     organization: string;
     targetAudience: string;
     publicUrl: string | undefined;
-    otherSoftwares: WikidataEntry[];
+    otherWikidataSoftwares: Pick<WikidataSoftware, "wikidataId" | "label" | "description">[];
 };
 
 export type SoftwareType = SoftwareType.Desktop | SoftwareType.CloudNative | SoftwareType.Stack;
@@ -100,12 +113,6 @@ export namespace SoftwareType {
 
 export type Prerogative = "isPresentInSupportContract" | "isFromFrenchPublicServices" | "doRespectRgaa";
 
-export type WikidataEntry = {
-    wikidataLabel: string;
-    wikidataDescription: string;
-    wikidataId: string;
-};
-
 export type Os = "windows" | "linux" | "mac" | "android" | "ios";
 
 export type SoftwareFormData = {
@@ -118,7 +125,7 @@ export type SoftwareFormData = {
     softwareMinimalVersion: string;
     isPresentInSupportContract: boolean;
     isFromFrenchPublicService: boolean;
-    similarSoftwares: WikidataEntry[];
+    similarSoftwareWikidataIds: string[];
     softwareLogoUrl: string | undefined;
     softwareKeywords: string[];
 };
@@ -150,7 +157,7 @@ export type InstanceFormData = {
     organization: string;
     targetAudience: string;
     publicUrl: string | undefined;
-    otherSoftwares: WikidataEntry[];
+    otherSoftwareWikidataIds: string[];
 };
 
 type State = {
@@ -174,9 +181,9 @@ const { getContext } = createUsecaseContextApi(() => ({
 
 export const privateThunks = {
     "initialize":
-        (params: { doPerformPeriodicalUpdate: boolean }) =>
+        (params: { doPerPerformPeriodicalCompilation: boolean }) =>
         async (...args) => {
-            const { doPerformPeriodicalUpdate } = params;
+            const { doPerPerformPeriodicalCompilation } = params;
 
             const [dispatch, , extraArg] = args;
 
@@ -191,10 +198,10 @@ export const privateThunks = {
                 })
             );
 
-            periodical_update: {
-                if (!doPerformPeriodicalUpdate) {
-                    console.log("Periodical update disabled");
-                    break periodical_update;
+            periodical_compilation: {
+                if (!doPerPerformPeriodicalCompilation) {
+                    console.log("Periodical compilation disabled");
+                    break periodical_compilation;
                 }
 
                 console.log("Periodical update enabled");
@@ -293,11 +300,11 @@ export const thunks = {
                         "updateTime": now,
                         "dereferencing": undefined,
                         "isStillInObservation": false,
-                        "parentSoftware": undefined,
+                        "parentSoftwareWikidataId": undefined,
                         "doRespectRgaa": false,
                         "isFromFrenchPublicService": formData.isFromFrenchPublicService,
                         "isPresentInSupportContract": formData.isPresentInSupportContract,
-                        "similarSoftwares": formData.similarSoftwares,
+                        "similarSoftwareWikidataIds": formData.similarSoftwareWikidataIds,
                         "wikidataId": formData.wikidataId,
                         "comptoirDuLibreId": formData.comptoirDuLibreId,
                         "license": formData.softwareLicense,
@@ -359,7 +366,7 @@ export const thunks = {
                             referencedSinceTime,
                             dereferencing,
                             isStillInObservation,
-                            parentSoftware,
+                            parentSoftwareWikidataId,
                             doRespectRgaa,
                             addedByAgentEmail,
                             catalogNumeriqueGouvFrId,
@@ -373,7 +380,7 @@ export const thunks = {
                             comptoirDuLibreId,
                             isFromFrenchPublicService,
                             isPresentInSupportContract,
-                            similarSoftwares,
+                            similarSoftwareWikidataIds,
                             softwareDescription,
                             softwareLicense,
                             softwareMinimalVersion,
@@ -393,7 +400,7 @@ export const thunks = {
                             "updateTime": Date.now(),
                             dereferencing,
                             isStillInObservation,
-                            parentSoftware,
+                            parentSoftwareWikidataId,
                             doRespectRgaa,
                             addedByAgentEmail,
                             catalogNumeriqueGouvFrId,
@@ -404,7 +411,7 @@ export const thunks = {
                             comptoirDuLibreId,
                             isFromFrenchPublicService,
                             isPresentInSupportContract,
-                            similarSoftwares,
+                            similarSoftwareWikidataIds,
                             "description": softwareDescription,
                             "license": softwareLicense,
                             "versionMin": softwareMinimalVersion,
@@ -610,7 +617,7 @@ export const thunks = {
                         "addedByAgentEmail": agent.email,
                         "organization": formData.organization,
                         "mainSoftwareSillId": formData.mainSoftwareSillId,
-                        "otherSoftwares": formData.otherSoftwares,
+                        "otherSoftwareWikidataIds": formData.otherSoftwareWikidataIds,
                         "publicUrl": formData.publicUrl,
                         "targetAudience": formData.targetAudience,
                         "referencedSinceTime": now,
@@ -641,8 +648,14 @@ export const thunks = {
 
                     assert(index !== -1, "Can't update instance, it doesn't exist");
 
-                    const { mainSoftwareSillId, organization, otherSoftwares, publicUrl, targetAudience, ...rest } =
-                        formData;
+                    const {
+                        mainSoftwareSillId,
+                        organization,
+                        otherSoftwareWikidataIds,
+                        publicUrl,
+                        targetAudience,
+                        ...rest
+                    } = formData;
 
                     assert<Equals<typeof rest, {}>>();
 
@@ -653,7 +666,7 @@ export const thunks = {
                         addedByAgentEmail,
                         mainSoftwareSillId,
                         organization,
-                        otherSoftwares,
+                        otherSoftwareWikidataIds,
                         publicUrl,
                         targetAudience,
                         referencedSinceTime,
@@ -786,17 +799,8 @@ const localThunks = {
                 //inconsistent state.
                 const newCompiledData = await compileData({
                     "db": newDb,
-                    "cache": Object.fromEntries(
-                        state.compiledData.map(({ id, wikidataSoftware, latestVersion, comptoirDuLibreSoftware }) => [
-                            id,
-                            {
-                                wikidataSoftware,
-                                latestVersion,
-                                "comptoirDuLibreLogoUrl": comptoirDuLibreSoftware?.logoUrl,
-                                "comptoirDuLibreKeywords": comptoirDuLibreSoftware?.keywords
-                            }
-                        ])
-                    )
+                    "getCachedSoftware": ({ sillSoftwareId }) =>
+                        state.compiledData.find(({ id }) => id === sillSoftwareId)
                 });
 
                 await Promise.all([
@@ -831,7 +835,7 @@ const localThunks = {
 
             const newCompiledData = await compileData({
                 "db": dbBefore,
-                "cache": {}
+                "getCachedSoftware": undefined
             });
 
             const wasCanceled = await mutex.runExclusive(async (): Promise<boolean> => {
@@ -892,7 +896,6 @@ export const selectors = (() => {
                 "softwareName": o.name,
                 "softwareDescription": o.description,
                 "latestVersion": o.latestVersion,
-                "parentSoftware": o.parentSoftware,
                 "testUrl": o.testUrls[0]?.url,
                 "addedTime": o.referencedSinceTime,
                 "updateTime": o.updateTime,
@@ -931,78 +934,108 @@ export const selectors = (() => {
                 "comptoirDuLibreServiceProviderCount": o.comptoirDuLibreSoftware?.providers.length ?? 0,
                 "annuaireCnllServiceProviders": o.annuaireCnllServiceProviders,
                 "compotoirDuLibreId": o.comptoirDuLibreSoftware?.id,
-                "wikidataId": o.wikidataSoftware?.id,
+                "wikidataId": o.wikidataSoftware?.wikidataId,
                 "softwareType": o.softwareType,
+                "parentWikidataSoftware": o.parentWikidataSoftware,
                 "similarSoftwares": (() => {
-                    const wikiDataIdAlreadySeen = new Set<string>();
+                    const softwareAlreadySeen = new Set<string>();
 
-                    if (o.wikidataSoftware?.id !== undefined) {
-                        wikiDataIdAlreadySeen.add(o.wikidataSoftware.id);
+                    function wikidataSoftwareToSimilarSoftware(
+                        wikidataSoftware: Pick<
+                            WikidataSoftware,
+                            "wikidataId" | "label" | "description" | "isLibreSoftware"
+                        >
+                    ): Software.SimilarSoftware {
+                        const software = compiledData.find(
+                            o => o.wikidataSoftware?.wikidataId === wikidataSoftware.wikidataId
+                        );
+
+                        if (software === undefined) {
+                            return {
+                                "isInSill": false,
+                                "wikidataId": wikidataSoftware.wikidataId,
+                                "label": wikidataSoftware.label,
+                                "description": wikidataSoftware.description,
+                                "isLibreSoftware": wikidataSoftware.isLibreSoftware
+                            };
+                        }
+
+                        return {
+                            "isInSill": true,
+                            "softwareName": software.name,
+                            "softwareDescription": software.description
+                        };
                     }
 
-                    function recursiveWalk(wikidataEntry: WikidataEntry | undefined): WikidataEntry[] {
-                        if (wikidataEntry !== undefined) {
-                            if (wikiDataIdAlreadySeen.has(wikidataEntry.wikidataId)) {
+                    function recursiveWalk(similarSoftware: Software.SimilarSoftware): Software.SimilarSoftware[] {
+                        {
+                            const id = similarSoftware.isInSill
+                                ? similarSoftware.softwareName
+                                : similarSoftware.wikidataId;
+
+                            if (softwareAlreadySeen.has(id)) {
                                 return [];
                             }
 
-                            wikiDataIdAlreadySeen.add(wikidataEntry.wikidataId);
+                            softwareAlreadySeen.add(id);
                         }
 
-                        return [
-                            ...(wikidataEntry === undefined ? [] : [wikidataEntry]),
+                        return id<Software.SimilarSoftware[]>([
+                            similarSoftware,
                             ...(() => {
-                                const software =
-                                    wikidataEntry === undefined
-                                        ? o
-                                        : compiledData.find(o => o.wikidataSoftware?.id === wikidataEntry.wikidataId);
-
-                                if (software === undefined) {
+                                if (!similarSoftware.isInSill) {
                                     return [];
                                 }
 
-                                return software.similarSoftwares.map(recursiveWalk).flat();
+                                const software = compiledData.find(o => o.name === similarSoftware.softwareName);
+
+                                assert(software !== undefined);
+
+                                return software.similarWikidataSoftwares
+                                    .map(wikidataSoftware =>
+                                        recursiveWalk(wikidataSoftwareToSimilarSoftware(wikidataSoftware))
+                                    )
+                                    .flat();
                             })(),
                             ...compiledData
                                 .map(software => {
-                                    const isFound =
-                                        software.similarSoftwares.find(({ wikidataId }) => {
-                                            if (wikidataEntry === undefined) {
-                                                return o.wikidataSoftware?.id === wikidataId;
-                                            }
+                                    const hasCurrentSimilarSoftwareInItsListOfSimilarSoftware =
+                                        software.similarWikidataSoftwares.find(wikidataSoftware => {
+                                            const similarSoftware_i =
+                                                wikidataSoftwareToSimilarSoftware(wikidataSoftware);
 
-                                            return wikidataEntry.wikidataId === wikidataId;
+                                            if (similarSoftware.isInSill) {
+                                                return (
+                                                    similarSoftware_i.isInSill &&
+                                                    similarSoftware_i.softwareName === similarSoftware.softwareName
+                                                );
+                                            } else {
+                                                return wikidataSoftware.wikidataId === similarSoftware.wikidataId;
+                                            }
                                         }) !== undefined;
 
-                                    if (!isFound) {
+                                    if (!hasCurrentSimilarSoftwareInItsListOfSimilarSoftware) {
                                         return undefined;
                                     }
-                                    const { wikidataSoftware } = software;
-
-                                    if (wikidataSoftware === undefined) {
-                                        console.log(`WARN: ${software.name} does not have a Wikidata entry`);
-                                        return undefined;
-                                    }
-
-                                    const { resolveLocalizedString } = createResolveLocalizedString<Language>({
-                                        "currentLanguage": "fr",
-                                        "fallbackLanguage": "en"
-                                    });
 
                                     return recursiveWalk({
-                                        "wikidataId": wikidataSoftware.id,
-                                        "wikidataDescription": resolveLocalizedString(
-                                            wikidataSoftware.description ?? ""
-                                        ),
-                                        "wikidataLabel": resolveLocalizedString(wikidataSoftware.label ?? "")
+                                        "isInSill": true,
+                                        "softwareName": software.name,
+                                        "softwareDescription": software.description
                                     });
                                 })
                                 .filter(exclude(undefined))
                                 .flat()
-                        ];
+                        ]);
                     }
 
-                    return recursiveWalk(undefined);
+                    return recursiveWalk(
+                        id<Software.SimilarSoftware.Sill>({
+                            "isInSill": true,
+                            "softwareName": o.name,
+                            "softwareDescription": o.description
+                        })
+                    ).filter(similarSoftware => !(similarSoftware.isInSill && similarSoftware.softwareName === o.name));
                 })(),
                 "keywords": [...o.keywords, ...(o.comptoirDuLibreSoftware?.keywords ?? [])].reduce(
                     ...removeDuplicates<string>((k1, k2) => k1.toLowerCase() === k2.toLowerCase())
@@ -1021,7 +1054,7 @@ export const selectors = (() => {
                     organization,
                     targetAudience,
                     publicUrl,
-                    otherSoftwares,
+                    otherWikidataSoftwares,
                     addedByAgentEmail,
                     mainSoftwareSillId
                 }) => ({
@@ -1030,7 +1063,7 @@ export const selectors = (() => {
                     organization,
                     targetAudience,
                     publicUrl,
-                    otherSoftwares,
+                    otherWikidataSoftwares,
                     addedByAgentEmail
                 })
             )

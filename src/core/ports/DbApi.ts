@@ -28,11 +28,11 @@ export namespace Db {
             lastRecommendedVersion?: string;
         };
         isStillInObservation: boolean;
-        parentSoftware: WikidataEntry | undefined;
+        parentSoftwareWikidataId: string | undefined;
         doRespectRgaa: boolean;
         isFromFrenchPublicService: boolean;
         isPresentInSupportContract: boolean;
-        similarSoftwares: WikidataEntry[];
+        similarSoftwareWikidataIds: string[];
         wikidataId?: string;
         //Example https://comptoir-du-libre.org/en/softwares/461 -> 461
         /* cspell: disable-next-line */
@@ -87,18 +87,12 @@ export namespace Db {
         organization: string;
         targetAudience: string;
         publicUrl: string | undefined;
-        otherSoftwares: WikidataEntry[];
+        otherSoftwareWikidataIds: string[];
         addedByAgentEmail: string;
         referencedSinceTime: number;
         updateTime: number;
     };
 }
-
-export type WikidataEntry = {
-    wikidataLabel: string;
-    wikidataDescription: string;
-    wikidataId: string;
-};
 
 export type Os = "windows" | "linux" | "mac" | "android" | "ios";
 

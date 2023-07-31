@@ -6,14 +6,15 @@ import { assert, type Equals } from "tsafe/assert";
 export type GetWikidataSoftware = (params: { wikidataId: string }) => Promise<WikidataSoftware | undefined>;
 
 export type WikidataSoftware = {
-    id: string;
+    wikidataId: string;
     developers: {
         name: string;
         id: string;
     }[];
-} & PartialNoOptional<{
     label: LocalizedString;
     description: LocalizedString;
+    isLibreSoftware: boolean;
+} & PartialNoOptional<{
     logoUrl: string;
     framaLibreId: string;
     websiteUrl: string;
