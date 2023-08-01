@@ -5,18 +5,24 @@ import { compiledDataBranch } from "../core/adapters/dbApi";
 
 const tmpDirBasename = "tmp_x3dL4bZdj4dbq2Td";
 
+const repoUrl = "https://github.com/codegouvfr/sill-data";
+
 execSync(
     [
         `rm -rf ${tmpDirBasename}`,
-        `git clone https://github.com/codegouvfr/sill-data ${tmpDirBasename}`,
+        `git clone --depth 1 ${repoUrl} ${tmpDirBasename}`,
         `cd ${tmpDirBasename}`,
-        `git remote set-url origin https://github.com/codegouvfr/sill-data-test`,
+        `git remote set-url origin ${repoUrl}-test`,
         `git push -f`,
-        `git checkout ${compiledDataBranch}`,
+        `cd ..`,
+        `rm -rf ${tmpDirBasename}`,
+        `git clone --branch ${compiledDataBranch} --depth 1 ${repoUrl} ${tmpDirBasename}`,
+        `cd ${tmpDirBasename}`,
+        `git remote set-url origin ${repoUrl}-test`,
         `git push -f`,
         `cd ..`,
         `rm -rf ${tmpDirBasename}`
-    ].join(" && ")
+    ].join(" && sleep 1 && ")
 );
 
 console.log("https://github.com/codegouvfr/sill-data-test");
