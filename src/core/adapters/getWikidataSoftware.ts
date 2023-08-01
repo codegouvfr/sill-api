@@ -241,7 +241,9 @@ const fetchEntity = memoize(
             throw new WikidataFetchError(res.status);
         }
 
-        const entity = (await res.json())["entities"][wikidataId] as Entity;
+        const json = await res.json();
+
+        const entity = Object.values(json["entities"])[0] as Entity;
 
         return { entity };
     },
