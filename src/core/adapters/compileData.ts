@@ -227,9 +227,14 @@ export function createCompileData(params: {
 
                             assert(agentRow !== undefined, `problem with referent ${agentEmail}`);
 
-                            return agentRow;
+                            return {
+                                "email": agentRow.email,
+                                "organization": agentRow.organization
+                            };
                         })(),
-                        ...rest
+                        "isExpert": rest.isExpert,
+                        "serviceUrl": rest.serviceUrl,
+                        "useCaseDescription": rest.useCaseDescription
                     })),
                 "users": softwareUserRows
                     .filter(({ softwareId }) => softwareId === softwareRow.id)
@@ -239,11 +244,14 @@ export function createCompileData(params: {
 
                             assert(agentRow !== undefined, `problem with user ${agentEmail}`);
 
-                            const { email, ...rest } = agentRow;
-
-                            return rest;
+                            return {
+                                "organization": agentRow.organization
+                            };
                         })(),
-                        ...rest
+                        "os": rest.os,
+                        "serviceUrl": rest.serviceUrl,
+                        "useCaseDescription": rest.useCaseDescription,
+                        "version": rest.version
                     }))
             }))
             .map(

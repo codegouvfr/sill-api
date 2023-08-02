@@ -63,8 +63,10 @@ export namespace CompiledData {
         };
 
         export type Private = Common & {
-            users: (Omit<Db.AgentRow, "email"> & Omit<Db.SoftwareUserRow, "softwareId" | "agentEmail">)[];
-            referents: (Db.AgentRow & Omit<Db.SoftwareReferentRow, "softwareId" | "agentEmail">)[];
+            users: (Pick<Db.AgentRow, "organization"> &
+                Pick<Db.SoftwareUserRow, "os" | "serviceUrl" | "useCaseDescription" | "version">)[];
+            referents: (Pick<Db.AgentRow, "email" | "organization"> &
+                Pick<Db.SoftwareReferentRow, "isExpert" | "serviceUrl" | "useCaseDescription">)[];
             instances: (Instance & { addedByAgentEmail: string })[];
         };
     }

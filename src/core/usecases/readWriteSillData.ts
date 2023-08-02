@@ -83,6 +83,7 @@ export type Agent = {
     email: string | undefined;
     organization: string;
     declarations: (DeclarationFormData & { softwareName: string })[];
+    isPublic: boolean;
 };
 
 export type Instance = {
@@ -326,7 +327,12 @@ export const thunks = {
                     });
 
                     if (agentRows.find(({ email }) => email === agentRow.email) === undefined) {
-                        agentRows.push(agentRow);
+                        agentRows.push({
+                            "email": agentRow.email,
+                            "organization": agentRow.organization,
+                            "about": undefined,
+                            "isPublic": false
+                        });
                     }
 
                     return {
@@ -457,7 +463,9 @@ export const thunks = {
                     if (agentRows.find(row => row.email === agent.email) === undefined) {
                         agentRows.push({
                             "email": agent.email,
-                            "organization": agent.organization
+                            "organization": agent.organization,
+                            "about": undefined,
+                            "isPublic": false
                         });
                     }
 
@@ -758,6 +766,61 @@ export const thunks = {
                 "email": newEmail,
                 userId
             });
+        },
+    "getAgentAbout":
+        (params: { email: string }) =>
+        (...args): { about: string | undefined; isPublic: boolean } => {
+            const [, getState] = args;
+
+            const { email } = params;
+
+            const state = getState()[name];
+
+            const agentRow = state.db.agentRows.find(agentRow => agentRow.email === email);
+
+            return agentRow === undefined
+                ? {
+                      "about": undefined,
+                      "isPublic": false
+                  }
+                : {
+                      "about": agentRow.about,
+                      "isPublic": agentRow.isPublic
+                  };
+        },
+    "updateAgentAbout":
+        (params: { email: string; organization: string; about: string | undefined; isPublic: boolean }) =>
+        async (...args) => {
+            const [dispatch] = args;
+
+            const { email, organization, about, isPublic } = params;
+
+            await dispatch(
+                localThunks.transaction(async newDb => {
+                    const { agentRows } = newDb;
+
+                    let agentRow = agentRows.find(agentRow => agentRow.email === email);
+
+                    if (agentRow === undefined) {
+                        agentRow = {
+                            email,
+                            organization,
+                            "isPublic": false,
+                            "about": undefined
+                        };
+
+                        agentRows.push(agentRow);
+                    }
+
+                    agentRow.isPublic = isPublic;
+                    agentRow.about = about;
+
+                    return {
+                        newDb,
+                        "commitMessage": `Updating ${email} profile`
+                    };
+                })
+            );
         }
 } satisfies Thunks;
 
@@ -1102,7 +1165,8 @@ export const selectors = (() => {
                             "softwareName": getSoftwareName(row.softwareId)
                         }))
                 ],
-                "organization": agentRow.organization
+                "organization": agentRow.organization,
+                "isPublic": agentRow.isPublic
             };
         })
     );

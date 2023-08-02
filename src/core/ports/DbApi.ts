@@ -60,6 +60,8 @@ export namespace Db {
     export type AgentRow = {
         email: string;
         organization: string;
+        about: string | undefined;
+        isPublic: boolean;
     };
 
     export type SoftwareReferentRow = {
