@@ -297,7 +297,7 @@ export function createRouter(params: {
                     "email": z.string()
                 })
             )
-            .mutation(async ({ ctx: { user }, input }) => {
+            .query(async ({ ctx: { user }, input }) => {
                 if (user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
