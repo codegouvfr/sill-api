@@ -312,7 +312,7 @@ export function createRouter(params: {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                return about;
+                return { about, isPublic };
             }),
         "getAllowedEmailRegexp": t.procedure.query(coreApi.extras.userApi.getAllowedEmailRegexp),
         "getAllOrganizations": t.procedure.query(coreApi.extras.userApi.getAllOrganizations),
