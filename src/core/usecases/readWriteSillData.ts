@@ -767,9 +767,9 @@ export const thunks = {
                 userId
             });
         },
-    "getAgentAbout":
+    "getAgentIsPublic":
         (params: { email: string }) =>
-        (...args): { about: string | undefined; isPublic: boolean } => {
+        (...args): boolean => {
             const [, getState] = args;
 
             const { email } = params;
@@ -778,22 +778,30 @@ export const thunks = {
 
             const agentRow = state.db.agentRows.find(agentRow => agentRow.email === email);
 
-            return agentRow === undefined
-                ? {
-                      "about": undefined,
-                      "isPublic": false
-                  }
-                : {
-                      "about": agentRow.about,
-                      "isPublic": agentRow.isPublic
-                  };
+            return agentRow === undefined ? false : agentRow.isPublic;
         },
-    "updateAgentAbout":
-        (params: { email: string; organization: string; about: string | undefined; isPublic: boolean }) =>
+    "getAgent":
+        (params: { email: string }) =>
+        (...args) => {
+            const [, getState] = args;
+
+            const { email } = params;
+
+            const agents = selectors.agents(getState());
+
+            const agent = agents.find(agent => agent.email === email);
+
+            return agent;
+        },
+    "updateIsAgentProfilePublic":
+        (params: { agent: { email: string; organization: string }; isPublic: boolean }) =>
         async (...args) => {
             const [dispatch] = args;
 
-            const { email, organization, about, isPublic } = params;
+            const {
+                agent: { email, organization },
+                isPublic
+            } = params;
 
             await dispatch(
                 localThunks.transaction(async newDb => {
@@ -813,11 +821,46 @@ export const thunks = {
                     }
 
                     agentRow.isPublic = isPublic;
+
+                    return {
+                        newDb,
+                        "commitMessage": `Making ${email} profile ${isPublic ? "public" : "private"}`
+                    };
+                })
+            );
+        },
+    "updateAgentAbout":
+        (params: { agent: { email: string; organization: string }; about: string | undefined }) =>
+        async (...args) => {
+            const [dispatch] = args;
+
+            const {
+                agent: { email, organization },
+                about
+            } = params;
+
+            await dispatch(
+                localThunks.transaction(async newDb => {
+                    const { agentRows } = newDb;
+
+                    let agentRow = agentRows.find(agentRow => agentRow.email === email);
+
+                    if (agentRow === undefined) {
+                        agentRow = {
+                            email,
+                            organization,
+                            "isPublic": false,
+                            "about": undefined
+                        };
+
+                        agentRows.push(agentRow);
+                    }
+
                     agentRow.about = about;
 
                     return {
                         newDb,
-                        "commitMessage": `Updating ${email} profile`
+                        "commitMessage": `Updating ${email} about markdown text`
                     };
                 })
             );

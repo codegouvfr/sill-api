@@ -270,10 +270,9 @@ export function createRouter(params: {
 
             return coreApi.selectors.readWriteSillData.agents(coreApi.getState());
         }),
-        "updateAgentAbout": t.procedure
+        "updateIsAgentProfilePublic": t.procedure
             .input(
                 z.object({
-                    "about": z.union([z.string(), z.literal(undefined)]),
                     "isPublic": z.boolean()
                 })
             )
@@ -282,37 +281,74 @@ export function createRouter(params: {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const { about, isPublic } = input;
+                const { isPublic } = input;
 
-                await coreApi.functions.readWriteSillData.updateAgentAbout({
-                    "email": user.email,
-                    "organization": user.organization,
-                    about,
+                await coreApi.functions.readWriteSillData.updateIsAgentProfilePublic({
+                    "agent": {
+                        "email": user.email,
+                        "organization": user.organization
+                    },
                     isPublic
                 });
             }),
-        "getAgentAbout": t.procedure
+        "updateAgentAbout": t.procedure
+            .input(
+                z.object({
+                    "about": z.string().optional()
+                })
+            )
+            .mutation(async ({ ctx: { user }, input }) => {
+                if (user === undefined) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+
+                const { about } = input;
+
+                await coreApi.functions.readWriteSillData.updateAgentAbout({
+                    "agent": {
+                        "email": user.email,
+                        "organization": user.organization
+                    },
+                    about
+                });
+            }),
+        "getIsAgentProfilePublic": t.procedure
+            .input(
+                z.object({
+                    "email": z.string()
+                })
+            )
+            .query(async ({ input }) => {
+                const { email } = input;
+
+                const isPublic = coreApi.functions.readWriteSillData.getAgentIsPublic({
+                    email
+                });
+
+                return { isPublic };
+            }),
+        "getAgent": t.procedure
             .input(
                 z.object({
                     "email": z.string()
                 })
             )
             .query(async ({ ctx: { user }, input }) => {
-                if (user === undefined) {
-                    throw new TRPCError({ "code": "UNAUTHORIZED" });
-                }
-
                 const { email } = input;
 
-                const { about, isPublic } = coreApi.functions.readWriteSillData.getAgentAbout({
+                const isPublic = coreApi.functions.readWriteSillData.getAgentIsPublic({
                     email
                 });
 
-                if (!isPublic && user.email !== email) {
+                if (!isPublic && user === undefined) {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                return { about, isPublic };
+                const agent = coreApi.functions.readWriteSillData.getAgent({
+                    email
+                });
+
+                return { agent };
             }),
         "getAllowedEmailRegexp": t.procedure.query(coreApi.extras.userApi.getAllowedEmailRegexp),
         "getAllOrganizations": t.procedure.query(coreApi.extras.userApi.getAllOrganizations),
