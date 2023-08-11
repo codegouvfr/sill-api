@@ -83,7 +83,6 @@ export type Agent = {
     email: string | undefined;
     organization: string;
     declarations: (DeclarationFormData & { softwareName: string })[];
-    isPublic: boolean;
 };
 
 export type Instance = {
@@ -774,24 +773,36 @@ export const thunks = {
 
             const { email } = params;
 
-            const state = getState()[name];
+            const { isPublic = false } = selectors.aboutAndIsPublicByAgentEmail(getState())[email] ?? {};
 
-            const agentRow = state.db.agentRows.find(agentRow => agentRow.email === email);
-
-            return agentRow === undefined ? false : agentRow.isPublic;
+            return isPublic;
         },
     "getAgent":
         (params: { email: string }) =>
-        (...args) => {
+        async (...args): Promise<Agent & { isPublic: boolean; about: string | undefined }> => {
             const [, getState] = args;
 
             const { email } = params;
 
-            const agents = selectors.agents(getState());
+            const state = getState();
 
-            const agent = agents.find(agent => agent.email === email);
+            const { agent } = (() => {
+                const agents = selectors.agents(state);
 
-            return agent;
+                const agent = agents.find(agent => agent.email === email);
+
+                return { agent };
+            })();
+
+            const { isPublic = false, about } = selectors.aboutAndIsPublicByAgentEmail(state)[email] ?? {};
+
+            return {
+                "email": email,
+                "organization": agent?.organization ?? "",
+                "declarations": agent?.declarations ?? [],
+                isPublic,
+                about
+            };
         },
     "updateIsAgentProfilePublic":
         (params: { agent: { email: string; organization: string }; isPublic: boolean }) =>
@@ -1208,10 +1219,23 @@ export const selectors = (() => {
                             "softwareName": getSoftwareName(row.softwareId)
                         }))
                 ],
-                "organization": agentRow.organization,
-                "isPublic": agentRow.isPublic
+                "organization": agentRow.organization
             };
         })
+    );
+
+    const aboutAndIsPublicByAgentEmail = createSelector(
+        sliceState,
+        (state): Record<string, { isPublic: boolean; about: string | undefined } | undefined> =>
+            Object.fromEntries(
+                state.db.agentRows.map(agentRow => [
+                    agentRow.email,
+                    {
+                        "isPublic": agentRow.isPublic,
+                        "about": agentRow.about
+                    }
+                ])
+            )
     );
 
     const referentCount = createSelector(
@@ -1237,6 +1261,7 @@ export const selectors = (() => {
         instances,
         agents,
         referentCount,
-        compiledDataPublicJson
+        compiledDataPublicJson,
+        aboutAndIsPublicByAgentEmail
     };
 })();
