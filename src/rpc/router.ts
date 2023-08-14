@@ -344,7 +344,7 @@ export function createRouter(params: {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const agent = coreApi.functions.readWriteSillData.getAgent({
+                const agent = await coreApi.functions.readWriteSillData.getAgent({
                     email
                 });
 
