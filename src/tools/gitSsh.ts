@@ -1,84 +1,66 @@
 import { exec } from "./exec";
 import { join as pathJoin } from "path";
 import * as fs from "fs";
-import * as runExclusive from "run-exclusive";
+import crypto from "crypto";
+import { Mutex } from "async-mutex";
 
-export const gitSsh = runExclusive.build(
-    async (params: {
-        workingDirectoryPath?: string;
-        sshUrl: string; // e.g.: git@github.com:garronej/evt.git
-        sshPrivateKeyName: string;
-        sshPrivateKey: string;
-        shaish?: string;
-        commitAuthorEmail?: string;
-        action: (params: {
-            repoPath: string;
-        }) => Promise<{ doCommit: false } | { doCommit: true; doAddAll: boolean; message: string }>;
-    }) => {
-        const {
-            workingDirectoryPath = process.cwd(),
-            sshUrl,
-            sshPrivateKeyName,
-            sshPrivateKey,
-            shaish,
-            commitAuthorEmail = "actions@github.com",
-            action
-        } = params;
+const mutexes: Record<string, Mutex> = {};
 
+export const gitSsh = async (params: {
+    sshUrl: string;
+    sshPrivateKeyName: string;
+    sshPrivateKey: string;
+    shaish?: string;
+    commitAuthorEmail?: string;
+    action: (params: {
+        repoPath: string;
+    }) => Promise<{ doCommit: false } | { doCommit: true; doAddAll: boolean; message: string }>;
+}) => {
+    const {
+        sshUrl,
+        sshPrivateKeyName,
+        sshPrivateKey,
+        shaish,
+        commitAuthorEmail = "actions@github.com",
+        action
+    } = params;
+
+    const mutex = (mutexes[sshUrl + (shaish || "")] ??= new Mutex());
+
+    return mutex.runExclusive(async () => {
         await configureOpenSshClient({ sshPrivateKeyName, sshPrivateKey });
 
-        const repoDirBasename = `gitSsh_${Date.now()}`;
+        const cacheDir = pathJoin(process.cwd(), "node_modules", ".cache", "gitSSH");
+        await fs.promises.mkdir(cacheDir, { recursive: true });
 
-        const repoPath = pathJoin(workingDirectoryPath, repoDirBasename);
+        const repoHash = crypto
+            .createHash("sha1")
+            .update(sshUrl + (shaish || ""))
+            .digest("hex");
+        const repoPath = pathJoin(cacheDir, repoHash);
 
-        await exec(`rm -rf ${repoDirBasename}`, {
-            "cwd": workingDirectoryPath
-        });
+        const repoExists = await fs.promises
+            .stat(repoPath)
+            .then(() => true)
+            .catch(() => false);
 
-        if (shaish === undefined) {
-            await exec(`git clone --depth 1 ${sshUrl} ${repoDirBasename}`, { "cwd": workingDirectoryPath });
-        } else {
-            if (isSha(shaish)) {
-                await exec(`git clone ${sshUrl} ${repoDirBasename}`, { "cwd": workingDirectoryPath });
-
-                try {
-                    await exec(`git checkout ${shaish}`, { "cwd": repoPath });
-                } catch (e) {
-                    throw new ErrorNoBranch(String(e));
-                }
+        if (!repoExists) {
+            // Perform git clone
+            if (shaish === undefined) {
+                await exec(`git clone --depth 1 ${sshUrl} ${repoPath}`);
             } else {
-                try {
-                    await exec(`git clone --branch ${shaish} --depth 1 ${sshUrl} ${repoDirBasename}`, {
-                        "cwd": workingDirectoryPath
-                    });
-                } catch (e) {
-                    if (String(e).includes(shaish)) {
-                        throw new ErrorNoBranch(String(e));
-                    }
-
-                    throw e;
+                if (isSha(shaish)) {
+                    await exec(`git clone ${sshUrl} ${repoPath}`);
+                    await exec(`git checkout ${shaish}`, { "cwd": repoPath });
+                } else {
+                    await exec(`git clone --branch ${shaish} --depth 1 ${sshUrl} ${repoPath}`);
                 }
             }
         }
 
-        const changesResult = await (async () => {
-            try {
-                return await action({ repoPath });
-            } catch (error) {
-                return error as Error;
-            }
-        })();
+        const changesResult = await action({ repoPath });
 
-        commit: {
-            if (changesResult instanceof Error || !changesResult.doCommit) {
-                break commit;
-            }
-
-            if ((await exec("git status --porcelain", { "cwd": repoPath })) === "") {
-                console.log("No change");
-                break commit;
-            }
-
+        if (changesResult.doCommit) {
             await exec(`git config --local user.email "${commitAuthorEmail}"`, {
                 "cwd": repoPath
             });
@@ -88,20 +70,15 @@ export const gitSsh = runExclusive.build(
                 await exec(`git add -A`, { "cwd": repoPath });
             }
 
-            await exec(`git commit -am "${changesResult.message}"`, {
-                "cwd": repoPath
-            });
+            //NOTE: This can fail if there are no changes to commit
+            try {
+                await exec(`git commit -am "${changesResult.message}"`, { "cwd": repoPath });
 
-            await exec(`git push`, { "cwd": repoPath });
+                await exec(`git push`, { "cwd": repoPath });
+            } catch {}
         }
-
-        await exec(`rm -r ${repoDirBasename}`, { "cwd": workingDirectoryPath });
-
-        if (changesResult instanceof Error) {
-            throw changesResult;
-        }
-    }
-);
+    });
+};
 
 export class ErrorNoBranch extends Error {
     constructor(message: string) {
