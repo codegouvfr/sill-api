@@ -1,5 +1,5 @@
 <p align="center">
-    <i>The backend of <a href="https://sill.code.gouv.fr">sill.code.gouv.fr</a></i>
+    <i>The backend of <a href="https://code.gouv.fr/sill">code.gouv.fr/sill</a></i>
     <br>
     <br>
     <a href="https://github.com/codegouvfr/sill-api/actions">
