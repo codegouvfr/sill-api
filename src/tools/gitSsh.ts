@@ -56,6 +56,9 @@ export const gitSsh = async (params: {
                     await exec(`git clone --branch ${shaish} --depth 1 ${sshUrl} ${repoPath}`);
                 }
             }
+        } else {
+            // Perform git pull
+            await exec(`git pull`, { "cwd": repoPath });
         }
 
         const changesResult = await action({ repoPath });
