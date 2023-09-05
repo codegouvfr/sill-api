@@ -6,6 +6,10 @@ import { Mutex } from "async-mutex";
 
 const mutexes: Record<string, Mutex> = {};
 
+const globalMutex = new Mutex();
+
+let isFirstCall = true;
+
 export const gitSsh = async (params: {
     sshUrl: string;
     sshPrivateKeyName: string;
@@ -25,13 +29,24 @@ export const gitSsh = async (params: {
         action
     } = params;
 
+    const cacheDir = pathJoin(process.cwd(), "node_modules", ".cache", "gitSSH");
+
+    await globalMutex.runExclusive(async () => {
+        if (!isFirstCall) {
+            return;
+        }
+
+        isFirstCall = false;
+
+        await fs.promises.rm(cacheDir, { "recursive": true, "force": true });
+
+        await fs.promises.mkdir(cacheDir, { "recursive": true });
+    });
+
     const mutex = (mutexes[sshUrl + (shaish || "")] ??= new Mutex());
 
     return mutex.runExclusive(async () => {
         await configureOpenSshClient({ sshPrivateKeyName, sshPrivateKey });
-
-        const cacheDir = pathJoin(process.cwd(), "node_modules", ".cache", "gitSSH");
-        await fs.promises.mkdir(cacheDir, { recursive: true });
 
         const repoHash = crypto
             .createHash("sha1")
@@ -58,6 +73,7 @@ export const gitSsh = async (params: {
             }
         } else {
             // Perform git pull
+            console.log("Performing git pull");
             await exec(`git pull`, { "cwd": repoPath });
         }
 
