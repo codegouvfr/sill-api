@@ -209,7 +209,13 @@ export const privateThunks = {
                 dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "initial" }));
 
                 setInterval(
-                    () => dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "periodical" })),
+                    async () => {
+                        try {
+                            dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "periodical" }));
+                        } catch (error) {
+                            console.error(`Non incremental periodical compilation failed: ${String(error)}`);
+                        }
+                    },
                     4 * 3600 * 1000 //4 hour
                 );
             }

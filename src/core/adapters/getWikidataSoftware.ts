@@ -81,7 +81,9 @@ export const getWikidataSoftware: GetWikidataSoftware = async ({ wikidataId }) =
                             return res.text();
                     }
 
-                    throw new Error(`Request to ${previewUrl} failed for unknown reason`);
+                    console.error(`Request to ${previewUrl} failed for unknown reason`);
+
+                    return undefined;
                 });
 
                 if (out === undefined) {
