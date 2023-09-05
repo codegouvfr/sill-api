@@ -43,17 +43,19 @@ export async function createCore(params: {
         getSoftwareLatestVersion
     });
 
+    const userApi =
+        keycloakUserApiParams === undefined
+            ? createObjectThatThrowsIfAccessed<UserApi>({
+                  "debugMessage": "No Keycloak server"
+              })
+            : createKeycloakUserApi(keycloakUserApiParams);
+
     const core = createCoreFromUsecases({
         usecases,
         "thunksExtraArgument": {
             "createStoreParams": params,
             "dbApi": createGitDbApi(gitDbApiParams),
-            "userApi":
-                keycloakUserApiParams === undefined
-                    ? createObjectThatThrowsIfAccessed<UserApi>({
-                          "debugMessage": "No Keycloak server"
-                      })
-                    : createKeycloakUserApi(keycloakUserApiParams),
+            userApi,
             compileData,
             getWikidataSoftwareOptions,
             comptoirDuLibreApi,
@@ -69,6 +71,8 @@ export async function createCore(params: {
     );
 
     if (doPerformCacheInitialization) {
+        console.log("Performing cache initialization...");
+
         //NOTE: Cache initialization so that the first user do not get slow response.
         objectKeys(usecases)
             .map(usecaseName => usecases[usecaseName])
@@ -79,6 +83,8 @@ export async function createCore(params: {
                     .map(selectorName => selectors[selectorName])
                     .forEach(selector => selector(core.getState()))
             );
+
+        await userApi.getUserCount();
     }
 
     return core;

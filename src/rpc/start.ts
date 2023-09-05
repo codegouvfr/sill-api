@@ -69,7 +69,7 @@ export async function startRpcService(params: {
                   },
         githubPersonalAccessTokenForApiRateLimit,
         "doPerPerformPeriodicalCompilation": !isDevEnvironnement && redirectUrl === undefined,
-        "doPerformCacheInitialization": redirectUrl !== undefined
+        "doPerformCacheInitialization": redirectUrl === undefined
     });
 
     console.log("Core API initialized");

@@ -43,9 +43,24 @@ export function createRouter(params: {
         "transformer": superjson
     });
 
+    const loggedProcedure = t.procedure.use(
+        t.middleware(async opts => {
+            const start = Date.now();
+
+            const result = await opts.next();
+
+            const durationMs = Date.now() - start;
+            const meta = { "path": opts.path, "type": opts.type, durationMs };
+
+            result.ok ? console.log("OK request timing:", meta) : console.error("Non-OK request timing", meta);
+
+            return result;
+        })
+    );
+
     const router = t.router({
-        "getRedirectUrl": t.procedure.query(() => redirectUrl),
-        "getApiVersion": t.procedure.query(
+        "getRedirectUrl": loggedProcedure.query(() => redirectUrl),
+        "getApiVersion": loggedProcedure.query(
             (() => {
                 const out: string = JSON.parse(
                     fs.readFileSync(pathJoin(getProjectRoot(), "package.json")).toString("utf8")
@@ -54,7 +69,7 @@ export function createRouter(params: {
                 return () => out;
             })()
         ),
-        "getOidcParams": t.procedure.query(
+        "getOidcParams": loggedProcedure.query(
             (() => {
                 const out = {
                     "keycloakParams": (() => {
@@ -72,7 +87,7 @@ export function createRouter(params: {
                 return () => out;
             })()
         ),
-        "getOrganizationUserProfileAttributeName": t.procedure.query(
+        "getOrganizationUserProfileAttributeName": loggedProcedure.query(
             (() => {
                 const { organizationUserProfileAttributeName } = keycloakParams ?? {};
                 if (organizationUserProfileAttributeName === undefined) {
@@ -83,15 +98,15 @@ export function createRouter(params: {
                 return () => organizationUserProfileAttributeName;
             })()
         ),
-        "getSoftwares": t.procedure.query(() => {
+        "getSoftwares": loggedProcedure.query(() => {
             const { softwares } = coreApi.selectors.readWriteSillData.softwares(coreApi.getState());
             return softwares;
         }),
-        "getInstances": t.procedure.query(() => {
+        "getInstances": loggedProcedure.query(() => {
             const { instances } = coreApi.selectors.readWriteSillData.instances(coreApi.getState());
             return instances;
         }),
-        "getWikidataOptions": t.procedure
+        "getWikidataOptions": loggedProcedure
             .input(
                 z.object({
                     "queryString": z.string(),
@@ -111,7 +126,7 @@ export function createRouter(params: {
                     language
                 });
             }),
-        "getSoftwareFormAutoFillDataFromWikidataAndOtherSources": t.procedure
+        "getSoftwareFormAutoFillDataFromWikidataAndOtherSources": loggedProcedure
             .input(
                 z.object({
                     "wikidataId": z.string()
@@ -129,7 +144,7 @@ export function createRouter(params: {
                     wikidataId
                 });
             }),
-        "createSoftware": t.procedure
+        "createSoftware": loggedProcedure
             .input(
                 z.object({
                     "formData": zSoftwareFormData
@@ -154,7 +169,7 @@ export function createRouter(params: {
                     throw new TRPCError({ "code": "INTERNAL_SERVER_ERROR", "message": String(e) });
                 }
             }),
-        "updateSoftware": t.procedure
+        "updateSoftware": loggedProcedure
             .input(
                 z.object({
                     "softwareSillId": z.number(),
@@ -177,7 +192,7 @@ export function createRouter(params: {
                     }
                 });
             }),
-        "createUserOrReferent": t.procedure
+        "createUserOrReferent": loggedProcedure
             .input(
                 z.object({
                     "formData": zDeclarationFormData,
@@ -201,7 +216,7 @@ export function createRouter(params: {
                 });
             }),
 
-        "removeUserOrReferent": t.procedure
+        "removeUserOrReferent": loggedProcedure
             .input(
                 z.object({
                     "softwareName": z.string(),
@@ -222,7 +237,7 @@ export function createRouter(params: {
                 });
             }),
 
-        "createInstance": t.procedure
+        "createInstance": loggedProcedure
             .input(
                 z.object({
                     "formData": zInstanceFormData
@@ -245,7 +260,7 @@ export function createRouter(params: {
 
                 return { instanceId };
             }),
-        "updateInstance": t.procedure
+        "updateInstance": loggedProcedure
             .input(
                 z.object({
                     "instanceId": z.number(),
@@ -265,14 +280,14 @@ export function createRouter(params: {
                     "agentEmail": user.email
                 });
             }),
-        "getAgents": t.procedure.query(async ({ ctx: { user } }) => {
+        "getAgents": loggedProcedure.query(async ({ ctx: { user } }) => {
             if (user === undefined) {
                 throw new TRPCError({ "code": "UNAUTHORIZED" });
             }
 
             return coreApi.selectors.readWriteSillData.agents(coreApi.getState());
         }),
-        "updateIsAgentProfilePublic": t.procedure
+        "updateIsAgentProfilePublic": loggedProcedure
             .input(
                 z.object({
                     "isPublic": z.boolean()
@@ -293,7 +308,7 @@ export function createRouter(params: {
                     isPublic
                 });
             }),
-        "updateAgentAbout": t.procedure
+        "updateAgentAbout": loggedProcedure
             .input(
                 z.object({
                     "about": z.string().optional()
@@ -314,7 +329,7 @@ export function createRouter(params: {
                     about
                 });
             }),
-        "getIsAgentProfilePublic": t.procedure
+        "getIsAgentProfilePublic": loggedProcedure
             .input(
                 z.object({
                     "email": z.string()
@@ -329,7 +344,7 @@ export function createRouter(params: {
 
                 return { isPublic };
             }),
-        "getAgent": t.procedure
+        "getAgent": loggedProcedure
             .input(
                 z.object({
                     "email": z.string()
@@ -352,9 +367,9 @@ export function createRouter(params: {
 
                 return { agent };
             }),
-        "getAllowedEmailRegexp": t.procedure.query(coreApi.extras.userApi.getAllowedEmailRegexp),
-        "getAllOrganizations": t.procedure.query(coreApi.extras.userApi.getAllOrganizations),
-        "changeAgentOrganization": t.procedure
+        "getAllowedEmailRegexp": loggedProcedure.query(coreApi.extras.userApi.getAllowedEmailRegexp),
+        "getAllOrganizations": loggedProcedure.query(coreApi.extras.userApi.getAllOrganizations),
+        "changeAgentOrganization": loggedProcedure
             .input(
                 z.object({
                     "newOrganization": z.string()
@@ -375,7 +390,7 @@ export function createRouter(params: {
                     "userId": user.id
                 });
             }),
-        "updateEmail": t.procedure
+        "updateEmail": loggedProcedure
             .input(
                 z.object({
                     "newEmail": z.string().email()
@@ -396,12 +411,12 @@ export function createRouter(params: {
                     newEmail
                 });
             }),
-        "getRegisteredUserCount": t.procedure.query(async () => coreApi.extras.userApi.getUserCount()),
-        "getTotalReferentCount": t.procedure.query(() =>
+        "getRegisteredUserCount": loggedProcedure.query(async () => coreApi.extras.userApi.getUserCount()),
+        "getTotalReferentCount": loggedProcedure.query(() =>
             coreApi.selectors.readWriteSillData.referentCount(coreApi.getState())
         ),
-        "getTermsOfServiceUrl": t.procedure.query(() => termsOfServiceUrl),
-        "getMarkdown": t.procedure
+        "getTermsOfServiceUrl": loggedProcedure.query(() => termsOfServiceUrl),
+        "getMarkdown": loggedProcedure
             .input(
                 z.object({
                     "language": zLanguage,
