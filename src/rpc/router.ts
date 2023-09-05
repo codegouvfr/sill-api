@@ -35,14 +35,16 @@ export function createRouter(params: {
     jwtClaimByUserKey: Record<keyof User, string>;
     termsOfServiceUrl: LocalizedString;
     readmeUrl: LocalizedString;
+    redirectUrl: string | undefined;
 }) {
-    const { coreApi, keycloakParams, jwtClaimByUserKey, termsOfServiceUrl, readmeUrl } = params;
+    const { coreApi, keycloakParams, jwtClaimByUserKey, termsOfServiceUrl, readmeUrl, redirectUrl } = params;
 
     const t = initTRPC.context<Context>().create({
         "transformer": superjson
     });
 
     const router = t.router({
+        "getRedirectUrl": t.procedure.query(() => redirectUrl),
         "getApiVersion": t.procedure.query(
             (() => {
                 const out: string = JSON.parse(

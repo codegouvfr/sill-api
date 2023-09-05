@@ -35,7 +35,9 @@ const zParsedCONFIGURATION = z.object({
     "githubPersonalAccessTokenForApiRateLimit": z.string().nonempty(),
     //Port we listen to, default 8080
     "port": z.number().optional(),
-    "isDevEnvironnement": z.boolean().optional()
+    "isDevEnvironnement": z.boolean().optional(),
+    // Completely disable this instance and redirect to another url
+    "redirectUrl": z.string().optional()
 });
 
 const { parsedCONFIGURATION } = (() => {
@@ -69,6 +71,5 @@ const { parsedCONFIGURATION } = (() => {
 startRpcService({
     ...parsedCONFIGURATION,
     "port": parsedCONFIGURATION.port ?? 8080,
-    "isDevEnvironnement": parsedCONFIGURATION.isDevEnvironnement ?? false,
-    "githubWebhookSecret": parsedCONFIGURATION.githubWebhookSecret || undefined
+    "isDevEnvironnement": parsedCONFIGURATION.isDevEnvironnement ?? false
 });

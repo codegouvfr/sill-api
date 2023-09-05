@@ -30,8 +30,10 @@ export async function startRpcService(params: {
     githubPersonalAccessTokenForApiRateLimit: string;
     port: number;
     isDevEnvironnement: boolean;
+    redirectUrl?: string;
 }) {
     const {
+        redirectUrl,
         dataRepoSshUrl,
         sshPrivateKeyForGitName,
         sshPrivateKeyForGit,
@@ -66,8 +68,8 @@ export async function startRpcService(params: {
                       "organizationUserProfileAttributeName": keycloakParams.organizationUserProfileAttributeName
                   },
         githubPersonalAccessTokenForApiRateLimit,
-        "doPerPerformPeriodicalCompilation": !isDevEnvironnement,
-        "doPerformCacheInitialization": true
+        "doPerPerformPeriodicalCompilation": !isDevEnvironnement && redirectUrl === undefined,
+        "doPerformCacheInitialization": redirectUrl !== undefined
     });
 
     console.log("Core API initialized");
@@ -97,7 +99,8 @@ export async function startRpcService(params: {
                       "organizationUserProfileAttributeName": keycloakParams.organizationUserProfileAttributeName
                   },
         termsOfServiceUrl,
-        readmeUrl
+        readmeUrl,
+        redirectUrl
     });
 
     express()
@@ -120,6 +123,10 @@ export async function startRpcService(params: {
                     const reqBody = await validateGitHubWebhookSignature(req, res);
 
                     console.log("Webhook signature OK");
+
+                    if (redirectUrl !== undefined) {
+                        console.log("Doing nothing with the webhook, this instance is effectively disabled");
+                    }
 
                     if (reqBody.ref !== `refs/heads/main`) {
                         console.log(`Not a push on the main branch, doing nothing`);
