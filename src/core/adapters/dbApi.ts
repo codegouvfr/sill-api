@@ -24,10 +24,10 @@ export type GitDbApiParams = {
     sshPrivateKey: string;
 };
 
-export function createGitDbApi(params: GitDbApiParams): DbApi {
+export function createGitDbApi(params: GitDbApiParams): { dbApi: DbApi; initializeDbApiCache: () => Promise<void> } {
     const { dataRepoSshUrl, sshPrivateKeyName, sshPrivateKey } = params;
 
-    return {
+    const dbApi: DbApi = {
         "fetchCompiledData": () => {
             const dOut = new Deferred<ReturnType<DbApi["fetchCompiledData"]>>();
 
@@ -143,5 +143,34 @@ export function createGitDbApi(params: GitDbApiParams): DbApi {
                 }
             });
         }
+    };
+
+    const initializeDbApiCache = async () => {
+        const start = Date.now();
+
+        console.log("Starting dbApi cache initialization...");
+
+        await Promise.all([
+            gitSsh({
+                "sshUrl": dataRepoSshUrl,
+                "shaish": compiledDataBranch,
+                sshPrivateKeyName,
+                sshPrivateKey,
+                "action": async () => ({ "doCommit": false })
+            }),
+            gitSsh({
+                "sshUrl": dataRepoSshUrl,
+                sshPrivateKeyName,
+                sshPrivateKey,
+                "action": async () => ({ "doCommit": false })
+            })
+        ]);
+
+        console.log(`dbApi cache initialization done in ${Date.now() - start}ms`);
+    };
+
+    return {
+        dbApi,
+        initializeDbApiCache
     };
 }

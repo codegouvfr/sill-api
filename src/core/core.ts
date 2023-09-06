@@ -14,8 +14,6 @@ import { getCnllPrestatairesSill } from "./adapters/getCnllPrestatairesSill";
 import { comptoirDuLibreApi } from "./adapters/getComptoirDuLibre";
 import { getWikidataSoftwareOptions } from "./adapters/getWikidataSoftwareOptions";
 import { createGetSoftwareLatestVersion } from "./adapters/getSoftwareLatestVersion";
-import { objectKeys } from "tsafe/objectKeys";
-import { exclude } from "tsafe/exclude";
 
 export async function createCore(params: {
     gitDbApiParams: GitDbApiParams;
@@ -43,18 +41,23 @@ export async function createCore(params: {
         getSoftwareLatestVersion
     });
 
-    const userApi =
+    const { dbApi, initializeDbApiCache } = createGitDbApi(gitDbApiParams);
+
+    const { userApi, initializeUserApiCache } =
         keycloakUserApiParams === undefined
-            ? createObjectThatThrowsIfAccessed<UserApi>({
-                  "debugMessage": "No Keycloak server"
-              })
+            ? {
+                  "userApi": createObjectThatThrowsIfAccessed<UserApi>({
+                      "debugMessage": "No Keycloak server"
+                  }),
+                  "initializeUserApiCache": async () => {}
+              }
             : createKeycloakUserApi(keycloakUserApiParams);
 
     const core = createCoreFromUsecases({
         usecases,
         "thunksExtraArgument": {
             "createStoreParams": params,
-            "dbApi": createGitDbApi(gitDbApiParams),
+            dbApi,
             userApi,
             compileData,
             getWikidataSoftwareOptions,
@@ -65,7 +68,7 @@ export async function createCore(params: {
     });
 
     await core.dispatch(
-        usecases.readWriteSillData.privateThunks.initialize({
+        usecases.readWriteSillData.protectedThunks.initialize({
             doPerPerformPeriodicalCompilation
         })
     );
@@ -73,18 +76,9 @@ export async function createCore(params: {
     if (doPerformCacheInitialization) {
         console.log("Performing cache initialization...");
 
-        //NOTE: Cache initialization so that the first user do not get slow response.
-        objectKeys(usecases)
-            .map(usecaseName => usecases[usecaseName])
-            .map(usecase => ("selectors" in usecase ? usecase.selectors : undefined))
-            .filter(exclude(undefined))
-            .forEach(selectors =>
-                objectKeys(selectors)
-                    .map(selectorName => selectors[selectorName])
-                    .forEach(selector => selector(core.getState()))
-            );
+        core.dispatch(usecases.readWriteSillData.protectedThunks.cacheInitialization());
 
-        await userApi.getUserCount();
+        await Promise.all([initializeDbApiCache(), initializeUserApiCache()]);
     }
 
     return core;

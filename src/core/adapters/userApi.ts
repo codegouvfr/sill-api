@@ -12,7 +12,10 @@ export type KeycloakUserApiParams = {
 
 const maxAge = 5 * 60 * 1000;
 
-export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
+export function createKeycloakUserApi(params: KeycloakUserApiParams): {
+    userApi: UserApi;
+    initializeUserApiCache: () => Promise<void>;
+} {
     const { url, adminPassword, realm, organizationUserProfileAttributeName } = params;
 
     const keycloakAdminApiClient = createKeycloakAdminApiClient({
@@ -140,13 +143,25 @@ export function createKeycloakUserApi(params: KeycloakUserApiParams): UserApi {
         )
     };
 
-    (["getUserCount", "getAllOrganizations", "getAllowedEmailRegexp"] as const).map(function callee(methodName) {
-        const f = userApi[methodName];
+    const initializeUserApiCache = async () => {
+        const start = Date.now();
 
-        f();
+        console.log("Starting userApi cache initialization...");
 
-        setInterval(f, maxAge - 10_000);
-    });
+        await Promise.all(
+            (["getUserCount", "getAllOrganizations", "getAllowedEmailRegexp"] as const).map(async function callee(
+                methodName
+            ) {
+                const f = userApi[methodName];
 
-    return userApi;
+                await f();
+
+                setInterval(f, maxAge - 10_000);
+            })
+        );
+
+        console.log(`userApi cache initialization done in ${Date.now() - start}ms`);
+    };
+
+    return { userApi, initializeUserApiCache };
 }

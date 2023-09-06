@@ -15,6 +15,7 @@ import { thunks as suggestionAndAutoFillThunks } from "./suggestionAndAutoFill";
 import { exclude } from "tsafe/exclude";
 import { id } from "tsafe/id";
 import { WikidataSoftware } from "../ports/GetWikidataSoftware";
+import { objectKeys } from "tsafe/objectKeys";
 
 export type Software = {
     logoUrl: string | undefined;
@@ -179,7 +180,7 @@ const { getContext } = createUsecaseContextApi(() => ({
     "mutex": new Mutex()
 }));
 
-export const privateThunks = {
+export const protectedThunks = {
     "initialize":
         (params: { doPerPerformPeriodicalCompilation: boolean }) =>
         async (...args) => {
@@ -206,12 +207,12 @@ export const privateThunks = {
 
                 console.log("Periodical update enabled");
 
-                dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "initial" }));
+                dispatch(privateThunks.triggerNonIncrementalCompilation({ "triggerType": "initial" }));
 
                 setInterval(
                     async () => {
                         try {
-                            dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "periodical" }));
+                            dispatch(privateThunks.triggerNonIncrementalCompilation({ "triggerType": "periodical" }));
                         } catch (error) {
                             console.error(`Non incremental periodical compilation failed: ${String(error)}`);
                         }
@@ -220,33 +221,18 @@ export const privateThunks = {
                 );
             }
         },
-    /** Functions that returns logoUrlFromFormData if it's not the same as the one from the automatic suggestions */
-    "getStorableLogo":
-        (params: { logoUrlFromFormData: string | undefined; wikidataId: string | undefined }) =>
-        async (...args): Promise<string | undefined> => {
-            const { logoUrlFromFormData, wikidataId } = params;
+    "cacheInitialization":
+        () =>
+        (...args) => {
+            const [, getState] = args;
 
-            const [dispatch] = args;
+            const start = Date.now();
 
-            if (logoUrlFromFormData === undefined) {
-                return undefined;
-            }
+            console.log("Starting cache refresh of readWriteSillData selectors");
 
-            if (wikidataId === undefined) {
-                return logoUrlFromFormData;
-            }
+            objectKeys(selectors).forEach(selectorName => selectors[selectorName](getState()));
 
-            const softwareFormAutoFillData = await dispatch(
-                suggestionAndAutoFillThunks.getSoftwareFormAutoFillDataFromWikidataAndOtherSources({
-                    wikidataId
-                })
-            );
-
-            if (softwareFormAutoFillData.softwareLogoUrl === logoUrlFromFormData) {
-                return undefined;
-            }
-
-            return logoUrlFromFormData;
+            console.log(`Cache refresh of readWriteSillData selectors done in ${Date.now() - start}ms`);
         }
 } satisfies Thunks;
 
@@ -256,7 +242,7 @@ export const thunks = {
         async (...args) => {
             const [dispatch] = args;
 
-            await dispatch(localThunks.triggerNonIncrementalCompilation({ "triggerType": "manual" }));
+            await dispatch(privateThunks.triggerNonIncrementalCompilation({ "triggerType": "manual" }));
         },
     "notifyPushOnMainBranch":
         (params: { commitMessage: string }) =>
@@ -266,7 +252,7 @@ export const thunks = {
             const [dispatch, , { dbApi }] = args;
 
             await dispatch(
-                localThunks.transaction(async () => ({
+                privateThunks.transaction(async () => ({
                     "newDb": await dbApi.fetchDb(),
                     commitMessage
                 }))
@@ -282,7 +268,7 @@ export const thunks = {
             const agentRow = { ...params.agent };
 
             await dispatch(
-                localThunks.transaction(async newDb => {
+                privateThunks.transaction(async newDb => {
                     const { softwareRows, agentRows } = newDb;
 
                     assert(
@@ -359,7 +345,7 @@ export const thunks = {
             const { softwareSillId, formData, agent } = params;
 
             await dispatch(
-                localThunks.transaction(async newDb => {
+                privateThunks.transaction(async newDb => {
                     const { softwareRows, softwareReferentRows } = newDb;
 
                     assert(
@@ -458,7 +444,7 @@ export const thunks = {
             const { formData, softwareName, agent } = params;
 
             await dispatch(
-                localThunks.transaction(async newDb => {
+                privateThunks.transaction(async newDb => {
                     const { agentRows, softwareReferentRows, softwareUserRows, softwareRows } = newDb;
 
                     const softwareRow = softwareRows.find(row => row.name === softwareName);
@@ -529,7 +515,7 @@ export const thunks = {
             const { softwareName, declarationType, agentEmail } = params;
 
             await dispatch(
-                localThunks.transaction(async newDb => {
+                privateThunks.transaction(async newDb => {
                     const { agentRows, softwareReferentRows, softwareUserRows, softwareRows, instanceRows } = newDb;
 
                     const softwareRow = softwareRows.find(row => row.name === softwareName);
@@ -597,7 +583,7 @@ export const thunks = {
             const dInstanceId = new Deferred<{ instanceId: number }>();
 
             await dispatch(
-                localThunks.transaction(async newDb => {
+                privateThunks.transaction(async newDb => {
                     const { instanceRows, softwareRows } = newDb;
 
                     {
@@ -654,7 +640,7 @@ export const thunks = {
             const [dispatch] = args;
 
             await dispatch(
-                localThunks.transaction(async newDb => {
+                privateThunks.transaction(async newDb => {
                     const { instanceRows } = newDb;
 
                     const index = instanceRows.findIndex(row => row.id === instanceId);
@@ -703,7 +689,7 @@ export const thunks = {
             const { userId, email, newOrganization } = params;
 
             await dispatch(
-                localThunks.transaction(async newDb => {
+                privateThunks.transaction(async newDb => {
                     const { agentRows } = newDb;
 
                     const agentRow = agentRows.find(row => row.email === email);
@@ -739,7 +725,7 @@ export const thunks = {
             const { userId, email, newEmail } = params;
 
             await dispatch(
-                localThunks.transaction(async newDb => {
+                privateThunks.transaction(async newDb => {
                     const { agentRows, softwareReferentRows, softwareUserRows, softwareRows } = newDb;
 
                     const agent = agentRows.find(row => row.email === email);
@@ -821,7 +807,7 @@ export const thunks = {
             } = params;
 
             await dispatch(
-                localThunks.transaction(async newDb => {
+                privateThunks.transaction(async newDb => {
                     const { agentRows } = newDb;
 
                     let agentRow = agentRows.find(agentRow => agentRow.email === email);
@@ -857,7 +843,7 @@ export const thunks = {
             } = params;
 
             await dispatch(
-                localThunks.transaction(async newDb => {
+                privateThunks.transaction(async newDb => {
                     const { agentRows } = newDb;
 
                     let agentRow = agentRows.find(agentRow => agentRow.email === email);
@@ -884,7 +870,7 @@ export const thunks = {
         }
 } satisfies Thunks;
 
-const localThunks = {
+const privateThunks = {
     "transaction":
         (asyncReducer: (dbClone: Db) => Promise<{ newDb: Db; commitMessage: string } | undefined>) =>
         async (...args): Promise<void> => {
@@ -938,6 +924,8 @@ const localThunks = {
                     })
                 );
             });
+
+            setTimeout(() => dispatch(protectedThunks.cacheInitialization()), 500);
         },
     "triggerNonIncrementalCompilation":
         (params: { triggerType: "periodical" | "manual" | "initial" }) =>
@@ -999,10 +987,38 @@ const localThunks = {
 
             if (wasCanceled) {
                 console.log("Data have changed, re-scheduling non incremental compilation");
-                await dispatch(localThunks.triggerNonIncrementalCompilation(params));
+                await dispatch(privateThunks.triggerNonIncrementalCompilation(params));
             }
 
             console.log("Done with non incremental compilation");
+        },
+    /** Functions that returns logoUrlFromFormData if it's not the same as the one from the automatic suggestions */
+    "getStorableLogo":
+        (params: { logoUrlFromFormData: string | undefined; wikidataId: string | undefined }) =>
+        async (...args): Promise<string | undefined> => {
+            const { logoUrlFromFormData, wikidataId } = params;
+
+            const [dispatch] = args;
+
+            if (logoUrlFromFormData === undefined) {
+                return undefined;
+            }
+
+            if (wikidataId === undefined) {
+                return logoUrlFromFormData;
+            }
+
+            const softwareFormAutoFillData = await dispatch(
+                suggestionAndAutoFillThunks.getSoftwareFormAutoFillDataFromWikidataAndOtherSources({
+                    wikidataId
+                })
+            );
+
+            if (softwareFormAutoFillData.softwareLogoUrl === logoUrlFromFormData) {
+                return undefined;
+            }
+
+            return logoUrlFromFormData;
         }
 } satisfies Thunks;
 
