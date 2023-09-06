@@ -45,7 +45,7 @@ export const gitSsh = async (params: {
 
     const mutex = (mutexes[sshUrl + (shaish || "")] ??= new Mutex());
 
-    return mutex.runExclusive(async () => {
+    return mutex.runExclusive(async function callee() {
         await configureOpenSshClient({ sshPrivateKeyName, sshPrivateKey });
 
         const repoHash = crypto
@@ -74,7 +74,18 @@ export const gitSsh = async (params: {
         } else {
             // Perform git pull
             console.log("Performing git pull");
-            await exec(`git pull`, { "cwd": repoPath });
+
+            try {
+                await exec(`git pull`, { "cwd": repoPath });
+            } catch {
+                console.log("There's been a force push, so we're going to re-clone the repo");
+
+                await fs.promises.rm(repoPath, { "recursive": true, "force": true });
+
+                await callee();
+
+                return;
+            }
         }
 
         const changesResult = await action({ repoPath });
