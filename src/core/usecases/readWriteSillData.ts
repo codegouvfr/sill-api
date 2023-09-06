@@ -186,9 +186,9 @@ export const protectedThunks = {
         async (...args) => {
             const { doPerPerformPeriodicalCompilation } = params;
 
-            const [dispatch, , extraArg] = args;
+            const [dispatch, getState, extraArg] = args;
 
-            const { dbApi } = extraArg;
+            const { dbApi, evtAction } = extraArg;
 
             const [db, compiledData] = await Promise.all([dbApi.fetchDb(), dbApi.fetchCompiledData()]);
 
@@ -220,19 +220,21 @@ export const protectedThunks = {
                     4 * 3600 * 1000 //4 hour
                 );
             }
-        },
-    "cacheInitialization":
-        () =>
-        (...args) => {
-            const [, getState] = args;
 
-            const start = Date.now();
+            evtAction.attach(
+                action => action.sliceName === name && action.actionName === "updated",
+                () => {
+                    setTimeout(() => {
+                        const start = Date.now();
 
-            console.log("Starting cache refresh of readWriteSillData selectors");
+                        console.log("Starting cache refresh of readWriteSillData selectors");
 
-            objectKeys(selectors).forEach(selectorName => selectors[selectorName](getState()));
+                        objectKeys(selectors).forEach(selectorName => selectors[selectorName](getState()));
 
-            console.log(`Cache refresh of readWriteSillData selectors done in ${Date.now() - start}ms`);
+                        console.log(`Cache refresh of readWriteSillData selectors done in ${Date.now() - start}ms`);
+                    }, 500);
+                }
+            );
         }
 } satisfies Thunks;
 
@@ -924,8 +926,6 @@ const privateThunks = {
                     })
                 );
             });
-
-            setTimeout(() => dispatch(protectedThunks.cacheInitialization()), 500);
         },
     "triggerNonIncrementalCompilation":
         (params: { triggerType: "periodical" | "manual" | "initial" }) =>

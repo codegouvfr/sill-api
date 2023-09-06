@@ -76,8 +76,6 @@ export async function createCore(params: {
     if (doPerformCacheInitialization) {
         console.log("Performing cache initialization...");
 
-        core.dispatch(usecases.readWriteSillData.protectedThunks.cacheInitialization());
-
         await Promise.all([initializeDbApiCache(), initializeUserApiCache()]);
     }
 
