@@ -221,9 +221,10 @@ export const protectedThunks = {
                 );
             }
 
-            evtAction.attach(
-                action => action.sliceName === name && action.actionName === "updated",
-                () => {
+            evtAction
+                .pipe(action => action.sliceName === name && action.actionName === "updated")
+                .toStateful()
+                .attach(() => {
                     setTimeout(() => {
                         const start = Date.now();
 
@@ -233,8 +234,7 @@ export const protectedThunks = {
 
                         console.log(`Cache refresh of readWriteSillData selectors done in ${Date.now() - start}ms`);
                     }, 500);
-                }
-            );
+                });
         }
 } satisfies Thunks;
 
