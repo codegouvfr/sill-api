@@ -57,7 +57,7 @@ export type Software = {
               url: string;
           }[]
         | undefined;
-    compotoirDuLibreId: number | undefined;
+    comptoirDuLibreId: number | undefined;
     wikidataId: string | undefined;
     softwareType: SoftwareType;
     parentWikidataSoftware: Pick<WikidataSoftware, "wikidataId" | "label" | "description"> | undefined;
@@ -1072,7 +1072,7 @@ export const selectors = (() => {
                 "license": o.license,
                 "comptoirDuLibreServiceProviderCount": o.comptoirDuLibreSoftware?.providers.length ?? 0,
                 "annuaireCnllServiceProviders": o.annuaireCnllServiceProviders,
-                "compotoirDuLibreId": o.comptoirDuLibreSoftware?.id,
+                "comptoirDuLibreId": o.comptoirDuLibreSoftware?.id,
                 "wikidataId": o.wikidataSoftware?.wikidataId,
                 "softwareType": o.softwareType,
                 "parentWikidataSoftware": o.parentWikidataSoftware,
