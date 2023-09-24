@@ -470,7 +470,26 @@ export function createRouter(params: {
                         );
                     };
                 })()
+            ),
+        "unreferenceSoftware": loggedProcedure
+            .input(
+                z.object({
+                    "softwareName": z.string(),
+                    "reason": z.string()
+                })
             )
+            .mutation(async ({ ctx: { user }, input }) => {
+                if (user === undefined) {
+                    throw new TRPCError({ "code": "UNAUTHORIZED" });
+                }
+
+                const { softwareName, reason } = input;
+
+                await coreApi.functions.readWriteSillData.unreferenceSoftware({
+                    softwareName,
+                    reason
+                });
+            })
     });
 
     return { router };

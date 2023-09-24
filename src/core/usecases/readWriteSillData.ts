@@ -869,6 +869,34 @@ export const thunks = {
                     };
                 })
             );
+        },
+    "unreferenceSoftware":
+        (params: { softwareName: string; reason: string }) =>
+        async (...args): Promise<void> => {
+            const [dispatch] = args;
+
+            const { softwareName, reason } = params;
+
+            await dispatch(
+                privateThunks.transaction(async newDb => {
+                    const { softwareRows } = newDb;
+
+                    const softwareRow = softwareRows.find(softwareRow => softwareRow.name === softwareName);
+
+                    assert(softwareRow !== undefined, `There is no ${softwareName} in the database`);
+
+                    softwareRow.dereferencing = {
+                        "time": Date.now(),
+                        reason,
+                        "lastRecommendedVersion": softwareRow.versionMin
+                    };
+
+                    return {
+                        newDb,
+                        "commitMessage": `Dereferencing ${softwareName} because ${reason}`
+                    };
+                })
+            );
         }
 } satisfies Thunks;
 
