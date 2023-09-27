@@ -16,6 +16,7 @@ export const gitSsh = async (params: {
     sshPrivateKey: string;
     shaish?: string;
     commitAuthorEmail?: string;
+    doForceReClone?: boolean;
     action: (params: {
         repoPath: string;
     }) => Promise<{ doCommit: false } | { doCommit: true; doAddAll: boolean; message: string }>;
@@ -25,6 +26,7 @@ export const gitSsh = async (params: {
         sshPrivateKeyName,
         sshPrivateKey,
         shaish,
+        doForceReClone = false,
         commitAuthorEmail = "actions@github.com",
         action
     } = params;
@@ -59,8 +61,17 @@ export const gitSsh = async (params: {
             .then(() => true)
             .catch(() => false);
 
+        if (doForceReClone && repoExists) {
+            await fs.promises.rm(repoPath, { "recursive": true, "force": true });
+
+            await callee();
+
+            return;
+        }
+
         if (!repoExists) {
-            // Perform git clone
+            console.log(`Performing git clone ${sshUrl} ${repoPath}`);
+
             if (shaish === undefined) {
                 await exec(`git clone --depth 1 ${sshUrl} ${repoPath}`);
             } else {
@@ -72,13 +83,26 @@ export const gitSsh = async (params: {
                 }
             }
         } else {
-            // Perform git pull
-            console.log("Performing git pull");
+            console.log(`Performing git pull ${sshUrl} ${repoPath}`);
 
             try {
                 await exec(`git pull`, { "cwd": repoPath });
+
+                // NOTE: If on main or on a branch
+                if (shaish === undefined || !isSha(shaish)) {
+                    // NOTE: Exit gratuitously if there are no changes
+                    await exec(
+                        [
+                            `current_branch=$(git rev-parse --abbrev-ref HEAD)`,
+                            `[ -z "$(git status --porcelain)" ]`,
+                            `[ -z "$(git status --porcelain)" ]`,
+                            `[ "$(git rev-list HEAD...origin/$current_branch --count)" -eq 0 ]`
+                        ].join(" && "),
+                        { "cwd": repoPath }
+                    );
+                }
             } catch {
-                console.log("There's been a force push, so we're going to re-clone the repo");
+                console.log(`There's been a force push, so we're going to re-clone the repo ${sshUrl} ${repoPath}`);
 
                 await fs.promises.rm(repoPath, { "recursive": true, "force": true });
 

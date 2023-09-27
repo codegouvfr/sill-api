@@ -255,7 +255,11 @@ export const thunks = {
 
             await dispatch(
                 privateThunks.transaction(async () => ({
-                    "newDb": await dbApi.fetchDb(),
+                    "newDb": await dbApi.fetchDb({
+                        // NOTE: Should not be necessary but for extra safety we do it
+                        // just in case there's some edge case we didn't think of with git.
+                        "doForceReClone": true
+                    }),
                     commitMessage
                 }))
             );

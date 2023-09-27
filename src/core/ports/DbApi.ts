@@ -2,7 +2,10 @@ import type { CompiledData } from "./CompileData";
 
 export type DbApi = {
     fetchCompiledData: () => Promise<CompiledData<"private">>;
-    fetchDb: () => Promise<Db>;
+    fetchDb: (params?: {
+        /** Default false */
+        doForceReClone?: boolean;
+    }) => Promise<Db>;
     updateDb: (params: { newDb: Db; commitMessage: string }) => Promise<void>;
     updateCompiledData: (params: { newCompiledData: CompiledData<"private">; commitMessage: string }) => Promise<void>;
 };
