@@ -82,10 +82,11 @@ export namespace CompiledData {
 
 export function compiledDataPrivateToPublic(compiledData: CompiledData<"private">): CompiledData<"public"> {
     return compiledData.map((software): CompiledData.Software<"public"> => {
-        const { referents, users, instances, ...rest } = software;
+        const { referents, users, instances, addedByAgentEmail, ...rest } = software;
 
         return {
             ...rest,
+            "addedByAgentEmail": "***",
             "hasExpertReferent": referents.find(({ isExpert }) => isExpert) !== undefined,
             "userAndReferentCountByOrganization": (() => {
                 const out: CompiledData.Software.Public["userAndReferentCountByOrganization"] = {};
