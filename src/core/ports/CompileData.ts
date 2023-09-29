@@ -28,9 +28,28 @@ export type CompiledData<T extends "private" | "public"> = CompiledData.Software
 export namespace CompiledData {
     export type Software<T extends "private" | "public"> = T extends "private" ? Software.Private : Software.Public;
     export namespace Software {
-        export type Common = Omit<
+        export type Common = Pick<
             Db.SoftwareRow,
-            "wikidataId" | "comptoirDuLibreId" | "similarSoftwareWikidataIds" | "parentSoftwareWikidataId"
+            | "id"
+            | "name"
+            | "description"
+            | "referencedSinceTime"
+            | "updateTime"
+            | "dereferencing"
+            | "isStillInObservation"
+            | "doRespectRgaa"
+            | "isFromFrenchPublicService"
+            | "isPresentInSupportContract"
+            | "license"
+            | "softwareType"
+            | "catalogNumeriqueGouvFrId"
+            | "versionMin"
+            | "workshopUrls"
+            | "testUrls"
+            | "categories"
+            | "generalInfoMd"
+            | "logoUrl"
+            | "keywords"
         > & {
             wikidataSoftware: WikidataSoftware | undefined;
             similarWikidataSoftwares: Pick<
@@ -63,6 +82,7 @@ export namespace CompiledData {
         };
 
         export type Private = Common & {
+            addedByAgentEmail: string;
             users: (Pick<Db.AgentRow, "organization"> &
                 Pick<Db.SoftwareUserRow, "os" | "serviceUrl" | "useCaseDescription" | "version">)[];
             referents: (Pick<Db.AgentRow, "email" | "organization"> &
@@ -82,11 +102,65 @@ export namespace CompiledData {
 
 export function compiledDataPrivateToPublic(compiledData: CompiledData<"private">): CompiledData<"public"> {
     return compiledData.map((software): CompiledData.Software<"public"> => {
-        const { referents, users, instances, addedByAgentEmail, ...rest } = software;
+        const {
+            referents,
+            users,
+            instances,
+            annuaireCnllServiceProviders,
+            catalogNumeriqueGouvFrId,
+            categories,
+            comptoirDuLibreSoftware,
+            dereferencing,
+            description,
+            doRespectRgaa,
+            generalInfoMd,
+            id,
+            isFromFrenchPublicService,
+            isPresentInSupportContract,
+            isStillInObservation,
+            keywords,
+            license,
+            logoUrl,
+            name,
+            referencedSinceTime,
+            softwareType,
+            testUrls,
+            latestVersion,
+            updateTime,
+            versionMin,
+            workshopUrls,
+            wikidataSoftware,
+            similarWikidataSoftwares,
+            parentWikidataSoftware
+        } = software;
 
         return {
-            ...rest,
-            "addedByAgentEmail": "***",
+            annuaireCnllServiceProviders,
+            catalogNumeriqueGouvFrId,
+            categories,
+            comptoirDuLibreSoftware,
+            dereferencing,
+            description,
+            doRespectRgaa,
+            generalInfoMd,
+            id,
+            isFromFrenchPublicService,
+            isPresentInSupportContract,
+            isStillInObservation,
+            keywords,
+            license,
+            logoUrl,
+            name,
+            referencedSinceTime,
+            softwareType,
+            testUrls,
+            latestVersion,
+            updateTime,
+            versionMin,
+            workshopUrls,
+            wikidataSoftware,
+            similarWikidataSoftwares,
+            parentWikidataSoftware,
             "hasExpertReferent": referents.find(({ isExpert }) => isExpert) !== undefined,
             "userAndReferentCountByOrganization": (() => {
                 const out: CompiledData.Software.Public["userAndReferentCountByOrganization"] = {};
