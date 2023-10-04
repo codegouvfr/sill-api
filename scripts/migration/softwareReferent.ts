@@ -1,11 +1,11 @@
-import type { Db } from "../../core/ports/DbApi";
+import type { Db } from "../../src/core/ports/DbApi";
 import { z } from "zod";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { id } from "tsafe/id";
-import { OptionalIfCanBeUndefined } from "../../tools/OptionalIfCanBeUndefined";
+import { OptionalIfCanBeUndefined } from "../../src/tools/OptionalIfCanBeUndefined";
 
 /*
 

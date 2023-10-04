@@ -1,16 +1,16 @@
-import type { Db } from "../../core/ports/DbApi";
+import type { Db } from "../../src/core/ports/DbApi";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { z } from "zod";
 import { id as tsafeId } from "tsafe/id";
-import type { OptionalIfCanBeUndefined } from "../../tools/OptionalIfCanBeUndefined";
+import type { OptionalIfCanBeUndefined } from "../../src/tools/OptionalIfCanBeUndefined";
 
 /*
 npm -g install ts-node
 cd ~/github/sill/sill-data
-ts-node --skipProject ../sill-api/src/scripts/migration/agent.ts
+ts-node --skipProject ../sill-api/scripts/migration/agent.ts
 */
 
 const zAgentRow = z.object({

@@ -1,4 +1,4 @@
-import { createCoreApi } from "../core";
+import { createCoreApi } from "../src/core";
 import { assert } from "tsafe/assert";
 
 const sshPrivateKeyName = process.env["SILL_SSH_NAME"];

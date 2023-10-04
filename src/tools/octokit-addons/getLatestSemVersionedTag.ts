@@ -2,13 +2,12 @@ import { listTagsFactory } from "./listTags";
 import type { Octokit } from "@octokit/rest";
 import { NpmModuleVersion } from "../NpmModuleVersion";
 
-export function getLatestSemVersionedTagFactory(params: { octokit: Octokit }) {
+export function getLatestTagFactory(params: { octokit: Octokit }) {
     const { octokit } = params;
 
-    async function getLatestSemVersionedTag(params: { owner: string; repo: string; doIgnoreBeta: boolean }): Promise<
+    async function getLatestTag(params: { owner: string; repo: string; doIgnoreBeta: boolean }): Promise<
         | {
               tag: string;
-              version: NpmModuleVersion | undefined;
           }
         | undefined
     > {
@@ -49,5 +48,5 @@ export function getLatestSemVersionedTagFactory(params: { octokit: Octokit }) {
         return semVersionedTags[0];
     }
 
-    return { getLatestSemVersionedTag };
+    return { getLatestTag };
 }

@@ -1,11 +1,11 @@
-import type { Db, Os, SoftwareType } from "../../core/ports/DbApi";
+import type { Db, Os, SoftwareType } from "../../src/core/ports/DbApi";
 import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { z } from "zod";
 import { id as tsafeId } from "tsafe/id";
-import type { OptionalIfCanBeUndefined } from "../../tools/OptionalIfCanBeUndefined";
+import type { OptionalIfCanBeUndefined } from "../../src/tools/OptionalIfCanBeUndefined";
 
 /*
 npm -g install ts-node
