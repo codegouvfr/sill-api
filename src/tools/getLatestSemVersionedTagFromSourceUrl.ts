@@ -1,7 +1,5 @@
 import { parseGitHubRepoUrl } from "./parseGithubRepoUrl";
-import { Octokit } from "@octokit/rest";
-import memoize from "memoizee";
-import { getLatestSemVersionedTagFactory } from "./octokit-addons/getLatestSemVersionedTag";
+import { graphql } from "@octokit/graphql";
 
 export async function getLatestSemVersionedTagFromSourceUrl(params: {
     sourceUrl: string;
@@ -17,50 +15,73 @@ export async function getLatestSemVersionedTagFromSourceUrl(params: {
         return undefined;
     }
 
-    const octokit = getOctokit(githubPersonalAccessTokenForApiRateLimit);
-
-    const { getLatestSemVersionedTag } = getLatestSemVersionedTagFactory({
-        octokit
-    });
-
-    const res = await getLatestSemVersionedTag({
-        "owner": parsedGitHubRepoUrl.owner,
-        "repo": parsedGitHubRepoUrl.repoName,
-        "doIgnoreBeta": true
-    }).catch(error => (console.warn(error.message), undefined));
-
-    if (res === undefined) {
-        console.log("failed to get latest version");
+    if (githubPersonalAccessTokenForApiRateLimit === undefined) {
         return undefined;
     }
 
-    const { tag } = res;
-
-    const {
-        data: {
-            commit: { author }
-        }
-    } = await octokit.repos.getCommit({
+    const resp = await getLatestTag({
+        "name": parsedGitHubRepoUrl.repoName,
         "owner": parsedGitHubRepoUrl.owner,
-        "repo": parsedGitHubRepoUrl.repoName,
-        "ref": tag
+        "githubToken": githubPersonalAccessTokenForApiRateLimit
     });
 
-    if (author === null || author.date === undefined) {
+    if (resp === null) {
         return undefined;
     }
 
     return {
-        tag,
-        "publicationTime": new Date(author.date).getTime()
+        "tag": resp.name,
+        "publicationTime": resp.date.getTime()
     };
 }
 
-const getOctokit = memoize(
-    (githubPersonalAccessTokenForApiRateLimit: string | undefined) =>
-        new Octokit(
-            githubPersonalAccessTokenForApiRateLimit === undefined
-                ? undefined
-                : { "auth": githubPersonalAccessTokenForApiRateLimit }
-        )
-);
+// NOTE: GPT generated
+const getLatestTag = async (params: { owner: string; name: string; githubToken: string }) => {
+    const { owner, name, githubToken } = params;
+
+    const query = `
+    query($owner: String!, $name: String!) {
+      repository(owner: $owner, name: $name) {
+        refs(refPrefix: "refs/tags/", first: 100, orderBy: {field: TAG_COMMIT_DATE, direction: DESC}) {
+          nodes {
+            name
+            target {
+              ... on Tag {
+                tagger {
+                  date
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+    try {
+        const data: any = await graphql(query, {
+            headers: {
+                authorization: `token ${githubToken}`
+            },
+            owner,
+            name
+        });
+
+        const tagsWithDates = (data.repository.refs.nodes as any[])
+            .filter((node: any) => node.target.tagger)
+            .map((node: any) => ({
+                name: node.name,
+                date: new Date(node.target.tagger.date)
+            }));
+
+        if (tagsWithDates.length === 0) {
+            return null;
+        }
+
+        // Assuming the tags are already sorted by date because of the GraphQL query
+        return tagsWithDates[0];
+    } catch (error) {
+        console.error(`An error occurred: ${error}`);
+        return null;
+    }
+};
