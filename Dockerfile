@@ -1,5 +1,5 @@
 # build environment
-FROM node:14.19.3-alpine as build
+FROM node:18-alpine3.17 as build
 WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
@@ -12,7 +12,7 @@ RUN npm install -g @vercel/ncc@0.36.1
 RUN npx ncc build src/main.js
 
 # production environment
-FROM node:14.19.3-alpine
+FROM node:18-alpine3.17
 RUN apk add --no-cache \
   git \
   openssh-client \
