@@ -545,7 +545,8 @@ const zSoftwareFormData = (() => {
         "isFromFrenchPublicService": z.boolean(),
         "similarSoftwareWikidataIds": z.array(z.string()),
         "softwareLogoUrl": z.string().optional(),
-        "softwareKeywords": z.array(z.string())
+        "softwareKeywords": z.array(z.string()),
+        "doRespectRgaa": z.boolean()
     });
 
     {

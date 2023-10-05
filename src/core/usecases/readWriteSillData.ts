@@ -129,6 +129,7 @@ export type SoftwareFormData = {
     similarSoftwareWikidataIds: string[];
     softwareLogoUrl: string | undefined;
     softwareKeywords: string[];
+    doRespectRgaa: boolean;
 };
 
 export type DeclarationFormData = DeclarationFormData.User | DeclarationFormData.Referent;
@@ -299,7 +300,7 @@ export const thunks = {
                         "dereferencing": undefined,
                         "isStillInObservation": false,
                         "parentSoftwareWikidataId": undefined,
-                        "doRespectRgaa": false,
+                        "doRespectRgaa": formData.doRespectRgaa,
                         "isFromFrenchPublicService": formData.isFromFrenchPublicService,
                         "isPresentInSupportContract": formData.isPresentInSupportContract,
                         "similarSoftwareWikidataIds": formData.similarSoftwareWikidataIds,
@@ -370,7 +371,6 @@ export const thunks = {
                             dereferencing,
                             isStillInObservation,
                             parentSoftwareWikidataId,
-                            doRespectRgaa,
                             addedByAgentEmail,
                             catalogNumeriqueGouvFrId,
                             categories,
@@ -392,6 +392,7 @@ export const thunks = {
                             wikidataId,
                             softwareLogoUrl,
                             softwareKeywords,
+                            doRespectRgaa,
                             ...rest
                         } = formData;
 
