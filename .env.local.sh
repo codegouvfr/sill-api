@@ -26,4 +26,5 @@ export CONFIGURATION=$(cat << EOF
 }
 EOF
 ) 
-$@
+
+npx forever "$@"
