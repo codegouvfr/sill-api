@@ -47,6 +47,7 @@
         "@types/memoizee": "^0.4.7",
         "@types/node": "^16.4.9",
         "@types/node-fetch": "^2.5.7",
+        "@types/semver": "^7.5.3",
         "@types/ungap__structured-clone": "^0.3.0",
         "@types/url-join": "^4.0.1",
         "@ungap/structured-clone": "^0.3.4",
@@ -81,6 +82,7 @@
         "@octokit/graphql": "^7.0.2",
         "@trpc/server": "^10.18.0",
         "jwt-decode": "^3.1.2",
+        "semver": "^7.5.4",
         "tsafe": "^1.6.0",
         "zod": "^3.21.4"
     },

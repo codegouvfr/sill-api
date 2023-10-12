@@ -14,10 +14,10 @@ export function createGetSoftwareLatestVersion(params: { githubPersonalAccessTok
             return undefined;
         }
 
-        const { tag, publicationTime } = resp;
+        const { version, publicationTime } = resp;
 
         return {
-            "semVer": tag,
+            "semVer": version,
             publicationTime
         };
     };
