@@ -42,7 +42,7 @@ export async function getLatestSemVersionedTagFromSourceUrl(params: {
         });
 
         async_iter: for await (const tag of asyncIterator) {
-            for (const search of ["rc.", "alpha", "beta", "nightly", "canary", "pre", "wip"]) {
+            for (const search of ["rc.", "alpha", "beta", "nightly", "canary", "pre", "wip", "next."]) {
                 if (tag.toLowerCase().includes(search)) {
                     continue async_iter;
                 }
