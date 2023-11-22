@@ -44,3 +44,5 @@ jspm_packages
 /data
 /git_tmp_xIdLsIt*
 /.yarn_home
+
+.env
