@@ -1,7 +1,7 @@
 {
     "name": "@codegouvfr/sill",
-    "version": "1.18.3",
-    "description": "The backend of etalab.gouv.fr/sill",
+    "version": "1.18.4",
+    "description": "The backend of code.gouv.fr/sill",
     "repository": {
         "type": "git",
         "url": "git://github.com/codegouvfr/sill-api.git"
