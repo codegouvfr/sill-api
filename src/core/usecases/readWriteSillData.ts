@@ -4,7 +4,8 @@ import {
     createUsecaseActions,
     createSelector,
     createObjectThatThrowsIfAccessed,
-    createUsecaseContextApi
+    createUsecaseContextApi,
+    AccessError
 } from "redux-clean-architecture";
 import { Mutex } from "async-mutex";
 import { assert, type Equals } from "tsafe/assert";
@@ -169,13 +170,64 @@ export type InstanceFormData = {
 type State = {
     db: Db;
     compiledData: CompiledData<"private">;
+    cache:
+        | {
+              similarSoftwares: {
+                  [softwareSillId: number]: {
+                      similarSoftwareWikidataIds: string[];
+                      similarSoftwares: Software.SimilarSoftware[];
+                  };
+              };
+          }
+        | undefined;
 };
 
 export const { reducer, actions } = createUsecaseActions({
     name,
     "initialState": createObjectThatThrowsIfAccessed<State>(),
     "reducers": {
-        "updated": (_state, { payload }: { payload: State }) => payload
+        "updated": (
+            state,
+            {
+                payload
+            }: {
+                payload: {
+                    db: Db;
+                    compiledData: CompiledData<"private">;
+                };
+            }
+        ) => {
+            const { db, compiledData } = payload;
+
+            return {
+                db,
+                compiledData,
+                "cache": (() => {
+                    try {
+                        return state.cache;
+                    } catch (error) {
+                        if (!(error instanceof AccessError)) {
+                            throw error;
+                        }
+                        return undefined;
+                    }
+                })()
+            };
+        },
+        "cacheUpdated": (
+            state,
+            {
+                payload
+            }: {
+                payload: {
+                    cache: State["cache"];
+                };
+            }
+        ) => {
+            const { cache } = payload;
+
+            state.cache = cache;
+        }
     }
 });
 
@@ -234,6 +286,32 @@ export const protectedThunks = {
                         console.log("Starting cache refresh of readWriteSillData selectors");
 
                         objectKeys(selectors).forEach(selectorName => selectors[selectorName](getState()));
+
+                        dispatch(
+                            actions.cacheUpdated({
+                                "cache": {
+                                    "similarSoftwares": Object.fromEntries(
+                                        selectors.softwares(getState()).map(software => [
+                                            software.softwareId,
+                                            {
+                                                "similarSoftwareWikidataIds": (() => {
+                                                    const softwareRow = getState()[name].compiledData.find(
+                                                        ({ id }) => id === software.softwareId
+                                                    );
+
+                                                    assert(softwareRow !== undefined);
+
+                                                    return softwareRow.similarWikidataSoftwares.map(
+                                                        ({ wikidataId }) => wikidataId
+                                                    );
+                                                })(),
+                                                "similarSoftwares": software.similarSoftwares
+                                            }
+                                        ])
+                                    )
+                                }
+                            })
+                        );
 
                         console.log(`Cache refresh of readWriteSillData selectors done in ${Date.now() - start}ms`);
                     }, 500);
@@ -1080,7 +1158,36 @@ export const selectors = (() => {
 
     const compiledData = createSelector(sliceState, state => state.compiledData);
 
-    const softwares = createSelector(compiledData, compiledData => {
+    const cache = createSelector(sliceState, state => state.cache);
+
+    const softwares = createSelector(compiledData, cache, (compiledData, cache) => {
+        const isCacheRestorable = (() => {
+            if (cache === undefined) {
+                return false;
+            }
+
+            if (
+                !same(
+                    Object.fromEntries(
+                        compiledData.map(({ id, similarWikidataSoftwares }) => [
+                            id,
+                            similarWikidataSoftwares.map(({ wikidataId }) => wikidataId)
+                        ])
+                    ),
+                    Object.fromEntries(
+                        Object.entries(cache.similarSoftwares).map(([id, { similarSoftwareWikidataIds }]) => [
+                            id,
+                            similarSoftwareWikidataIds
+                        ])
+                    )
+                )
+            ) {
+                return false;
+            }
+
+            return true;
+        })();
+
         const similarSoftwarePartition: Software.SimilarSoftware[][] = [];
 
         return compiledData.map(
@@ -1132,6 +1239,12 @@ export const selectors = (() => {
                 "softwareType": o.softwareType,
                 "parentWikidataSoftware": o.parentWikidataSoftware,
                 "similarSoftwares": (() => {
+                    if (isCacheRestorable) {
+                        assert(cache !== undefined);
+
+                        return cache.similarSoftwares[o.id].similarSoftwares;
+                    }
+
                     const softwareAlreadySeen = new Set<string>();
 
                     for (const similarSoftwares of similarSoftwarePartition) {
