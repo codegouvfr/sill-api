@@ -241,7 +241,7 @@ async function fetchEntity(wikidataId: string): Promise<{ entity: Entity }> {
     }
 
     if (res.status === 429) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 100));
         return fetchEntity(wikidataId);
     }
 
