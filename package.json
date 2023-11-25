@@ -1,6 +1,6 @@
 {
     "name": "@codegouvfr/sill",
-    "version": "1.18.5",
+    "version": "1.18.6",
     "description": "The backend of code.gouv.fr/sill",
     "repository": {
         "type": "git",
