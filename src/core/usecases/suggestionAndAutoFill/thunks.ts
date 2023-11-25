@@ -1,14 +1,10 @@
-import type { Thunks, State as RootState } from "../bootstrap";
-import { createSelector, createUsecaseContextApi } from "redux-clean-architecture";
-import { exclude } from "tsafe/exclude";
+import type { Thunks } from "../../bootstrap";
+import { createUsecaseContextApi } from "redux-clean-architecture";
 import { assert } from "tsafe/assert";
-import { Language } from "../ports/GetWikidataSoftware";
+import type { Language } from "../../ports/GetWikidataSoftware";
 import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
 import { id } from "tsafe/id";
-
-export const name = "suggestionAndAutoFill";
-
-export const reducer = null;
+import { privateSelectors } from "./selectors";
 
 export const thunks = {
     "getWikidataOptionsWithPresenceInSill":
@@ -20,7 +16,7 @@ export const thunks = {
 
             const queryResults = await getWikidataSoftwareOptions({ queryString, language });
 
-            const sillWikidataIds = privateSelector.sillWikidataIds(getState());
+            const sillWikidataIds = privateSelectors.sillWikidataIds(getState());
 
             return queryResults.map(({ id, description, label, isLibreSoftware }) => ({
                 "wikidataId": id,
@@ -140,13 +136,3 @@ type AutoFillData = {
 const { getContext } = createUsecaseContextApi(() => ({
     "autoFillDataCache": id<{ [wikidataId: string]: AutoFillData }>({})
 }));
-
-const privateSelector = (() => {
-    const compiledData = (state: RootState) => state.readWriteSillData.compiledData;
-
-    const sillWikidataIds = createSelector(compiledData, compiledData =>
-        compiledData.map(software => software.wikidataSoftware?.wikidataId).filter(exclude(undefined))
-    );
-
-    return { sillWikidataIds };
-})();
