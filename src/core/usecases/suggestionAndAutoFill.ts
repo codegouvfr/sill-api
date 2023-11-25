@@ -1,5 +1,5 @@
 import type { Thunks, State as RootState } from "../bootstrap";
-import { createSelector } from "redux-clean-architecture";
+import { createSelector, createUsecaseContextApi } from "redux-clean-architecture";
 import { exclude } from "tsafe/exclude";
 import { assert } from "tsafe/assert";
 import { Language } from "../ports/GetWikidataSoftware";
@@ -32,10 +32,22 @@ export const thunks = {
         },
     "getSoftwareFormAutoFillDataFromWikidataAndOtherSources":
         (params: { wikidataId: string }) =>
-        async (...args) => {
+        async (...args): Promise<AutoFillData> => {
             const { wikidataId } = params;
 
-            const [, , { getSoftwareLatestVersion, comptoirDuLibreApi, getWikidataSoftware }] = args;
+            const [, , rootContext] = args;
+
+            const { autoFillDataCache } = getContext(rootContext);
+
+            {
+                const cachedAutoFillData = autoFillDataCache[wikidataId];
+
+                if (cachedAutoFillData !== undefined) {
+                    return cachedAutoFillData;
+                }
+            }
+
+            const { getSoftwareLatestVersion, comptoirDuLibreApi, getWikidataSoftware } = rootContext;
 
             const [wikidataSoftware, comptoirDuLibre] = await Promise.all([
                 getWikidataSoftware({ wikidataId }),
@@ -85,15 +97,7 @@ export const thunks = {
                 "fallbackLanguage": "en"
             });
 
-            return id<{
-                comptoirDuLibreId: number | undefined;
-                softwareName: string | undefined;
-                softwareDescription: string | undefined;
-                softwareLicense: string | undefined;
-                softwareMinimalVersion: string | undefined;
-                softwareLogoUrl: string | undefined;
-                keywords: string[];
-            }>({
+            const autoFillData: AutoFillData = {
                 "comptoirDuLibreId": comptoirDuLibreSoftware?.id,
                 "softwareName":
                     wikidataSoftwareLabel === undefined ? undefined : resolveLocalizedString(wikidataSoftwareLabel),
@@ -111,9 +115,31 @@ export const thunks = {
                           }).then(resp => resp?.semVer),
                 "softwareLogoUrl": wikidataSoftware.logoUrl ?? comptoirDuLibreLogoUrl,
                 "keywords": comptoirDuLibreKeywords ?? []
-            });
+            };
+
+            autoFillDataCache[wikidataId] = autoFillData;
+
+            setTimeout(() => {
+                delete autoFillDataCache[wikidataId];
+            }, 3 * 60 * 1000 /* 3 hours */);
+
+            return autoFillData;
         }
 } satisfies Thunks;
+
+type AutoFillData = {
+    comptoirDuLibreId: number | undefined;
+    softwareName: string | undefined;
+    softwareDescription: string | undefined;
+    softwareLicense: string | undefined;
+    softwareMinimalVersion: string | undefined;
+    softwareLogoUrl: string | undefined;
+    keywords: string[];
+};
+
+const { getContext } = createUsecaseContextApi(() => ({
+    "autoFillDataCache": id<{ [wikidataId: string]: AutoFillData }>({})
+}));
 
 const privateSelector = (() => {
     const compiledData = (state: RootState) => state.readWriteSillData.compiledData;
