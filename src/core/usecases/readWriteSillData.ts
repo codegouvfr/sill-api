@@ -345,7 +345,7 @@ export const thunks = {
             agent: { email: string; organization: string };
         }) =>
         async (...args): Promise<void> => {
-            const [dispatch] = args;
+            const [dispatch, getState] = args;
 
             const { softwareSillId, formData, agent } = params;
 
@@ -374,7 +374,8 @@ export const thunks = {
                             categories,
                             generalInfoMd,
                             testUrls,
-                            workshopUrls
+                            workshopUrls,
+                            logoUrl: logoUrlFromDb
                         } = softwareRows[index];
 
                         const {
@@ -388,7 +389,7 @@ export const thunks = {
                             softwareName,
                             softwareType,
                             wikidataId,
-                            softwareLogoUrl,
+                            softwareLogoUrl: logoUrlFromFormData,
                             softwareKeywords,
                             doRespectRgaa,
                             ...rest
@@ -420,12 +421,19 @@ export const thunks = {
                             "name": softwareName,
                             "softwareType": softwareType,
                             "wikidataId": wikidataId,
-                            "logoUrl": await dispatch(
-                                privateThunks.getStorableLogo({
-                                    wikidataId,
-                                    "logoUrlFromFormData": formData.softwareLogoUrl
-                                })
-                            ),
+                            "logoUrl": (() => {
+                                const state = getState()[name];
+
+                                const software = state.compiledData.find(({ id }) => id === softwareSillId);
+
+                                assert(software !== undefined);
+
+                                if (software.logoUrl === logoUrlFromDb) {
+                                    return logoUrlFromDb;
+                                }
+
+                                return logoUrlFromFormData;
+                            })(),
                             "keywords": softwareKeywords
                         };
                     }
