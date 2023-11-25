@@ -6,7 +6,7 @@ import * as fs from "fs";
 import { join as pathJoin } from "path";
 import { getProjectRoot } from "../tools/getProjectRoot";
 import fetch from "node-fetch";
-import type { CoreApi } from "../core";
+import type { Core, Context as CoreContext } from "../core";
 import type { Context } from "./context";
 import type { User } from "./user";
 import type { KeycloakParams } from "../tools/createValidateKeycloakSignature";
@@ -26,7 +26,8 @@ import { type LocalizedString, Language, languages } from "../core/ports/GetWiki
 import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
 
 export function createRouter(params: {
-    coreApi: CoreApi;
+    core: Core;
+    coreContext: CoreContext;
     keycloakParams:
         | (KeycloakParams & {
               organizationUserProfileAttributeName: string;
@@ -37,7 +38,7 @@ export function createRouter(params: {
     readmeUrl: LocalizedString;
     redirectUrl: string | undefined;
 }) {
-    const { coreApi, keycloakParams, jwtClaimByUserKey, termsOfServiceUrl, readmeUrl, redirectUrl } = params;
+    const { core, coreContext, keycloakParams, jwtClaimByUserKey, termsOfServiceUrl, readmeUrl, redirectUrl } = params;
 
     const t = initTRPC.context<Context>().create({
         "transformer": superjson
@@ -98,14 +99,8 @@ export function createRouter(params: {
                 return () => organizationUserProfileAttributeName;
             })()
         ),
-        "getSoftwares": loggedProcedure.query(() => {
-            const { softwares } = coreApi.selectors.readWriteSillData.softwares(coreApi.getState());
-            return softwares;
-        }),
-        "getInstances": loggedProcedure.query(() => {
-            const { instances } = coreApi.selectors.readWriteSillData.instances(coreApi.getState());
-            return instances;
-        }),
+        "getSoftwares": loggedProcedure.query(() => core.states.readWriteSillData.getSoftwares()),
+        "getInstances": loggedProcedure.query(() => core.states.readWriteSillData.getInstances()),
         "getWikidataOptions": loggedProcedure
             .input(
                 z.object({
@@ -121,7 +116,7 @@ export function createRouter(params: {
 
                 const { queryString, language } = input;
 
-                return coreApi.functions.suggestionAndAutoFill.getWikidataOptionsWithPresenceInSill({
+                return core.functions.suggestionAndAutoFill.getWikidataOptionsWithPresenceInSill({
                     queryString,
                     language
                 });
@@ -140,7 +135,7 @@ export function createRouter(params: {
 
                 const { wikidataId } = input;
 
-                return coreApi.functions.suggestionAndAutoFill.getSoftwareFormAutoFillDataFromWikidataAndOtherSources({
+                return core.functions.suggestionAndAutoFill.getSoftwareFormAutoFillDataFromWikidataAndOtherSources({
                     wikidataId
                 });
             }),
@@ -158,7 +153,7 @@ export function createRouter(params: {
                 const { formData } = input;
 
                 try {
-                    await coreApi.functions.readWriteSillData.createSoftware({
+                    await core.functions.readWriteSillData.createSoftware({
                         formData,
                         "agent": {
                             "email": user.email,
@@ -183,7 +178,7 @@ export function createRouter(params: {
 
                 const { softwareSillId, formData } = input;
 
-                await coreApi.functions.readWriteSillData.updateSoftware({
+                await core.functions.readWriteSillData.updateSoftware({
                     softwareSillId,
                     formData,
                     "agent": {
@@ -206,7 +201,7 @@ export function createRouter(params: {
 
                 const { formData, softwareName } = input;
 
-                await coreApi.functions.readWriteSillData.createUserOrReferent({
+                await core.functions.readWriteSillData.createUserOrReferent({
                     formData,
                     softwareName,
                     "agent": {
@@ -230,7 +225,7 @@ export function createRouter(params: {
 
                 const { softwareName, declarationType } = input;
 
-                await coreApi.functions.readWriteSillData.removeUserOrReferent({
+                await core.functions.readWriteSillData.removeUserOrReferent({
                     softwareName,
                     "agentEmail": user.email,
                     declarationType
@@ -250,7 +245,7 @@ export function createRouter(params: {
 
                 const { formData } = input;
 
-                const { instanceId } = await coreApi.functions.readWriteSillData.createInstance({
+                const { instanceId } = await core.functions.readWriteSillData.createInstance({
                     formData,
                     "agent": {
                         "email": user.email,
@@ -274,7 +269,7 @@ export function createRouter(params: {
 
                 const { instanceId, formData } = input;
 
-                await coreApi.functions.readWriteSillData.updateInstance({
+                await core.functions.readWriteSillData.updateInstance({
                     instanceId,
                     formData,
                     "agentEmail": user.email
@@ -285,7 +280,9 @@ export function createRouter(params: {
                 throw new TRPCError({ "code": "UNAUTHORIZED" });
             }
 
-            return coreApi.selectors.readWriteSillData.agents(coreApi.getState());
+            const agents = core.states.readWriteSillData.getAgents();
+
+            return { agents };
         }),
         "updateIsAgentProfilePublic": loggedProcedure
             .input(
@@ -300,7 +297,7 @@ export function createRouter(params: {
 
                 const { isPublic } = input;
 
-                await coreApi.functions.readWriteSillData.updateIsAgentProfilePublic({
+                await core.functions.readWriteSillData.updateIsAgentProfilePublic({
                     "agent": {
                         "email": user.email,
                         "organization": user.organization
@@ -321,7 +318,7 @@ export function createRouter(params: {
 
                 const { about } = input;
 
-                await coreApi.functions.readWriteSillData.updateAgentAbout({
+                await core.functions.readWriteSillData.updateAgentAbout({
                     "agent": {
                         "email": user.email,
                         "organization": user.organization
@@ -338,7 +335,7 @@ export function createRouter(params: {
             .query(async ({ input }) => {
                 const { email } = input;
 
-                const isPublic = coreApi.functions.readWriteSillData.getAgentIsPublic({
+                const isPublic = core.functions.readWriteSillData.getAgentIsPublic({
                     email
                 });
 
@@ -353,7 +350,7 @@ export function createRouter(params: {
             .query(async ({ ctx: { user }, input }) => {
                 const { email } = input;
 
-                const isPublic = coreApi.functions.readWriteSillData.getAgentIsPublic({
+                const isPublic = core.functions.readWriteSillData.getAgentIsPublic({
                     email
                 });
 
@@ -361,14 +358,14 @@ export function createRouter(params: {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const agent = await coreApi.functions.readWriteSillData.getAgent({
+                const agent = await core.functions.readWriteSillData.getAgent({
                     email
                 });
 
                 return { agent };
             }),
-        "getAllowedEmailRegexp": loggedProcedure.query(coreApi.extras.userApi.getAllowedEmailRegexp),
-        "getAllOrganizations": loggedProcedure.query(coreApi.extras.userApi.getAllOrganizations),
+        "getAllowedEmailRegexp": loggedProcedure.query(coreContext.userApi.getAllowedEmailRegexp),
+        "getAllOrganizations": loggedProcedure.query(coreContext.userApi.getAllOrganizations),
         "changeAgentOrganization": loggedProcedure
             .input(
                 z.object({
@@ -384,7 +381,7 @@ export function createRouter(params: {
 
                 const { newOrganization } = input;
 
-                await coreApi.functions.readWriteSillData.changeAgentOrganization({
+                await core.functions.readWriteSillData.changeAgentOrganization({
                     "email": user.email,
                     newOrganization,
                     "userId": user.id
@@ -405,16 +402,17 @@ export function createRouter(params: {
 
                 assert(keycloakParams !== undefined);
 
-                await coreApi.functions.readWriteSillData.updateUserEmail({
+                await core.functions.readWriteSillData.updateUserEmail({
                     "userId": user.id,
                     "email": user.email,
                     newEmail
                 });
             }),
-        "getRegisteredUserCount": loggedProcedure.query(async () => coreApi.extras.userApi.getUserCount()),
-        "getTotalReferentCount": loggedProcedure.query(() =>
-            coreApi.selectors.readWriteSillData.referentCount(coreApi.getState())
-        ),
+        "getRegisteredUserCount": loggedProcedure.query(async () => coreContext.userApi.getUserCount()),
+        "getTotalReferentCount": loggedProcedure.query(() => {
+            const referentCount = core.states.readWriteSillData.getReferentCount();
+            return { referentCount };
+        }),
         "getTermsOfServiceUrl": loggedProcedure.query(() => termsOfServiceUrl),
         "getMarkdown": loggedProcedure
             .input(
@@ -485,7 +483,7 @@ export function createRouter(params: {
 
                 const { softwareName, reason } = input;
 
-                await coreApi.functions.readWriteSillData.unreferenceSoftware({
+                await core.functions.readWriteSillData.unreferenceSoftware({
                     softwareName,
                     reason
                 });

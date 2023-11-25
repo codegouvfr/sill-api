@@ -1,6 +1,6 @@
 import type { Db } from "./DbApi";
 import type { WikidataSoftware } from "./GetWikidataSoftware";
-import type { ComptoirDuLibre } from "./GetComptoirDuLibre";
+import type { ComptoirDuLibre } from "./ComptoirDuLibreApi";
 
 export type CompileData = (params: {
     db: Db;

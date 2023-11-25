@@ -1,9 +1,11 @@
 import structuredClone from "@ungap/structured-clone";
-import type { Thunks, RootState } from "../core";
-import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
-import { createSelector } from "@reduxjs/toolkit";
-import { createObjectThatThrowsIfAccessed, createUsecaseContextApi } from "redux-clean-architecture";
+import type { Thunks, State as RootState } from "../bootstrap";
+import {
+    createUsecaseActions,
+    createSelector,
+    createObjectThatThrowsIfAccessed,
+    createUsecaseContextApi
+} from "redux-clean-architecture";
 import { Mutex } from "async-mutex";
 import { assert, type Equals } from "tsafe/assert";
 import type { Db } from "../ports/DbApi";
@@ -16,6 +18,8 @@ import { exclude } from "tsafe/exclude";
 import { id } from "tsafe/id";
 import { WikidataSoftware } from "../ports/GetWikidataSoftware";
 import { objectKeys } from "tsafe/objectKeys";
+
+export const name = "readWriteSillData";
 
 export type Software = {
     logoUrl: string | undefined;
@@ -167,13 +171,11 @@ type State = {
     compiledData: CompiledData<"private">;
 };
 
-export const name = "readWriteSillData";
-
-export const { reducer, actions } = createSlice({
+export const { reducer, actions } = createUsecaseActions({
     name,
     "initialState": createObjectThatThrowsIfAccessed<State>(),
     "reducers": {
-        "updated": (_state, { payload }: PayloadAction<State>) => payload
+        "updated": (_state, { payload }: { payload: State }) => payload
     }
 });
 
@@ -187,9 +189,9 @@ export const protectedThunks = {
         async (...args) => {
             const { doPerPerformPeriodicalCompilation } = params;
 
-            const [dispatch, getState, extraArg] = args;
+            const [dispatch, getState, rootContext] = args;
 
-            const { dbApi, evtAction } = extraArg;
+            const { dbApi, evtAction } = rootContext;
 
             const [db, compiledData] = await Promise.all([dbApi.fetchDb(), dbApi.fetchCompiledData()]);
 
@@ -223,7 +225,7 @@ export const protectedThunks = {
             }
 
             evtAction
-                .pipe(action => action.sliceName === name && action.actionName === "updated")
+                .pipe(action => action.usecaseName === name && action.actionName === "updated")
                 .toStateful()
                 .attach(() => {
                     setTimeout(() => {
@@ -689,9 +691,9 @@ export const thunks = {
     "changeAgentOrganization":
         (params: { userId: string; email: string; newOrganization: string }) =>
         async (...args) => {
-            const [dispatch, , extraArg] = args;
+            const [dispatch, , rootContext] = args;
 
-            const { userApi } = extraArg;
+            const { userApi } = rootContext;
 
             const { userId, email, newOrganization } = params;
 
@@ -725,9 +727,9 @@ export const thunks = {
     "updateUserEmail":
         (params: { userId: string; email: string; newEmail: string }) =>
         async (...args) => {
-            const [dispatch, , extraArg] = args;
+            const [dispatch, , rootContext] = args;
 
-            const { userApi } = extraArg;
+            const { userApi } = rootContext;
 
             const { userId, email, newEmail } = params;
 
@@ -909,11 +911,11 @@ const privateThunks = {
     "transaction":
         (asyncReducer: (dbClone: Db) => Promise<{ newDb: Db; commitMessage: string } | undefined>) =>
         async (...args): Promise<void> => {
-            const [dispatch, getState, extraArg] = args;
+            const [dispatch, getState, rootContext] = args;
 
-            const { compileData, dbApi } = extraArg;
+            const { compileData, dbApi } = rootContext;
 
-            const { mutex } = getContext(extraArg);
+            const { mutex } = getContext(rootContext);
 
             await mutex.runExclusive(async () => {
                 let newDb = structuredClone(getState()[name].db);
@@ -967,11 +969,11 @@ const privateThunks = {
 
             const { triggerType } = params;
 
-            const [dispatch, getState, extraArg] = args;
+            const [dispatch, getState, rootContext] = args;
 
-            const { dbApi, compileData } = extraArg;
+            const { dbApi, compileData } = rootContext;
 
-            const { mutex } = getContext(extraArg);
+            const { mutex } = getContext(rootContext);
 
             const dbBefore = structuredClone(getState()[name].db);
 

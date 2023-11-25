@@ -3,7 +3,7 @@ import type { CompileData, CompiledData } from "../ports/CompileData";
 import type { GetWikidataSoftware, WikidataSoftware } from "../ports/GetWikidataSoftware";
 import type { GetCnllPrestatairesSill } from "../ports/GetCnllPrestatairesSill";
 import type { GetSoftwareLatestVersion } from "../ports/GetSoftwareLatestVersion";
-import type { ComptoirDuLibreApi, ComptoirDuLibre } from "../ports/GetComptoirDuLibre";
+import type { ComptoirDuLibreApi, ComptoirDuLibre } from "../ports/ComptoirDuLibreApi";
 import { exclude } from "tsafe/exclude";
 import memoize from "memoizee";
 

@@ -3,7 +3,7 @@ import * as trpcExpress from "@trpc/server/adapters/express";
 import cors from "cors";
 import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWebhookSignature";
 import compression from "compression";
-import { createCoreApi } from "../core";
+import { bootstrapCore } from "../core";
 import type { LocalizedString } from "../core/ports/GetWikidataSoftware";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
@@ -52,7 +52,7 @@ export async function startRpcService(params: {
 
     console.log({ isDevEnvironnement });
 
-    const coreApi = await createCoreApi({
+    const { core, context: coreContext } = await bootstrapCore({
         "gitDbApiParams": {
             dataRepoSshUrl,
             "sshPrivateKeyName": sshPrivateKeyForGitName,
@@ -87,7 +87,8 @@ export async function startRpcService(params: {
     });
 
     const { router } = createRouter({
-        coreApi,
+        core,
+        coreContext,
         jwtClaimByUserKey,
         "keycloakParams":
             keycloakParams === undefined
@@ -136,7 +137,7 @@ export async function startRpcService(params: {
 
                     console.log("Push on main branch of data repo");
 
-                    coreApi.functions.readWriteSillData.notifyPushOnMainBranch({
+                    core.functions.readWriteSillData.notifyPushOnMainBranch({
                         "commitMessage": reqBody.head_commit.message
                     });
 
@@ -145,9 +146,7 @@ export async function startRpcService(params: {
             })()
         )
         .get(`*/sill.json`, (...[, res]) => {
-            const { compiledDataPublicJson } = coreApi.selectors.readWriteSillData.compiledDataPublicJson(
-                coreApi.getState()
-            );
+            const compiledDataPublicJson = core.states.readWriteSillData.getCompiledDataPublicJson();
 
             res.setHeader("Content-Type", "application/json").send(Buffer.from(compiledDataPublicJson, "utf8"));
         })

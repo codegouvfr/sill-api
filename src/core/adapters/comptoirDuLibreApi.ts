@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import type { ComptoirDuLibreApi, ComptoirDuLibre } from "../ports/GetComptoirDuLibre";
+import type { ComptoirDuLibreApi, ComptoirDuLibre } from "../ports/ComptoirDuLibreApi";
 import cheerio, { type CheerioAPI, type Cheerio, type Element } from "cheerio";
 
 const url = "https://comptoir-du-libre.org/public/export/comptoir-du-libre_export_v1.json";

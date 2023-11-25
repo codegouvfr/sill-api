@@ -1,7 +1,7 @@
 import * as readWriteSillData from "./readWriteSillData";
-import * as suggestionAndAutofill from "./suggestionAndAutoFill";
+import * as suggestionAndAutoFill from "./suggestionAndAutoFill";
 
 export const usecases = {
     readWriteSillData,
-    suggestionAndAutofill
+    suggestionAndAutoFill
 };

@@ -1,5 +1,5 @@
-import type { Thunks, RootState } from "../core";
-import { createSelector } from "@reduxjs/toolkit";
+import type { Thunks, State as RootState } from "../bootstrap";
+import { createSelector } from "redux-clean-architecture";
 import { exclude } from "tsafe/exclude";
 import { assert } from "tsafe/assert";
 import { Language } from "../ports/GetWikidataSoftware";
