@@ -36,7 +36,9 @@ export function createCompileData(params: {
 
             const getWikidataSoftware = memoize(
                 async (wikidataId: string) => {
-                    getWikidataSoftware_params.clear(wikidataId);
+                    if (getCachedSoftware === undefined) {
+                        getWikidataSoftware_params.clear(wikidataId);
+                    }
                     return await getWikidataSoftware_params(wikidataId);
                 },
                 { "promise": true }
