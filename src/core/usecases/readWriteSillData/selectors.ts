@@ -25,16 +25,17 @@ const softwares = createSelector(compiledData, cache, (compiledData, cache) => {
         if (
             !same(
                 Object.fromEntries(
-                    compiledData.map(({ id, similarWikidataSoftwares }) => [
-                        id,
-                        similarWikidataSoftwares.map(({ wikidataId }) => wikidataId)
-                    ])
+                    compiledData
+                        .map(
+                            ({ id, similarWikidataSoftwares }) =>
+                                [`${id}`, similarWikidataSoftwares.map(({ wikidataId }) => wikidataId)] as const
+                        )
+                        .sort(([id1], [id2]) => id1.localeCompare(id2))
                 ),
                 Object.fromEntries(
-                    Object.entries(cache.similarSoftwares).map(([id, { similarSoftwareWikidataIds }]) => [
-                        id,
-                        similarSoftwareWikidataIds
-                    ])
+                    Object.entries(cache.similarSoftwares)
+                        .map(([id, { similarSoftwareWikidataIds }]) => [id, similarSoftwareWikidataIds] as const)
+                        .sort(([id1], [id2]) => id1.localeCompare(id2))
                 )
             )
         ) {

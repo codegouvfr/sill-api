@@ -76,13 +76,13 @@ export const protectedThunks = {
                                             software.softwareId,
                                             {
                                                 "similarSoftwareWikidataIds": (() => {
-                                                    const softwareRow = getState()[name].compiledData.find(
+                                                    const compiledDataSoftware = getState()[name].compiledData.find(
                                                         ({ id }) => id === software.softwareId
                                                     );
 
-                                                    assert(softwareRow !== undefined);
+                                                    assert(compiledDataSoftware !== undefined);
 
-                                                    return softwareRow.similarWikidataSoftwares.map(
+                                                    return compiledDataSoftware.similarWikidataSoftwares.map(
                                                         ({ wikidataId }) => wikidataId
                                                     );
                                                 })(),
