@@ -10,12 +10,8 @@ type State = {
     compiledData: CompiledData<"private">;
     cache:
         | {
-              similarSoftwares: {
-                  [softwareSillId: number]: {
-                      similarSoftwareWikidataIds: string[];
-                      similarSoftwares: Software.SimilarSoftware[];
-                  };
-              };
+              similarSoftwareWikidataIdsBySillId: { [sillId: number]: string[] };
+              similarSoftwarePartition: Software.SimilarSoftware[][];
           }
         | undefined;
 };
