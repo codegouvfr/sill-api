@@ -1,4 +1,4 @@
-import { createCoreApi } from "../src/core";
+import { bootstrapCore } from "../src/core";
 import { assert } from "tsafe/assert";
 
 const sshPrivateKeyName = process.env["SILL_SSH_NAME"];
@@ -14,7 +14,7 @@ const githubPersonalAccessTokenForApiRateLimit = process.env["SILL_GITHUB_TOKEN"
 assert(githubPersonalAccessTokenForApiRateLimit !== undefined);
 
 (async () => {
-    const coreApi = await createCoreApi({
+    const { core } = await bootstrapCore({
         "keycloakUserApiParams": undefined,
         "gitDbApiParams": {
             "dataRepoSshUrl": "git@github.com:codegouvfr/sill-data.git",
@@ -26,7 +26,7 @@ assert(githubPersonalAccessTokenForApiRateLimit !== undefined);
         "doPerformCacheInitialization": false
     });
 
-    await coreApi.functions.readWriteSillData.manuallyTriggerNonIncrementalCompilation();
+    await core.functions.readWriteSillData.manuallyTriggerNonIncrementalCompilation();
 
     process.exit(0);
 })();
