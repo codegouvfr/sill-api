@@ -51,14 +51,13 @@ export function createGitDbApi(params: GitDbApiParams): { dbApi: DbApi; initiali
 
             return dOut.pr;
         },
-        "fetchDb": ({ doForceReClone = false } = {}) => {
+        "fetchDb": () => {
             const dOut = new Deferred<Db>();
 
             gitSsh({
                 "sshUrl": dataRepoSshUrl,
                 sshPrivateKeyName,
                 sshPrivateKey,
-                doForceReClone,
                 "action": async ({ repoPath }) => {
                     const [softwareRows, agentRows, softwareReferentRows, softwareUserRows, instanceRows] =
                         await Promise.all(
