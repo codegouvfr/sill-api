@@ -1080,8 +1080,10 @@ export const selectors = (() => {
 
     const compiledData = createSelector(sliceState, state => state.compiledData);
 
-    const softwares = createSelector(compiledData, compiledData =>
-        compiledData.map(
+    const softwares = createSelector(compiledData, compiledData => {
+        const similarSoftwarePartition: Software.SimilarSoftware[][] = [];
+
+        return compiledData.map(
             (o): Software => ({
                 "logoUrl": o.logoUrl ?? o.wikidataSoftware?.logoUrl ?? o.comptoirDuLibreSoftware?.logoUrl,
                 "softwareId": o.id,
@@ -1131,6 +1133,18 @@ export const selectors = (() => {
                 "parentWikidataSoftware": o.parentWikidataSoftware,
                 "similarSoftwares": (() => {
                     const softwareAlreadySeen = new Set<string>();
+
+                    for (const similarSoftwares of similarSoftwarePartition) {
+                        for (const similarSoftware of similarSoftwares) {
+                            if (!similarSoftware.isInSill) {
+                                continue;
+                            }
+                            if (similarSoftware.softwareName === o.name) {
+                                return similarSoftwares.filter(item => item !== similarSoftware);
+                            }
+                            softwareAlreadySeen.add(similarSoftware.softwareName);
+                        }
+                    }
 
                     function wikidataSoftwareToSimilarSoftware(
                         wikidataSoftware: Pick<
@@ -1221,20 +1235,26 @@ export const selectors = (() => {
                         ]);
                     }
 
-                    return recursiveWalk(
+                    const similarSoftwares = recursiveWalk(
                         id<Software.SimilarSoftware.Sill>({
                             "isInSill": true,
                             "softwareName": o.name,
                             "softwareDescription": o.description
                         })
-                    ).filter(similarSoftware => !(similarSoftware.isInSill && similarSoftware.softwareName === o.name));
+                    );
+
+                    similarSoftwarePartition.push(similarSoftwares);
+
+                    return similarSoftwares.filter(
+                        similarSoftware => !(similarSoftware.isInSill && similarSoftware.softwareName === o.name)
+                    );
                 })(),
                 "keywords": [...o.keywords, ...(o.comptoirDuLibreSoftware?.keywords ?? [])].reduce(
                     ...removeDuplicates<string>((k1, k2) => k1.toLowerCase() === k2.toLowerCase())
                 )
             })
-        )
-    );
+        );
+    });
 
     const instances = createSelector(compiledData, (compiledData): Instance[] =>
         compiledData
