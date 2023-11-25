@@ -14,7 +14,7 @@ export function createCompileData(params: {
     getSoftwareLatestVersion: GetSoftwareLatestVersion;
 }) {
     const {
-        getWikidataSoftware: getWikidataSoftware_notMemoized,
+        getWikidataSoftware: getWikidataSoftware_params,
         comptoirDuLibreApi,
         getCnllPrestatairesSill,
         getSoftwareLatestVersion
@@ -35,7 +35,10 @@ export function createCompileData(params: {
             const partialSoftwareBySillId: Record<number, CompileData.PartialSoftware> = {};
 
             const getWikidataSoftware = memoize(
-                (wikidataId: string) => getWikidataSoftware_notMemoized({ wikidataId }),
+                async (wikidataId: string) => {
+                    getWikidataSoftware_params.clear(wikidataId);
+                    return await getWikidataSoftware_params(wikidataId);
+                },
                 { "promise": true }
             );
 

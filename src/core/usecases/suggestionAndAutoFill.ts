@@ -50,7 +50,7 @@ export const thunks = {
             const { getSoftwareLatestVersion, comptoirDuLibreApi, getWikidataSoftware } = rootContext;
 
             const [wikidataSoftware, comptoirDuLibre] = await Promise.all([
-                getWikidataSoftware({ wikidataId }),
+                getWikidataSoftware(wikidataId),
                 comptoirDuLibreApi.getComptoirDuLibre()
             ]);
 

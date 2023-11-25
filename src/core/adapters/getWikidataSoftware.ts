@@ -22,123 +22,124 @@ const { resolveLocalizedString } = createResolveLocalizedString({
     "fallbackLanguage": "en"
 });
 
-export const getWikidataSoftware: GetWikidataSoftware = async ({ wikidataId }) => {
-    const { entity } =
-        (await fetchEntity(wikidataId).catch(error => {
-            if (error instanceof WikidataFetchError) {
-                if (error.status === 404 || error.status === undefined) {
-                    return undefined;
+export const getWikidataSoftware: GetWikidataSoftware = memoize(
+    async wikidataId => {
+        const { entity } =
+            (await fetchEntity(wikidataId).catch(error => {
+                if (error instanceof WikidataFetchError) {
+                    if (error.status === 404 || error.status === undefined) {
+                        return undefined;
+                    }
+                    throw error;
                 }
-                throw error;
-            }
-        })) ?? {};
-
-    if (entity === undefined) {
-        return undefined;
-    }
-
-    const { getClaimDataValue } = createGetClaimDataValue({ entity });
-
-    const license = await (async () => {
-        const licenseId = getClaimDataValue<"wikibase-entityid">("P275")[0]?.id;
-
-        if (licenseId === undefined) {
-            return undefined;
-        }
-
-        const { entity } = await fetchEntity(licenseId).catch(() => ({ "entity": undefined }));
+            })) ?? {};
 
         if (entity === undefined) {
             return undefined;
         }
 
-        return { "label": entity.aliases.en?.[0]?.value, "id": licenseId };
-    })();
+        const { getClaimDataValue } = createGetClaimDataValue({ entity });
 
-    return {
-        wikidataId,
-        "label": wikidataSingleLocalizedStringToLocalizedString(entity.labels) ?? {
-            "en": "No label"
-        },
-        "description": wikidataSingleLocalizedStringToLocalizedString(entity.descriptions) ?? {
-            "en": "No description"
-        },
-        "logoUrl": await (async () => {
-            const value = getClaimDataValue<"string">("P154")[0];
+        const license = await (async () => {
+            const licenseId = getClaimDataValue<"wikibase-entityid">("P275")[0]?.id;
 
-            if (value === undefined) {
+            if (licenseId === undefined) {
                 return undefined;
             }
 
-            const previewUrl = encodeURI(`https://www.wikidata.org/wiki/${wikidataId}#/media/File:${value}`);
+            const { entity } = await fetchEntity(licenseId).catch(() => ({ "entity": undefined }));
 
-            const raw = await (async function callee(): Promise<string> {
-                const out = await fetch(previewUrl).then(res => {
-                    switch (res.status) {
-                        case 429:
-                            return undefined;
-                        case 200:
-                            return res.text();
+            if (entity === undefined) {
+                return undefined;
+            }
+
+            return { "label": entity.aliases.en?.[0]?.value, "id": licenseId };
+        })();
+
+        return {
+            wikidataId,
+            "label": wikidataSingleLocalizedStringToLocalizedString(entity.labels) ?? {
+                "en": "No label"
+            },
+            "description": wikidataSingleLocalizedStringToLocalizedString(entity.descriptions) ?? {
+                "en": "No description"
+            },
+            "logoUrl": await (async () => {
+                const value = getClaimDataValue<"string">("P154")[0];
+
+                if (value === undefined) {
+                    return undefined;
+                }
+
+                const previewUrl = encodeURI(`https://www.wikidata.org/wiki/${wikidataId}#/media/File:${value}`);
+
+                const raw = await (async function callee(): Promise<string> {
+                    const out = await fetch(previewUrl).then(res => {
+                        switch (res.status) {
+                            case 429:
+                                return undefined;
+                            case 200:
+                                return res.text();
+                        }
+
+                        console.error(`Request to ${previewUrl} failed for unknown reason`);
+
+                        return undefined;
+                    });
+
+                    if (out === undefined) {
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+
+                        return callee();
                     }
 
-                    console.error(`Request to ${previewUrl} failed for unknown reason`);
+                    return out;
+                })();
 
-                    return undefined;
-                });
+                const $ = cheerio.load(raw);
 
-                if (out === undefined) {
-                    await new Promise(resolve => setTimeout(resolve, 3000));
+                const endOfHref =
+                    "File:" +
+                    encodeURIComponent(value)
+                        .replace(/%2C/g, ",") //Preserve ','
+                        .replace(/%20/g, "_") //Replace ' ' by '_'
+                        .replace(/'/g, "%27"); //Replace ''' by '%27'
 
-                    return callee();
-                }
+                const url = $(`a[href$="${endOfHref}"] img`).attr("src");
 
-                return out;
-            })();
+                assert(
+                    url !== undefined,
+                    `Wikidata scrapper needs to be updated ${previewUrl} ${value}, endOfHref: ${endOfHref}`
+                );
 
-            const $ = cheerio.load(raw);
+                return url;
+            })(),
+            "framaLibreId": getClaimDataValue<"string">("P4107")[0],
+            ...(() => {
+                const websiteUrl = getClaimDataValue<"string">("P856")[0];
+                const sourceUrl = getClaimDataValue<"string">("P1324")[0];
 
-            const endOfHref =
-                "File:" +
-                encodeURIComponent(value)
-                    .replace(/%2C/g, ",") //Preserve ','
-                    .replace(/%20/g, "_") //Replace ' ' by '_'
-                    .replace(/'/g, "%27"); //Replace ''' by '%27'
+                return {
+                    sourceUrl,
+                    "websiteUrl": sourceUrl !== websiteUrl ? websiteUrl : undefined
+                };
+            })(),
+            "documentationUrl": getClaimDataValue<"string">("P2078")[0],
+            "license": license?.label,
+            "isLibreSoftware": license === undefined ? false : freeSoftwareLicensesWikidataIds.includes(license.id),
+            "developers": await Promise.all(
+                [
+                    ...getClaimDataValue<"wikibase-entityid">("P50"),
+                    ...getClaimDataValue<"wikibase-entityid">("P170"),
+                    ...getClaimDataValue<"wikibase-entityid">("P172"),
+                    ...getClaimDataValue<"wikibase-entityid">("P178")
+                ].map(async ({ id }) => {
+                    const { entity } = await fetchEntity(id).catch(() => ({ "entity": undefined }));
+                    if (entity === undefined) {
+                        return undefined;
+                    }
 
-            const url = $(`a[href$="${endOfHref}"] img`).attr("src");
-
-            assert(
-                url !== undefined,
-                `Wikidata scrapper needs to be updated ${previewUrl} ${value}, endOfHref: ${endOfHref}`
-            );
-
-            return url;
-        })(),
-        "framaLibreId": getClaimDataValue<"string">("P4107")[0],
-        ...(() => {
-            const websiteUrl = getClaimDataValue<"string">("P856")[0];
-            const sourceUrl = getClaimDataValue<"string">("P1324")[0];
-
-            return {
-                sourceUrl,
-                "websiteUrl": sourceUrl !== websiteUrl ? websiteUrl : undefined
-            };
-        })(),
-        "documentationUrl": getClaimDataValue<"string">("P2078")[0],
-        "license": license?.label,
-        "isLibreSoftware": license === undefined ? false : freeSoftwareLicensesWikidataIds.includes(license.id),
-        "developers": await Promise.all(
-            [
-                ...getClaimDataValue<"wikibase-entityid">("P50"),
-                ...getClaimDataValue<"wikibase-entityid">("P170"),
-                ...getClaimDataValue<"wikibase-entityid">("P172"),
-                ...getClaimDataValue<"wikibase-entityid">("P178")
-            ].map(async ({ id }) => {
-                const { entity } = await fetchEntity(id).catch(() => ({ "entity": undefined }));
-                if (entity === undefined) {
-                    return undefined;
-                }
-
-                /*
+                    /*
 					const { getClaimDataValue } = createGetClaimDataValue({
 						entity,
 					});
@@ -153,52 +154,57 @@ export const getWikidataSoftware: GetWikidataSoftware = async ({ wikidataId }) =
 					}
 					*/
 
-                const name = (() => {
-                    const { shortName } = (() => {
-                        const { getClaimDataValue } = createGetClaimDataValue({
-                            entity
-                        });
+                    const name = (() => {
+                        const { shortName } = (() => {
+                            const { getClaimDataValue } = createGetClaimDataValue({
+                                entity
+                            });
 
-                        const shortName = getClaimDataValue<"text-language">("P1813")[0]?.text;
+                            const shortName = getClaimDataValue<"text-language">("P1813")[0]?.text;
 
-                        return { shortName };
+                            return { shortName };
+                        })();
+
+                        if (shortName !== undefined) {
+                            return shortName;
+                        }
+
+                        const label = wikidataSingleLocalizedStringToLocalizedString(entity.labels);
+
+                        if (label === undefined) {
+                            return undefined;
+                        }
+
+                        return resolveLocalizedString(label);
                     })();
 
-                    if (shortName !== undefined) {
-                        return shortName;
-                    }
-
-                    const label = wikidataSingleLocalizedStringToLocalizedString(entity.labels);
-
-                    if (label === undefined) {
+                    if (name === undefined) {
                         return undefined;
                     }
 
-                    return resolveLocalizedString(label);
-                })();
+                    return {
+                        name,
+                        "id": entity.id
+                    };
+                })
+            ).then(developers =>
+                developers.filter(exclude(undefined)).reduce(
+                    ...(() => {
+                        const { removeDuplicates } = removeDuplicatesFactory({
+                            "areEquals": same
+                        });
 
-                if (name === undefined) {
-                    return undefined;
-                }
-
-                return {
-                    name,
-                    "id": entity.id
-                };
-            })
-        ).then(developers =>
-            developers.filter(exclude(undefined)).reduce(
-                ...(() => {
-                    const { removeDuplicates } = removeDuplicatesFactory({
-                        "areEquals": same
-                    });
-
-                    return removeDuplicates<WikidataSoftware["developers"][number]>();
-                })()
+                        return removeDuplicates<WikidataSoftware["developers"][number]>();
+                    })()
+                )
             )
-        )
-    };
-};
+        };
+    },
+    {
+        "promise": true,
+        "maxAge": 3 * 3600 * 1000
+    }
+);
 
 function wikidataSingleLocalizedStringToLocalizedString(
     wikidataSingleLocalizedString: WikiDataLocalizedString.Single
@@ -225,35 +231,30 @@ export class WikidataFetchError extends Error {
     }
 }
 
-const fetchEntity = memoize(
-    async function callee(wikidataId: string): Promise<{ entity: Entity }> {
-        const res = await fetch(`https://www.wikidata.org/wiki/Special:EntityData/${wikidataId}.json`).catch(
-            () => undefined
-        );
+async function fetchEntity(wikidataId: string): Promise<{ entity: Entity }> {
+    const res = await fetch(`https://www.wikidata.org/wiki/Special:EntityData/${wikidataId}.json`).catch(
+        () => undefined
+    );
 
-        if (res === undefined) {
-            throw new WikidataFetchError(undefined);
-        }
-
-        if (res.status === 429) {
-            return await callee(wikidataId);
-        }
-
-        if (res.status === 404) {
-            throw new WikidataFetchError(res.status);
-        }
-
-        const json = await res.json();
-
-        const entity = Object.values(json["entities"])[0] as Entity;
-
-        return { entity };
-    },
-    {
-        "promise": true,
-        "maxAge": 1000 * 3600 * 3
+    if (res === undefined) {
+        throw new WikidataFetchError(undefined);
     }
-);
+
+    if (res.status === 429) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return fetchEntity(wikidataId);
+    }
+
+    if (res.status === 404) {
+        throw new WikidataFetchError(res.status);
+    }
+
+    const json = await res.json();
+
+    const entity = Object.values(json["entities"])[0] as Entity;
+
+    return { entity };
+}
 
 function createGetClaimDataValue(params: { entity: Entity }) {
     const { entity } = params;
