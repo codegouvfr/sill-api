@@ -47,9 +47,11 @@ export function createCompileData(params: {
                 parentSoftwareWikidataId,
                 similarSoftwareWikidataIds
             } of softwareRows) {
-                console.log(`Scrapping the web for info about ${name}`);
-
                 const cache = getCachedSoftware?.({ "sillSoftwareId": sillId });
+
+                if (cache === undefined) {
+                    console.log(`Scrapping the web for info about ${name}`);
+                }
 
                 const wikidataSoftware_prev = cache?.wikidataSoftware;
 
