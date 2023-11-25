@@ -913,50 +913,64 @@ const privateThunks = {
 
             const { mutex } = getContext(rootContext);
 
-            await mutex.runExclusive(async () => {
-                let newDb = structuredClone(getState()[name].db);
+            const dLocalStateUpdated = new Deferred<void>();
 
-                const reducerReturnValue = await asyncReducer(newDb);
+            mutex
+                .runExclusive(async () => {
+                    let newDb = structuredClone(getState()[name].db);
 
-                if (reducerReturnValue === undefined) {
-                    return;
-                }
+                    const reducerReturnValue = await asyncReducer(newDb);
 
-                const { commitMessage, newDb: newDbReturnedByReducer } = reducerReturnValue;
+                    if (reducerReturnValue === undefined) {
+                        return;
+                    }
 
-                if (newDbReturnedByReducer !== undefined) {
-                    newDb = newDbReturnedByReducer;
-                }
+                    const { commitMessage, newDb: newDbReturnedByReducer } = reducerReturnValue;
 
-                const state = getState()[name];
+                    if (newDbReturnedByReducer !== undefined) {
+                        newDb = newDbReturnedByReducer;
+                    }
 
-                if (same(newDb, state.db)) {
-                    return;
-                }
+                    const state = getState()[name];
 
-                console.log("Incremental compilation started");
+                    if (same(newDb, state.db)) {
+                        return;
+                    }
 
-                //NOTE: It's important to call compileData first as it may crash
-                //and if it does it mean that if we have committed we'll end up with
-                //inconsistent state.
-                const newCompiledData = await compileData({
-                    "db": newDb,
-                    "getCachedSoftware": ({ sillSoftwareId }) =>
-                        state.compiledData.find(({ id }) => id === sillSoftwareId)
-                });
-
-                await Promise.all([
-                    dbApi.updateDb({ newDb, commitMessage }),
-                    dbApi.updateCompiledData({ newCompiledData, commitMessage })
-                ]);
-
-                dispatch(
-                    actions.updated({
+                    //NOTE: It's important to call compileData first as it may crash
+                    //and if it does it mean that if we have committed we'll end up with
+                    //inconsistent state.
+                    const newCompiledData = await compileData({
                         "db": newDb,
-                        "compiledData": newCompiledData
-                    })
-                );
-            });
+                        "getCachedSoftware": ({ sillSoftwareId }) =>
+                            state.compiledData.find(({ id }) => id === sillSoftwareId)
+                    });
+
+                    dispatch(
+                        actions.updated({
+                            "db": newDb,
+                            "compiledData": newCompiledData
+                        })
+                    );
+
+                    dLocalStateUpdated.resolve();
+
+                    try {
+                        await Promise.all([
+                            dbApi.updateDb({ newDb, commitMessage }),
+                            dbApi.updateCompiledData({ newCompiledData, commitMessage })
+                        ]);
+                    } catch (error) {
+                        console.error(
+                            `Error while updating the DB, this is fatal, terminating the process now`,
+                            String(error)
+                        );
+                        process.exit(1);
+                    }
+                })
+                .catch(error => dLocalStateUpdated.reject(error));
+
+            await dLocalStateUpdated.pr;
         },
     "triggerNonIncrementalCompilation":
         (params: { triggerType: "periodical" | "manual" | "initial" }) =>
