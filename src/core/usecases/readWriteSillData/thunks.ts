@@ -10,7 +10,9 @@ import * as suggestionAndAutoFill from "../suggestionAndAutoFill";
 import { objectKeys } from "tsafe/objectKeys";
 import { name, actions } from "./state";
 import type { SoftwareFormData, DeclarationFormData, InstanceFormData, Agent } from "./types";
-import { selectors } from "./selectors";
+import { selectors, protectedSelectors } from "./selectors";
+import { arrDiff } from "evt/tools/reducers/diff";
+import { exclude } from "tsafe/exclude";
 
 const { getContext } = createUsecaseContextApi(() => ({
     "mutex": new Mutex()
@@ -195,8 +197,12 @@ export const thunks = {
 
                     assert(index !== -1, "The software does not exist");
 
+                    let commitMessage = `${softwareRows[index].name} updated by ${agent.email}`;
+
                     {
                         const {
+                            name: name_current,
+                            similarSoftwareWikidataIds: similarSoftwareWikidataIds_current,
                             id,
                             referencedSinceTime,
                             dereferencing,
@@ -215,7 +221,7 @@ export const thunks = {
                             comptoirDuLibreId,
                             isFromFrenchPublicService,
                             isPresentInSupportContract,
-                            similarSoftwareWikidataIds,
+                            similarSoftwareWikidataIds: similarSoftwareWikidataIds_fromForm,
                             softwareDescription,
                             softwareLicense,
                             softwareMinimalVersion,
@@ -229,6 +235,95 @@ export const thunks = {
                         } = formData;
 
                         assert<Equals<typeof rest, {}>>();
+
+                        let similarSoftwareWikidataIds: string[];
+
+                        transitively_remove_similarity: {
+                            const { removed } = arrDiff(
+                                similarSoftwareWikidataIds_current,
+                                similarSoftwareWikidataIds_fromForm
+                            );
+
+                            if (removed.length === 0) {
+                                similarSoftwareWikidataIds = similarSoftwareWikidataIds_fromForm;
+                                break transitively_remove_similarity;
+                            }
+
+                            commitMessage += `; removed similar software: ${removed.join(", ")}`;
+
+                            const similarSoftwarePartition = protectedSelectors.similarSoftwarePartition(getState());
+
+                            const partition = similarSoftwarePartition.find(
+                                partition =>
+                                    partition.find(
+                                        similarSoftware =>
+                                            similarSoftware.isInSill && similarSoftware.softwareName === name_current
+                                    ) !== undefined
+                            );
+
+                            assert(partition !== undefined);
+
+                            {
+                                const wikidataIdBySoftwareName: Record<string, string> = {};
+
+                                softwareRows.forEach(({ name, wikidataId }) => {
+                                    if (wikidataId === undefined) {
+                                        return;
+                                    }
+                                    wikidataIdBySoftwareName[name] = wikidataId;
+                                });
+
+                                const partitionWikidataIds = partition
+                                    .map(similarSoftware =>
+                                        similarSoftware.isInSill
+                                            ? wikidataIdBySoftwareName[similarSoftware.softwareName]
+                                            : similarSoftware.wikidataId
+                                    )
+                                    .filter(exclude(undefined));
+
+                                similarSoftwareWikidataIds = partitionWikidataIds
+                                    .map(wikidataId => {
+                                        if (removed.includes(wikidataId)) {
+                                            return undefined;
+                                        }
+
+                                        if (wikidataId === wikidataIdBySoftwareName[name_current]) {
+                                            return undefined;
+                                        }
+
+                                        return wikidataId;
+                                    })
+                                    .filter(exclude(undefined));
+                            }
+
+                            partition.forEach(similarSoftware => {
+                                if (!similarSoftware.isInSill) {
+                                    return;
+                                }
+
+                                if (similarSoftware.softwareName === name_current) {
+                                    return;
+                                }
+
+                                const similarSoftwareRow = softwareRows.find(
+                                    ({ name }) => name === similarSoftware.softwareName
+                                );
+
+                                assert(similarSoftwareRow !== undefined);
+
+                                removed.forEach(similarSoftwareWikidataId => {
+                                    if (similarSoftwareRow.wikidataId === similarSoftwareWikidataId) {
+                                        similarSoftwareRow.similarSoftwareWikidataIds = [];
+                                        return;
+                                    }
+
+                                    similarSoftwareRow.similarSoftwareWikidataIds =
+                                        similarSoftwareRow.similarSoftwareWikidataIds.filter(
+                                            wikidataId_i => wikidataId_i !== similarSoftwareWikidataId
+                                        );
+                                });
+                            });
+                        }
 
                         softwareRows[index] = {
                             id,
@@ -272,7 +367,7 @@ export const thunks = {
                     }
 
                     return {
-                        "commitMessage": `${softwareRows[index].name} updated by ${agent.email}`,
+                        commitMessage,
                         newDb
                     };
                 })

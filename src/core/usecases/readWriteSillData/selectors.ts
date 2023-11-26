@@ -69,7 +69,7 @@ const similarSoftwarePartition = createSelector(compiledData, (compiledData): So
             }
         }
 
-        function recursiveWalk(similarSoftware: Software.SimilarSoftware): Software.SimilarSoftware[] {
+        function getPartition(similarSoftware: Software.SimilarSoftware): Software.SimilarSoftware[] {
             {
                 const id = similarSoftware.isInSill ? similarSoftware.softwareName : similarSoftware.wikidataId;
 
@@ -92,7 +92,7 @@ const similarSoftwarePartition = createSelector(compiledData, (compiledData): So
                     assert(software !== undefined);
 
                     return software.similarWikidataSoftwares
-                        .map(wikidataSoftware => recursiveWalk(wikidataSoftwareToSimilarSoftware(wikidataSoftware)))
+                        .map(wikidataSoftware => getPartition(wikidataSoftwareToSimilarSoftware(wikidataSoftware)))
                         .flat();
                 })(),
                 ...compiledData
@@ -115,7 +115,7 @@ const similarSoftwarePartition = createSelector(compiledData, (compiledData): So
                             return undefined;
                         }
 
-                        return recursiveWalk({
+                        return getPartition({
                             "isInSill": true,
                             "softwareName": software.name,
                             "softwareDescription": software.description
@@ -126,15 +126,15 @@ const similarSoftwarePartition = createSelector(compiledData, (compiledData): So
             ]);
         }
 
-        const similarSoftwares = recursiveWalk(
-            id<Software.SimilarSoftware.Sill>({
-                "isInSill": true,
-                "softwareName": o.name,
-                "softwareDescription": o.description
-            })
+        similarSoftwarePartition.push(
+            getPartition(
+                id<Software.SimilarSoftware.Sill>({
+                    "isInSill": true,
+                    "softwareName": o.name,
+                    "softwareDescription": o.description
+                })
+            )
         );
-
-        similarSoftwarePartition.push(similarSoftwares);
     });
 
     return similarSoftwarePartition;
