@@ -17,7 +17,7 @@ export function createCompileData(params: {
         getWikidataSoftware: getWikidataSoftware_params,
         comptoirDuLibreApi,
         getCnllPrestatairesSill,
-        getSoftwareLatestVersion
+        getSoftwareLatestVersion: getSoftwareLatestVersion_params
     } = params;
 
     const compileData: CompileData = async params => {
@@ -40,6 +40,16 @@ export function createCompileData(params: {
                         getWikidataSoftware_params.clear(wikidataId);
                     }
                     return await getWikidataSoftware_params(wikidataId);
+                },
+                { "promise": true }
+            );
+
+            const getSoftwareLatestVersion = memoize(
+                async (repoUrl: string) => {
+                    if (getCachedSoftware === undefined) {
+                        getSoftwareLatestVersion_params.clear(repoUrl);
+                    }
+                    return await getSoftwareLatestVersion_params(repoUrl);
                 },
                 { "promise": true }
             );
@@ -96,7 +106,7 @@ export function createCompileData(params: {
                             return undefined;
                         }
 
-                        return getSoftwareLatestVersion({ repoUrl });
+                        return getSoftwareLatestVersion(repoUrl);
                     })(),
                     (() => {
                         if (cdlSoftware_prev?.id === cdlSoftware?.id) {

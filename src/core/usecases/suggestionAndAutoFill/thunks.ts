@@ -102,13 +102,14 @@ export const thunks = {
                         ? undefined
                         : resolveLocalizedString(wikidataSoftware.description),
                 "softwareLicense": wikidataSoftware.license ?? comptoirDuLibreSoftware?.licence,
-                "softwareMinimalVersion":
-                    wikidataSoftware.sourceUrl === undefined
+                "softwareMinimalVersion": await (async () => {
+                    const repoUrl =
+                        wikidataSoftware.sourceUrl ?? comptoirDuLibreSoftware?.external_resources.repository;
+
+                    return repoUrl === undefined
                         ? undefined
-                        : await getSoftwareLatestVersion({
-                              "repoUrl":
-                                  wikidataSoftware.sourceUrl ?? comptoirDuLibreSoftware?.external_resources.repository
-                          }).then(resp => resp?.semVer),
+                        : getSoftwareLatestVersion(repoUrl).then(resp => resp?.semVer);
+                })(),
                 "softwareLogoUrl": wikidataSoftware.logoUrl ?? comptoirDuLibreLogoUrl,
                 "keywords": comptoirDuLibreKeywords ?? []
             };
