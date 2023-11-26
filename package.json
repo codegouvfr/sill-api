@@ -1,6 +1,6 @@
 {
     "name": "@codegouvfr/sill",
-    "version": "1.18.8",
+    "version": "1.18.9",
     "description": "The backend of code.gouv.fr/sill",
     "repository": {
         "type": "git",
@@ -65,7 +65,7 @@
         "i18nifty": "^1.5.3",
         "jwt-simple": "^0.5.6",
         "keycloak-backend": "^2.0.1",
-        "keycloakify": "^7.11.9",
+        "keycloakify": "^8.4.1",
         "lint-staged": "^11.1.1",
         "memoizee": "^0.4.15",
         "node-fetch": "^2.6.7",
