@@ -32,6 +32,8 @@ try {
 
     // Remove the temporary directory
     executeCommand(`rm -rf ${tmpDirBasename}`);
+
+    executeCommand("sleep 30");
 } catch (error) {
     console.error("An error occurred:", String(error));
 }
