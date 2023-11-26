@@ -2,51 +2,145 @@ import type { State as RootState } from "../../bootstrap";
 import { createSelector } from "redux-clean-architecture";
 import { assert } from "tsafe/assert";
 import { compiledDataPrivateToPublic } from "../../ports/CompileData";
-import { same } from "evt/tools/inDepth/same";
 import { removeDuplicates } from "evt/tools/reducers/removeDuplicates";
 import { exclude } from "tsafe/exclude";
 import { id } from "tsafe/id";
 import { WikidataSoftware } from "../../ports/GetWikidataSoftware";
 import { name } from "./state";
 import type { Software, Agent, Instance, DeclarationFormData } from "./types";
+import { CompiledData } from "../../ports/CompileData";
 
 const sliceState = (state: RootState) => state[name];
 
 const compiledData = createSelector(sliceState, state => state.compiledData);
 
-const cache = createSelector(sliceState, state => state.cache);
+const similarSoftwarePartition = createSelector(compiledData, (compiledData): Software.SimilarSoftware[][] => {
+    const compiledSoftwareByWikidataId: { [wikidataId: string]: CompiledData.Software<"private"> } = {};
 
-const softwares = createSelector(compiledData, cache, (compiledData, cache) => {
-    const isCacheRestorable = (() => {
-        if (cache === undefined) {
-            return false;
+    compiledData.forEach(software => {
+        if (software.wikidataSoftware === undefined) {
+            return;
+        }
+        compiledSoftwareByWikidataId[software.wikidataSoftware.wikidataId] = software;
+    });
+
+    const compiledSoftwareByName: { [name: string]: CompiledData.Software<"private"> } = {};
+
+    compiledData.forEach(software => {
+        compiledSoftwareByName[software.name] = software;
+    });
+
+    function wikidataSoftwareToSimilarSoftware(
+        wikidataSoftware: Pick<WikidataSoftware, "wikidataId" | "label" | "description" | "isLibreSoftware">
+    ): Software.SimilarSoftware {
+        const software = compiledSoftwareByWikidataId[wikidataSoftware.wikidataId];
+
+        if (software === undefined) {
+            return {
+                "isInSill": false,
+                "wikidataId": wikidataSoftware.wikidataId,
+                "label": wikidataSoftware.label,
+                "description": wikidataSoftware.description,
+                "isLibreSoftware": wikidataSoftware.isLibreSoftware
+            };
         }
 
-        if (
-            !same(
-                Object.fromEntries(
-                    compiledData
-                        .map(
-                            ({ id, similarWikidataSoftwares }) =>
-                                [`${id}`, similarWikidataSoftwares.map(({ wikidataId }) => wikidataId)] as const
-                        )
-                        .sort(([id1], [id2]) => id1.localeCompare(id2))
-                ),
-                Object.fromEntries(
-                    Object.entries(cache.similarSoftwares)
-                        .map(([id, { similarSoftwareWikidataIds }]) => [id, similarSoftwareWikidataIds] as const)
-                        .sort(([id1], [id2]) => id1.localeCompare(id2))
-                )
-            )
-        ) {
-            return false;
-        }
-
-        return true;
-    })();
+        return {
+            "isInSill": true,
+            "softwareName": software.name,
+            "softwareDescription": software.description
+        };
+    }
 
     const similarSoftwarePartition: Software.SimilarSoftware[][] = [];
 
+    compiledData.forEach(o => {
+        const softwareAlreadySeen = new Set<string>();
+
+        for (const similarSoftwares of similarSoftwarePartition) {
+            for (const similarSoftware of similarSoftwares) {
+                if (!similarSoftware.isInSill) {
+                    continue;
+                }
+                if (similarSoftware.softwareName === o.name) {
+                    return;
+                }
+                softwareAlreadySeen.add(similarSoftware.softwareName);
+            }
+        }
+
+        function recursiveWalk(similarSoftware: Software.SimilarSoftware): Software.SimilarSoftware[] {
+            {
+                const id = similarSoftware.isInSill ? similarSoftware.softwareName : similarSoftware.wikidataId;
+
+                if (softwareAlreadySeen.has(id)) {
+                    return [];
+                }
+
+                softwareAlreadySeen.add(id);
+            }
+
+            return id<Software.SimilarSoftware[]>([
+                similarSoftware,
+                ...(() => {
+                    if (!similarSoftware.isInSill) {
+                        return [];
+                    }
+
+                    const software = compiledSoftwareByName[similarSoftware.softwareName];
+
+                    assert(software !== undefined);
+
+                    return software.similarWikidataSoftwares
+                        .map(wikidataSoftware => recursiveWalk(wikidataSoftwareToSimilarSoftware(wikidataSoftware)))
+                        .flat();
+                })(),
+                ...compiledData
+                    .map(software => {
+                        const hasCurrentSimilarSoftwareInItsListOfSimilarSoftware =
+                            software.similarWikidataSoftwares.find(wikidataSoftware => {
+                                const similarSoftware_i = wikidataSoftwareToSimilarSoftware(wikidataSoftware);
+
+                                if (similarSoftware.isInSill) {
+                                    return (
+                                        similarSoftware_i.isInSill &&
+                                        similarSoftware_i.softwareName === similarSoftware.softwareName
+                                    );
+                                } else {
+                                    return wikidataSoftware.wikidataId === similarSoftware.wikidataId;
+                                }
+                            }) !== undefined;
+
+                        if (!hasCurrentSimilarSoftwareInItsListOfSimilarSoftware) {
+                            return undefined;
+                        }
+
+                        return recursiveWalk({
+                            "isInSill": true,
+                            "softwareName": software.name,
+                            "softwareDescription": software.description
+                        });
+                    })
+                    .filter(exclude(undefined))
+                    .flat()
+            ]);
+        }
+
+        const similarSoftwares = recursiveWalk(
+            id<Software.SimilarSoftware.Sill>({
+                "isInSill": true,
+                "softwareName": o.name,
+                "softwareDescription": o.description
+            })
+        );
+
+        similarSoftwarePartition.push(similarSoftwares);
+    });
+
+    return similarSoftwarePartition;
+});
+
+const softwares = createSelector(compiledData, similarSoftwarePartition, (compiledData, similarSoftwarePartition) => {
     return compiledData.map(
         (o): Software => ({
             "logoUrl": o.logoUrl ?? o.wikidataSoftware?.logoUrl ?? o.comptoirDuLibreSoftware?.logoUrl,
@@ -96,14 +190,6 @@ const softwares = createSelector(compiledData, cache, (compiledData, cache) => {
             "softwareType": o.softwareType,
             "parentWikidataSoftware": o.parentWikidataSoftware,
             "similarSoftwares": (() => {
-                if (isCacheRestorable) {
-                    assert(cache !== undefined);
-
-                    return cache.similarSoftwares[o.id].similarSoftwares;
-                }
-
-                const softwareAlreadySeen = new Set<string>();
-
                 for (const similarSoftwares of similarSoftwarePartition) {
                     for (const similarSoftware of similarSoftwares) {
                         if (!similarSoftware.isInSill) {
@@ -112,106 +198,10 @@ const softwares = createSelector(compiledData, cache, (compiledData, cache) => {
                         if (similarSoftware.softwareName === o.name) {
                             return similarSoftwares.filter(item => item !== similarSoftware);
                         }
-                        softwareAlreadySeen.add(similarSoftware.softwareName);
                     }
                 }
 
-                function wikidataSoftwareToSimilarSoftware(
-                    wikidataSoftware: Pick<WikidataSoftware, "wikidataId" | "label" | "description" | "isLibreSoftware">
-                ): Software.SimilarSoftware {
-                    const software = compiledData.find(
-                        o => o.wikidataSoftware?.wikidataId === wikidataSoftware.wikidataId
-                    );
-
-                    if (software === undefined) {
-                        return {
-                            "isInSill": false,
-                            "wikidataId": wikidataSoftware.wikidataId,
-                            "label": wikidataSoftware.label,
-                            "description": wikidataSoftware.description,
-                            "isLibreSoftware": wikidataSoftware.isLibreSoftware
-                        };
-                    }
-
-                    return {
-                        "isInSill": true,
-                        "softwareName": software.name,
-                        "softwareDescription": software.description
-                    };
-                }
-
-                function recursiveWalk(similarSoftware: Software.SimilarSoftware): Software.SimilarSoftware[] {
-                    {
-                        const id = similarSoftware.isInSill ? similarSoftware.softwareName : similarSoftware.wikidataId;
-
-                        if (softwareAlreadySeen.has(id)) {
-                            return [];
-                        }
-
-                        softwareAlreadySeen.add(id);
-                    }
-
-                    return id<Software.SimilarSoftware[]>([
-                        similarSoftware,
-                        ...(() => {
-                            if (!similarSoftware.isInSill) {
-                                return [];
-                            }
-
-                            const software = compiledData.find(o => o.name === similarSoftware.softwareName);
-
-                            assert(software !== undefined);
-
-                            return software.similarWikidataSoftwares
-                                .map(wikidataSoftware =>
-                                    recursiveWalk(wikidataSoftwareToSimilarSoftware(wikidataSoftware))
-                                )
-                                .flat();
-                        })(),
-                        ...compiledData
-                            .map(software => {
-                                const hasCurrentSimilarSoftwareInItsListOfSimilarSoftware =
-                                    software.similarWikidataSoftwares.find(wikidataSoftware => {
-                                        const similarSoftware_i = wikidataSoftwareToSimilarSoftware(wikidataSoftware);
-
-                                        if (similarSoftware.isInSill) {
-                                            return (
-                                                similarSoftware_i.isInSill &&
-                                                similarSoftware_i.softwareName === similarSoftware.softwareName
-                                            );
-                                        } else {
-                                            return wikidataSoftware.wikidataId === similarSoftware.wikidataId;
-                                        }
-                                    }) !== undefined;
-
-                                if (!hasCurrentSimilarSoftwareInItsListOfSimilarSoftware) {
-                                    return undefined;
-                                }
-
-                                return recursiveWalk({
-                                    "isInSill": true,
-                                    "softwareName": software.name,
-                                    "softwareDescription": software.description
-                                });
-                            })
-                            .filter(exclude(undefined))
-                            .flat()
-                    ]);
-                }
-
-                const similarSoftwares = recursiveWalk(
-                    id<Software.SimilarSoftware.Sill>({
-                        "isInSill": true,
-                        "softwareName": o.name,
-                        "softwareDescription": o.description
-                    })
-                );
-
-                similarSoftwarePartition.push(similarSoftwares);
-
-                return similarSoftwares.filter(
-                    similarSoftware => !(similarSoftware.isInSill && similarSoftware.softwareName === o.name)
-                );
+                return [];
             })(),
             "keywords": [...o.keywords, ...(o.comptoirDuLibreSoftware?.keywords ?? [])].reduce(
                 ...removeDuplicates<string>((k1, k2) => k1.toLowerCase() === k2.toLowerCase())
@@ -314,6 +304,10 @@ const compiledDataPublicJson = createSelector(sliceState, state => {
 
     return JSON.stringify(compiledDataPrivateToPublic(compiledData), null, 2);
 });
+
+export const protectedSelectors = {
+    similarSoftwarePartition
+};
 
 export const selectors = {
     softwares,

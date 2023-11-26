@@ -68,32 +68,6 @@ export const protectedThunks = {
 
                         objectKeys(selectors).forEach(selectorName => selectors[selectorName](getState()));
 
-                        dispatch(
-                            actions.cacheUpdated({
-                                "cache": {
-                                    "similarSoftwares": Object.fromEntries(
-                                        selectors.softwares(getState()).map(software => [
-                                            software.softwareId,
-                                            {
-                                                "similarSoftwareWikidataIds": (() => {
-                                                    const compiledDataSoftware = getState()[name].compiledData.find(
-                                                        ({ id }) => id === software.softwareId
-                                                    );
-
-                                                    assert(compiledDataSoftware !== undefined);
-
-                                                    return compiledDataSoftware.similarWikidataSoftwares.map(
-                                                        ({ wikidataId }) => wikidataId
-                                                    );
-                                                })(),
-                                                "similarSoftwares": software.similarSoftwares
-                                            }
-                                        ])
-                                    )
-                                }
-                            })
-                        );
-
                         console.log(`Cache refresh of readWriteSillData selectors done in ${Date.now() - start}ms`);
                     }, 500);
                 });
