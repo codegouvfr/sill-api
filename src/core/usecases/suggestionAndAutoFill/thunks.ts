@@ -54,7 +54,7 @@ export const thunks = {
 
             const { label: wikidataSoftwareLabel } = wikidataSoftware;
 
-            const { comptoirDuLibreSoftware } = await (async () => {
+            const { comptoirDuLibreSoftware } = (() => {
                 if (wikidataSoftwareLabel === undefined) {
                     return { "comptoirDuLibreSoftware": undefined };
                 }
