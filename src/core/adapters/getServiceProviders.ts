@@ -1,4 +1,5 @@
 import memoize from "memoizee";
+import fetch from "node-fetch";
 import { id } from "tsafe/id";
 import type { GetServiceProviders, ServiceProvidersBySillId } from "../ports/GetServiceProviders";
 
