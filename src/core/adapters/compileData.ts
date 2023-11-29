@@ -1,5 +1,6 @@
 import { assert } from "tsafe/assert";
 import type { CompileData, CompiledData } from "../ports/CompileData";
+import { GetServiceProviders } from "../ports/GetServiceProviders";
 import type { GetWikidataSoftware, WikidataSoftware } from "../ports/GetWikidataSoftware";
 import type { GetCnllPrestatairesSill } from "../ports/GetCnllPrestatairesSill";
 import type { GetSoftwareLatestVersion } from "../ports/GetSoftwareLatestVersion";
@@ -12,12 +13,14 @@ export function createCompileData(params: {
     getCnllPrestatairesSill: GetCnllPrestatairesSill;
     comptoirDuLibreApi: ComptoirDuLibreApi;
     getSoftwareLatestVersion: GetSoftwareLatestVersion;
+    getServiceProviders: GetServiceProviders;
 }) {
     const {
         getWikidataSoftware: getWikidataSoftware_params,
         comptoirDuLibreApi,
         getCnllPrestatairesSill,
-        getSoftwareLatestVersion: getSoftwareLatestVersion_params
+        getSoftwareLatestVersion: getSoftwareLatestVersion_params,
+        getServiceProviders
     } = params;
 
     const compileData: CompileData = async params => {
@@ -30,6 +33,7 @@ export function createCompileData(params: {
             comptoirDuLibreApi.getComptoirDuLibre(),
             getCnllPrestatairesSill()
         ]);
+        const serviceProvidersBySillId = await getServiceProviders();
 
         const { partialSoftwareBySillId } = await (async () => {
             const partialSoftwareBySillId: Record<number, CompileData.PartialSoftware> = {};
@@ -300,6 +304,7 @@ export function createCompileData(params: {
                     referents,
                     users
                 }): CompiledData.Software<"private"> => ({
+                    serviceProviders: serviceProvidersBySillId[sillId] ?? [],
                     "id": sillId,
                     name,
                     description,
