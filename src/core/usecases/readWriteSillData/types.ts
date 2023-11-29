@@ -1,10 +1,19 @@
-import { WikidataSoftware } from "../../ports/GetWikidataSoftware";
+import type { WikidataSoftware } from "../../ports/GetWikidataSoftware";
+
+export type ServiceProvider = {
+    name: string;
+    website?: string;
+    cdlUrl?: string;
+    cnllUrl?: string;
+    siren?: string;
+};
 
 export type Software = {
     logoUrl: string | undefined;
     softwareId: number;
     softwareName: string;
     softwareDescription: string;
+    serviceProviders: ServiceProvider[];
     latestVersion:
         | {
               semVer: string;

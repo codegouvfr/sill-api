@@ -1,3 +1,4 @@
+import { ServiceProvider } from "../usecases/readWriteSillData";
 import type { Db } from "./DbApi";
 import type { WikidataSoftware } from "./GetWikidataSoftware";
 import type { ComptoirDuLibre } from "./ComptoirDuLibreApi";
@@ -51,6 +52,7 @@ export namespace CompiledData {
             | "logoUrl"
             | "keywords"
         > & {
+            serviceProviders: ServiceProvider[];
             wikidataSoftware: WikidataSoftware | undefined;
             similarWikidataSoftwares: Pick<
                 WikidataSoftware,
@@ -131,10 +133,12 @@ export function compiledDataPrivateToPublic(compiledData: CompiledData<"private"
             workshopUrls,
             wikidataSoftware,
             similarWikidataSoftwares,
-            parentWikidataSoftware
+            parentWikidataSoftware,
+            serviceProviders
         } = software;
 
         return {
+            serviceProviders,
             annuaireCnllServiceProviders,
             catalogNumeriqueGouvFrId,
             categories,

@@ -55,9 +55,10 @@ const { parsedCONFIGURATION } = (() => {
 
     try {
         parsedCONFIGURATION = JSONC.parse(CONFIGURATION) as any;
-    } catch {
+    } catch (error) {
         throw new Error(
-            `The CONFIGURATION environnement variable is not a valid JSONC string (JSONC = JSON + Comment support)\n${CONFIGURATION}`
+            `The CONFIGURATION environnement variable is not a valid JSONC string (JSONC = JSON + Comment support)\n${CONFIGURATION}`,
+            { cause: error }
         );
     }
 
