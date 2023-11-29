@@ -43,7 +43,8 @@ export async function bootstrapCore(params: ParamsOfBootstrapCore): Promise<{ co
         { comptoirDuLibreApi },
         { createGitDbApi },
         { createKeycloakUserApi },
-        { getWikidataSoftwareOptions }
+        { getWikidataSoftwareOptions },
+        { getServiceProviders }
     ] = await Promise.all([
         import("./adapters/getSoftwareLatestVersion"),
         import("./adapters/compileData"),
@@ -52,7 +53,8 @@ export async function bootstrapCore(params: ParamsOfBootstrapCore): Promise<{ co
         import("./adapters/comptoirDuLibreApi"),
         import("./adapters/dbApi"),
         import("./adapters/userApi"),
-        import("./adapters/getWikidataSoftwareOptions")
+        import("./adapters/getWikidataSoftwareOptions"),
+        import("./adapters/getServiceProviders")
     ] as const);
 
     const { getSoftwareLatestVersion } = createGetSoftwareLatestVersion({
@@ -63,7 +65,8 @@ export async function bootstrapCore(params: ParamsOfBootstrapCore): Promise<{ co
         getWikidataSoftware,
         getCnllPrestatairesSill,
         comptoirDuLibreApi,
-        getSoftwareLatestVersion
+        getSoftwareLatestVersion,
+        getServiceProviders
     });
 
     const { dbApi, initializeDbApiCache } = createGitDbApi(gitDbApiParams);

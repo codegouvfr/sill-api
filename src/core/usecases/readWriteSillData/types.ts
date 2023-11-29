@@ -1,3 +1,4 @@
+import { ServiceProvider } from "../../ports/GetServiceProviders";
 import { WikidataSoftware } from "../../ports/GetWikidataSoftware";
 
 export type Software = {
@@ -5,6 +6,7 @@ export type Software = {
     softwareId: number;
     softwareName: string;
     softwareDescription: string;
+    serviceProviders: ServiceProvider[];
     latestVersion:
         | {
               semVer: string;
