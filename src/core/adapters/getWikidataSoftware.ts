@@ -73,28 +73,37 @@ export const getWikidataSoftware: GetWikidataSoftware = memoize(
 
                 const previewUrl = encodeURI(`https://www.wikidata.org/wiki/${wikidataId}#/media/File:${value}`);
 
-                const raw = await (async function callee(): Promise<string> {
-                    const out = await fetch(previewUrl).then(res => {
-                        switch (res.status) {
-                            case 429:
-                                return undefined;
-                            case 200:
-                                return res.text();
-                        }
+                const raw = await (async function callee(): Promise<string | undefined> {
+                    const res = await fetch(previewUrl).catch(() => undefined);
 
-                        console.error(`Request to ${previewUrl} failed for unknown reason`);
-
+                    if (res === undefined) {
                         return undefined;
-                    });
+                    }
 
-                    if (out === undefined) {
-                        await new Promise(resolve => setTimeout(resolve, 3000));
+                    // Too many requests
+                    if (res.status === 429) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
 
                         return callee();
                     }
 
-                    return out;
+                    if (res.status !== 200) {
+                        console.error(`Request to ${previewUrl} failed with error code ${res.status}`);
+                        return undefined;
+                    }
+
+                    const raw = await res.text().catch(() => undefined);
+
+                    if (raw === undefined) {
+                        return undefined;
+                    }
+
+                    return raw;
                 })();
+
+                if (raw === undefined) {
+                    return undefined;
+                }
 
                 const $ = cheerio.load(raw);
 
