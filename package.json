@@ -18,7 +18,8 @@
         "link-in-web": "ts-node --skipProject scripts/link-in-app.ts sill-web",
         "reset-data-test": "ts-node --skipProject scripts/reset-data-test.ts",
         "compile-data": "ts-node --skipProject scripts/compile-data.ts",
-        "with-local-env": "dotenv -e .env --"
+        "with-local-env": "dotenv -e .env --",
+        "typecheck": "tsc --noEmit"
     },
     "lint-staged": {
         "*.{ts,tsx,json,md}": [
