@@ -143,7 +143,7 @@ const similarSoftwarePartition = createSelector(compiledData, (compiledData): So
 const softwares = createSelector(compiledData, similarSoftwarePartition, (compiledData, similarSoftwarePartition) => {
     return compiledData.map(
         (o): Software => ({
-            "serviceProviders": [], //todo use correct data
+            "serviceProviders": o.serviceProviders,
             "logoUrl": o.logoUrl ?? o.wikidataSoftware?.logoUrl ?? o.comptoirDuLibreSoftware?.logoUrl,
             "softwareId": o.id,
             "softwareName": o.name,
