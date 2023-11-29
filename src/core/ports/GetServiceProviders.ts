@@ -1,10 +1,4 @@
-export type ServiceProvider = {
-    name: string;
-    website?: string;
-    cdlUrl?: string;
-    cnllUrl?: string;
-    siren?: string;
-};
+import { ServiceProvider } from "../usecases/readWriteSillData";
 
 export type ServiceProvidersBySillId = Partial<Record<string, ServiceProvider[]>>;
 

@@ -1,5 +1,5 @@
+import { ServiceProvider } from "../usecases/readWriteSillData";
 import type { Db } from "./DbApi";
-import { ServiceProvider } from "./GetServiceProviders";
 import type { WikidataSoftware } from "./GetWikidataSoftware";
 import type { ComptoirDuLibre } from "./ComptoirDuLibreApi";
 

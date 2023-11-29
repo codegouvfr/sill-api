@@ -7,5 +7,6 @@ export type {
     SoftwareFormData,
     DeclarationFormData,
     InstanceFormData,
-    SoftwareType
+    SoftwareType,
+    ServiceProvider
 } from "../core/usecases/readWriteSillData";
