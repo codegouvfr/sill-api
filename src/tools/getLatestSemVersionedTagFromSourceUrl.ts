@@ -12,8 +12,9 @@ import { graphql } from "@octokit/graphql";
 export async function getLatestSemVersionedTagFromSourceUrl(params: {
     sourceUrl: string;
     githubPersonalAccessTokenForApiRateLimit: string | undefined;
+    isQuick: boolean;
 }): Promise<{ version: string; publicationTime: number } | undefined> {
-    const { sourceUrl, githubPersonalAccessTokenForApiRateLimit } = params;
+    const { sourceUrl, githubPersonalAccessTokenForApiRateLimit, isQuick } = params;
 
     let parsedGitHubRepoUrl: ReturnType<typeof parseGitHubRepoUrl>;
 
@@ -29,34 +30,43 @@ export async function getLatestSemVersionedTagFromSourceUrl(params: {
         return undefined;
     }
 
-    const tags = await (async () => {
-        const tags: string[] = [];
+    const tags = isQuick
+        ? []
+        : await (async () => {
+              const tags: string[] = [];
 
-        const { listTags } = listTagsFactory({
-            octokit
-        });
+              const { listTags } = listTagsFactory({
+                  octokit
+              });
 
-        const asyncIterator = listTags({
-            "owner": parsedGitHubRepoUrl.owner,
-            "repo": parsedGitHubRepoUrl.repoName
-        });
+              const asyncIterator = listTags({
+                  "owner": parsedGitHubRepoUrl.owner,
+                  "repo": parsedGitHubRepoUrl.repoName
+              });
 
-        async_iter: for await (const tag of asyncIterator) {
-            for (const search of ["rc.", "alpha", "beta", "nightly", "canary", "pre", "wip", "next."]) {
-                if (tag.toLowerCase().includes(search)) {
-                    continue async_iter;
-                }
-            }
+              const start = Date.now();
 
-            if (/rc[0-9]/.test(tag)) {
-                continue;
-            }
+              async_iter: for await (const tag of asyncIterator) {
+                  if (Date.now() - start > 30 * 1000) {
+                      console.log(`Listing ${sourceUrl} tags with octokit REST is taking too long, aborting...`);
+                      return [];
+                  }
 
-            tags.push(tag);
-        }
+                  for (const search of ["rc.", "alpha", "beta", "nightly", "canary", "pre", "wip", "next."]) {
+                      if (tag.toLowerCase().includes(search)) {
+                          continue async_iter;
+                      }
+                  }
 
-        return tags;
-    })().catch(() => id<string[]>([]));
+                  if (/rc[0-9]/.test(tag)) {
+                      continue;
+                  }
+
+                  tags.push(tag);
+              }
+
+              return tags;
+          })().catch(() => id<string[]>([]));
 
     const semverTags_valid: { tag: string; version: string }[] = tags
         .map(tag => {
@@ -174,11 +184,14 @@ export async function getLatestSemVersionedTagFromSourceUrl(params: {
         };
     }
 
-    const allTagsWithDates = await getAllTagsWithDatesUsingGraphQLApi({
-        "owner": parsedGitHubRepoUrl.owner,
-        "name": parsedGitHubRepoUrl.repoName,
-        "githubToken": githubPersonalAccessTokenForApiRateLimit
-    });
+    const allTagsWithDates =
+        tags.length === 0
+            ? null
+            : await getAllTagsWithDatesUsingGraphQLApi({
+                  "owner": parsedGitHubRepoUrl.owner,
+                  "name": parsedGitHubRepoUrl.repoName,
+                  "githubToken": githubPersonalAccessTokenForApiRateLimit
+              });
 
     if (allTagsWithDates !== null) {
         const latestTagWithDate = allTagsWithDates
@@ -318,8 +331,15 @@ const getAllTagsWithDatesUsingGraphQLApi = async (params: { owner: string; name:
     let hasNextPage = true;
     let afterCursor: string | undefined;
 
+    const start = Date.now();
+
     try {
         while (hasNextPage) {
+            if (Date.now() - start > 30 * 1000) {
+                console.log(`Listing ${owner}/${name} tags with octokit GraphQL is taking too long, aborting...`);
+                return null;
+            }
+
             const data: any = await graphql(query, {
                 headers: {
                     authorization: `token ${githubToken}`

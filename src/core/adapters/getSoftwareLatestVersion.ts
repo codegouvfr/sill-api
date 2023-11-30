@@ -6,10 +6,18 @@ export function createGetSoftwareLatestVersion(params: { githubPersonalAccessTok
     const { githubPersonalAccessTokenForApiRateLimit } = params;
 
     const getSoftwareLatestVersion: GetSoftwareLatestVersion = memoize(
-        async repoUrl => {
+        async (repoUrl, strategy) => {
             const resp = await getLatestSemVersionedTagFromSourceUrl({
                 githubPersonalAccessTokenForApiRateLimit,
-                "sourceUrl": repoUrl
+                "sourceUrl": repoUrl,
+                "isQuick": (() => {
+                    switch (strategy) {
+                        case "look everywhere":
+                            return false;
+                        case "quick":
+                            return true;
+                    }
+                })()
             });
 
             if (resp === undefined) {

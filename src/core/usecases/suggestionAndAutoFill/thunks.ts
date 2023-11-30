@@ -108,7 +108,7 @@ export const thunks = {
 
                     return repoUrl === undefined
                         ? undefined
-                        : getSoftwareLatestVersion(repoUrl).then(resp => resp?.semVer);
+                        : getSoftwareLatestVersion(repoUrl, "quick").then(resp => resp?.semVer);
                 })(),
                 "softwareLogoUrl": wikidataSoftware.logoUrl ?? comptoirDuLibreLogoUrl,
                 "keywords": comptoirDuLibreKeywords ?? []

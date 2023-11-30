@@ -53,7 +53,11 @@ export function createCompileData(params: {
                     if (getCachedSoftware === undefined) {
                         getSoftwareLatestVersion_params.clear(repoUrl);
                     }
-                    return await getSoftwareLatestVersion_params(repoUrl);
+
+                    return await getSoftwareLatestVersion_params(
+                        repoUrl,
+                        getCachedSoftware === undefined ? "look everywhere" : "quick"
+                    );
                 },
                 { "promise": true }
             );
