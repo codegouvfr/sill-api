@@ -11,7 +11,7 @@
     "scripts": {
         "build": "tsc",
         "start": "./.env.local.sh dist/main.js",
-        "dev": "yarn with-local-env ./.env.local.sh dist/main.js",
+        "dev": "./.my-env.local.sh dist/main.js",
         "_format": "prettier \"**/*.{ts,tsx,json,md}\"",
         "format": "yarn run _format --write",
         "format:check": "yarn run _format --list-different",
@@ -19,7 +19,6 @@
         "reset-data-test": "ts-node --skipProject scripts/reset-data-test.ts",
         "compile-data": "ts-node --skipProject scripts/compile-data.ts",
         "dev-compile-data": "yarn with-local-env ts-node --skipProject scripts/compile-data.ts",
-        "with-local-env": "dotenv -e .env --",
         "typecheck": "tsc --noEmit"
     },
     "lint-staged": {
@@ -62,7 +61,6 @@
         "cra-envs": "^1.2.1",
         "csv-parse": "^5.0.4",
         "deepmerge": "^4.2.2",
-        "dotenv-cli": "^7.3.0",
         "evt": "^2.4.18",
         "express": "^4.17.2",
         "forever": "^4.0.3",
