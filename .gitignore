@@ -45,4 +45,4 @@ jspm_packages
 /git_tmp_xIdLsIt*
 /.yarn_home
 
-/.my-env.local.sh
+/.env.local.sh
