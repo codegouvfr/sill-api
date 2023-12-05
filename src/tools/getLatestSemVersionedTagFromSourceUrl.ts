@@ -7,6 +7,7 @@ import { exclude } from "tsafe/exclude";
 import { id } from "tsafe/id";
 import { assert } from "tsafe/assert";
 import { graphql } from "@octokit/graphql";
+import fetch from "node-fetch";
 
 /** NOTE: This function can't throw */
 export async function getLatestSemVersionedTagFromSourceUrl(params: {
@@ -24,7 +25,7 @@ export async function getLatestSemVersionedTagFromSourceUrl(params: {
         return undefined;
     }
 
-    const octokit = new Octokit({ "auth": githubPersonalAccessTokenForApiRateLimit });
+    const octokit = new Octokit({ "auth": githubPersonalAccessTokenForApiRateLimit, "request": { fetch } });
 
     if (githubPersonalAccessTokenForApiRateLimit === undefined) {
         return undefined;
@@ -341,12 +342,15 @@ const getAllTagsWithDatesUsingGraphQLApi = async (params: { owner: string; name:
             }
 
             const data: any = await graphql(query, {
-                headers: {
-                    authorization: `token ${githubToken}`
+                "headers": {
+                    "authorization": `token ${githubToken}`
+                },
+                "request": {
+                    fetch
                 },
                 owner,
                 name,
-                after: afterCursor
+                "after": afterCursor
             });
 
             const newTags = (data.repository.refs.nodes as any[])
