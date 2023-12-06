@@ -29,16 +29,17 @@ export function createCompileData(params: {
             getCachedSoftware
         } = params;
 
-        const [{ softwares: cdlSoftwares }, cnllPrestatairesSill] = await Promise.all([
-            comptoirDuLibreApi.getComptoirDuLibre(),
-            getCnllPrestatairesSill()
-        ]);
-
         if (getCachedSoftware === undefined) {
             getServiceProviders.clear();
+            getCnllPrestatairesSill.clear();
+            comptoirDuLibreApi.getComptoirDuLibre.clear();
         }
 
-        const serviceProvidersBySillId = await getServiceProviders();
+        const [{ softwares: cdlSoftwares }, cnllPrestatairesSill, serviceProvidersBySillId] = await Promise.all([
+            comptoirDuLibreApi.getComptoirDuLibre(),
+            getCnllPrestatairesSill(),
+            getServiceProviders()
+        ]);
 
         const { partialSoftwareBySillId } = await (async () => {
             const partialSoftwareBySillId: Record<number, CompileData.PartialSoftware> = {};
@@ -106,7 +107,7 @@ export function createCompileData(params: {
                         const getRepoUrl = (
                             wikidataSoftware: WikidataSoftware | undefined,
                             cdlSoftware: ComptoirDuLibre.Software | undefined
-                        ) => wikidataSoftware?.sourceUrl ?? cdlSoftware?.external_resources?.repository;
+                        ) => wikidataSoftware?.sourceUrl ?? cdlSoftware?.external_resources?.repository ?? undefined;
 
                         const repoUrl_prev = getRepoUrl(wikidataSoftware_prev, cdlSoftware_prev);
                         const repoUrl = getRepoUrl(wikidataSoftware, cdlSoftware);
@@ -287,7 +288,7 @@ export function createCompileData(params: {
             .map(
                 ({
                     softwareRow: {
-                        id: sillId,
+                        "id": sillId,
                         name,
                         description,
                         referencedSinceTime,
@@ -313,7 +314,6 @@ export function createCompileData(params: {
                     referents,
                     users
                 }): CompiledData.Software<"private"> => ({
-                    "serviceProviders": serviceProvidersBySillId[sillId] ?? [],
                     "id": sillId,
                     name,
                     description,
@@ -335,6 +335,7 @@ export function createCompileData(params: {
                     addedByAgentEmail,
                     logoUrl,
                     keywords,
+                    "serviceProviders": serviceProvidersBySillId[sillId] ?? [],
                     "wikidataSoftware": partialSoftwareBySillId[sillId].wikidataSoftware,
                     "similarWikidataSoftwares": partialSoftwareBySillId[sillId].similarWikidataSoftwares,
                     "parentWikidataSoftware": partialSoftwareBySillId[sillId].parentWikidataSoftware,

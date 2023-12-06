@@ -1,12 +1,36 @@
 import type { GetSoftwareLatestVersion } from "../ports/GetSoftwareLatestVersion";
 import { getLatestSemVersionedTagFromSourceUrl } from "../../tools/getLatestSemVersionedTagFromSourceUrl";
-import memoize from "memoizee";
 
-export function createGetSoftwareLatestVersion(params: { githubPersonalAccessTokenForApiRateLimit: string }) {
+export function createGetSoftwareLatestVersion(params: { githubPersonalAccessTokenForApiRateLimit: string }): {
+    getSoftwareLatestVersion: GetSoftwareLatestVersion;
+} {
     const { githubPersonalAccessTokenForApiRateLimit } = params;
 
-    const getSoftwareLatestVersion: GetSoftwareLatestVersion = memoize(
-        async (repoUrl, strategy) => {
+    const cacheQuick = new Map<string, Promise<{ semVer: string; publicationTime: number } | undefined>>();
+    const cacheLookEverywhere = new Map<string, Promise<{ semVer: string; publicationTime: number } | undefined>>();
+
+    async function getSoftwareLatestVersion(
+        repoUrl: string,
+        strategy: "quick" | "look everywhere"
+    ): Promise<{ semVer: string; publicationTime: number } | undefined> {
+        {
+            let cachedPr: Promise<{ semVer: string; publicationTime: number } | undefined> | undefined = undefined;
+
+            cachedPr = cacheLookEverywhere.get(repoUrl);
+
+            if (cachedPr !== undefined) {
+                return cachedPr;
+            }
+
+            if (strategy === "quick") {
+                cachedPr = cacheQuick.get(repoUrl);
+                if (cachedPr !== undefined) {
+                    return cachedPr;
+                }
+            }
+        }
+
+        const pr = (async () => {
             const resp = await getLatestSemVersionedTagFromSourceUrl({
                 githubPersonalAccessTokenForApiRateLimit,
                 "sourceUrl": repoUrl,
@@ -30,12 +54,24 @@ export function createGetSoftwareLatestVersion(params: { githubPersonalAccessTok
                 "semVer": version,
                 publicationTime
             };
-        },
-        {
-            "maxAge": 3 * 3600 * 1000,
-            "promise": true
+        })();
+
+        switch (strategy) {
+            case "look everywhere":
+                cacheLookEverywhere.set(repoUrl, pr);
+                break;
+            case "quick":
+                cacheQuick.set(repoUrl, pr);
+                break;
         }
-    );
+
+        return pr;
+    }
+
+    getSoftwareLatestVersion.clear = (repoUrl: string) => {
+        cacheLookEverywhere.delete(repoUrl);
+        cacheQuick.delete(repoUrl);
+    };
 
     return { getSoftwareLatestVersion };
 }

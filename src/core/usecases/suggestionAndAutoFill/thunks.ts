@@ -104,7 +104,9 @@ export const thunks = {
                 "softwareLicense": wikidataSoftware.license ?? comptoirDuLibreSoftware?.licence,
                 "softwareMinimalVersion": await (async () => {
                     const repoUrl =
-                        wikidataSoftware.sourceUrl ?? comptoirDuLibreSoftware?.external_resources.repository;
+                        wikidataSoftware.sourceUrl ??
+                        comptoirDuLibreSoftware?.external_resources.repository ??
+                        undefined;
 
                     return repoUrl === undefined
                         ? undefined

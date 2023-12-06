@@ -179,9 +179,9 @@ const softwares = createSelector(compiledData, similarSoftwarePartition, (compil
                     "authorUrl": `https://www.wikidata.org/wiki/${developer.id}`
                 })) ?? [],
             "officialWebsiteUrl":
-                o.wikidataSoftware?.websiteUrl ?? o.comptoirDuLibreSoftware?.external_resources.website,
+                o.wikidataSoftware?.websiteUrl ?? o.comptoirDuLibreSoftware?.external_resources.website ?? undefined,
             "codeRepositoryUrl":
-                o.wikidataSoftware?.sourceUrl ?? o.comptoirDuLibreSoftware?.external_resources.repository,
+                o.wikidataSoftware?.sourceUrl ?? o.comptoirDuLibreSoftware?.external_resources.repository ?? undefined,
             "versionMin": o.versionMin,
             "license": o.license,
             "comptoirDuLibreServiceProviderCount": o.comptoirDuLibreSoftware?.providers.length ?? 0,
