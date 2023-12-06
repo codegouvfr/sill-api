@@ -33,6 +33,11 @@ export function createCompileData(params: {
             comptoirDuLibreApi.getComptoirDuLibre(),
             getCnllPrestatairesSill()
         ]);
+
+        if (getCachedSoftware === undefined) {
+            getServiceProviders.clear();
+        }
+
         const serviceProvidersBySillId = await getServiceProviders();
 
         const { partialSoftwareBySillId } = await (async () => {
@@ -308,7 +313,7 @@ export function createCompileData(params: {
                     referents,
                     users
                 }): CompiledData.Software<"private"> => ({
-                    serviceProviders: serviceProvidersBySillId[sillId] ?? [],
+                    "serviceProviders": serviceProvidersBySillId[sillId] ?? [],
                     "id": sillId,
                     name,
                     description,
