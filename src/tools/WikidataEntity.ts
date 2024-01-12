@@ -26,7 +26,7 @@ export type DataValue<Type extends "wikibase-entityid" | "string" | "text-langua
 export type StatementClaim<Type extends "wikibase-entityid" | "string" | "text-language"> = {
     type: "statement";
     id: string;
-    rank: "preferred" | "normal";
+    rank: "preferred" | "normal" | "deprecated";
     mainsnak: {
         snaktype: "value";
         property: string;
