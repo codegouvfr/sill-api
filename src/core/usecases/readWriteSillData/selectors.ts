@@ -182,6 +182,7 @@ const softwares = createSelector(compiledData, similarSoftwarePartition, (compil
                 o.wikidataSoftware?.websiteUrl ?? o.comptoirDuLibreSoftware?.external_resources.website ?? undefined,
             "codeRepositoryUrl":
                 o.wikidataSoftware?.sourceUrl ?? o.comptoirDuLibreSoftware?.external_resources.repository ?? undefined,
+            "documentationUrl": o.wikidataSoftware?.documentationUrl,
             "versionMin": o.versionMin,
             "license": o.license,
             "comptoirDuLibreServiceProviderCount": o.comptoirDuLibreSoftware?.providers.length ?? 0,

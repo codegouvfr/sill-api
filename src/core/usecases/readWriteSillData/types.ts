@@ -39,6 +39,7 @@ export type Software = {
     }[];
     officialWebsiteUrl: string | undefined;
     codeRepositoryUrl: string | undefined;
+    documentationUrl: string | undefined;
     versionMin: string;
     license: string;
     comptoirDuLibreServiceProviderCount: number;
