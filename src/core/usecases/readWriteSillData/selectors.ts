@@ -155,7 +155,7 @@ const softwares = createSelector(compiledData, similarSoftwarePartition, (compil
             "dereferencing": o.dereferencing,
             "categories": o.categories,
             "prerogatives": {
-                "doRespectRgaa": o.doRespectRgaa ?? false,
+                "doRespectRgaa": o.doRespectRgaa,
                 "isFromFrenchPublicServices": o.isFromFrenchPublicService,
                 "isPresentInSupportContract": o.isPresentInSupportContract
             },

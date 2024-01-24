@@ -31,7 +31,7 @@ export type Software = {
           }
         | undefined;
     categories: string[];
-    prerogatives: Record<Prerogative, boolean>;
+    prerogatives: Prerogatives;
     userAndReferentCountByOrganization: Record<string, { userCount: number; referentCount: number }>;
     authors: {
         authorName: string;
@@ -104,7 +104,12 @@ export namespace SoftwareType {
     };
 }
 
-export type Prerogative = "isPresentInSupportContract" | "isFromFrenchPublicServices" | "doRespectRgaa";
+type Prerogatives = {
+    isPresentInSupportContract: boolean;
+    isFromFrenchPublicServices: boolean;
+    doRespectRgaa: boolean | null;
+};
+export type Prerogative = keyof Prerogatives;
 
 export type Os = "windows" | "linux" | "mac" | "android" | "ios";
 
@@ -121,7 +126,7 @@ export type SoftwareFormData = {
     similarSoftwareWikidataIds: string[];
     softwareLogoUrl: string | undefined;
     softwareKeywords: string[];
-    doRespectRgaa: boolean;
+    doRespectRgaa: boolean | null;
 };
 
 export type DeclarationFormData = DeclarationFormData.User | DeclarationFormData.Referent;

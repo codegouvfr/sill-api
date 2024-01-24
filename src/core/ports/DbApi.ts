@@ -29,7 +29,7 @@ export namespace Db {
         };
         isStillInObservation: boolean;
         parentSoftwareWikidataId: string | undefined;
-        doRespectRgaa: boolean;
+        doRespectRgaa: boolean | null;
         isFromFrenchPublicService: boolean;
         isPresentInSupportContract: boolean;
         similarSoftwareWikidataIds: string[];

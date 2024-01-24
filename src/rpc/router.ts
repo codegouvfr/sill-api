@@ -544,7 +544,7 @@ const zSoftwareFormData = (() => {
         "similarSoftwareWikidataIds": z.array(z.string()),
         "softwareLogoUrl": z.string().optional(),
         "softwareKeywords": z.array(z.string()),
-        "doRespectRgaa": z.boolean()
+        "doRespectRgaa": z.boolean().or(z.null())
     });
 
     {
