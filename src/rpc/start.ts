@@ -145,7 +145,11 @@ export async function startRpcService(params: {
                 };
             })()
         )
-        .get(`*/sill.json`, (...[, res]) => {
+        .get(`*/sill.json`, (req, res) => {
+            if (redirectUrl !== undefined) {
+                return res.redirect(redirectUrl + req.originalUrl);
+            }
+
             const compiledDataPublicJson = core.states.readWriteSillData.getCompiledDataPublicJson();
 
             res.setHeader("Content-Type", "application/json").send(Buffer.from(compiledDataPublicJson, "utf8"));
