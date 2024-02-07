@@ -43,12 +43,11 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-<<<<<<< HEAD
 "@babel/parser@^7.22.7":
   version "7.23.9"
   resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.23.9.tgz#7b903b6149b0f8fa7ad564af646c4c38a77fc44b"
   integrity sha512-9tcKgqKbs3xGJ+NtKF2ndOBBLVwPjl1SHxPQkd36r3Dlirw3xWUeGaTbqr7uGZcTaxkVNwc+03SVP7aCdWrTlA==
-=======
+
 "@babel/runtime-corejs3@^7.16.5":
   version "7.23.9"
   resolved "https://registry.yarnpkg.com/@babel/runtime-corejs3/-/runtime-corejs3-7.23.9.tgz#1b43062a13ecb60158aecdd81bc3fab4108b7cbc"
@@ -56,7 +55,6 @@
   dependencies:
     core-js-pure "^3.30.2"
     regenerator-runtime "^0.14.0"
->>>>>>> 9f40b6d (WIP fetching Hal software data)
 
 "@babel/runtime@^7.9.2":
   version "7.21.0"
@@ -95,16 +93,6 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-<<<<<<< HEAD
-"@jridgewell/gen-mapping@^0.3.2":
-  version "0.3.3"
-  resolved "https://registry.yarnpkg.com/@jridgewell/gen-mapping/-/gen-mapping-0.3.3.tgz#7e02e6eb5df901aaedb08514203b096614024098"
-  integrity sha512-HLhSWOLRi875zjjMG/r+Nv0oCW8umGb0BgEhyX3dDX3egwZtB8PqLnjz3yedt8R5StBrzcg4aBpnh8UA9D1BoQ==
-  dependencies:
-    "@jridgewell/set-array" "^1.0.1"
-    "@jridgewell/sourcemap-codec" "^1.4.10"
-    "@jridgewell/trace-mapping" "^0.3.9"
-=======
 "@esbuild/aix-ppc64@0.19.12":
   version "0.19.12"
   resolved "https://registry.yarnpkg.com/@esbuild/aix-ppc64/-/aix-ppc64-0.19.12.tgz#d1bc06aedb6936b3b6d313bf809a5a40387d2b7f"
@@ -226,7 +214,15 @@
   integrity sha512-mo5j5X+jIZmJQveBKeS/clAueipV7KgiX1vMgCxam1RNYiqE1w62n0/tJJnHtjW8ZHcQco5gY85jA3mi0L+nSA==
   dependencies:
     "@sinclair/typebox" "^0.27.8"
->>>>>>> 9f40b6d (WIP fetching Hal software data)
+
+"@jridgewell/gen-mapping@^0.3.2":
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/@jridgewell/gen-mapping/-/gen-mapping-0.3.3.tgz#7e02e6eb5df901aaedb08514203b096614024098"
+  integrity sha512-HLhSWOLRi875zjjMG/r+Nv0oCW8umGb0BgEhyX3dDX3egwZtB8PqLnjz3yedt8R5StBrzcg4aBpnh8UA9D1BoQ==
+  dependencies:
+    "@jridgewell/set-array" "^1.0.1"
+    "@jridgewell/sourcemap-codec" "^1.4.10"
+    "@jridgewell/trace-mapping" "^0.3.9"
 
 "@jridgewell/resolve-uri@^3.0.3":
   version "3.1.0"
@@ -248,11 +244,7 @@
   resolved "https://registry.yarnpkg.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.4.14.tgz#add4c98d341472a289190b424efbdb096991bb24"
   integrity sha512-XPSJHWmi394fuUuzDnGz1wiKqWfo1yXecHQMRf2l6hztTO+nPru658AyDngaBe7isIxEkRsPR3FZh+s7iVa4Uw==
 
-<<<<<<< HEAD
-"@jridgewell/sourcemap-codec@^1.4.14":
-=======
-"@jridgewell/sourcemap-codec@^1.4.15":
->>>>>>> 9f40b6d (WIP fetching Hal software data)
+"@jridgewell/sourcemap-codec@^1.4.14", "@jridgewell/sourcemap-codec@^1.4.15":
   version "1.4.15"
   resolved "https://registry.yarnpkg.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.4.15.tgz#d7c6e6755c78567a951e04ab52ef0fd26de59f32"
   integrity sha512-eF2rxCRulEKXHTRiDrDy6erMYWqNw4LPdQ8UQA4huuxaQsVeRPFl2oM8oDGxMFhJUWZf9McpLtJasDDZb/Bpeg==
@@ -585,19 +577,11 @@
   dependencies:
     deepmerge "*"
 
-<<<<<<< HEAD
-=======
-"@types/ejs@^3.1.0":
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/@types/ejs/-/ejs-3.1.2.tgz#75d277b030bc11b3be38c807e10071f45ebc78d9"
-  integrity sha512-ZmiaE3wglXVWBM9fyVC17aGPkLo/UgaOjEiI2FXQfyczrCefORPxIe+2dVmnmk3zkVIbizjrlQzmPGhSYGXG5g==
-
 "@types/estree@1.0.5", "@types/estree@^1.0.0":
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/@types/estree/-/estree-1.0.5.tgz#a6ce3e556e00fd9895dd872dd172ad0d4bd687f4"
   integrity sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==
 
->>>>>>> 9f40b6d (WIP fetching Hal software data)
 "@types/express-serve-static-core@^4.17.18", "@types/express-serve-static-core@^4.17.33":
   version "4.17.33"
   resolved "https://registry.yarnpkg.com/@types/express-serve-static-core/-/express-serve-static-core-4.17.33.tgz#de35d30a9d637dc1450ad18dd583d75d5733d543"
@@ -898,7 +882,6 @@ array-unique@^0.3.2:
   resolved "https://registry.yarnpkg.com/array-unique/-/array-unique-0.3.2.tgz#a894b75d4bc4f6cd679ef3244a9fd8f46ae2d428"
   integrity sha512-SleRWjh9JUud2wH1hPs9rZBZ33H6T9HOiL0uwGnGx9FpE6wKGyfWugmbkEOIs6qWrZhg0LWeLziLrEwQJhs5mQ==
 
-<<<<<<< HEAD
 assert@^2.0.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/assert/-/assert-2.1.0.tgz#6d92a238d05dc02e7427c881fb8be81c8448b2dd"
@@ -909,12 +892,11 @@ assert@^2.0.0:
     object-is "^1.1.5"
     object.assign "^4.1.4"
     util "^0.12.5"
-=======
+
 assertion-error@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/assertion-error/-/assertion-error-1.1.0.tgz#e60b6b0e8f301bd97e5375215bda406c85118c0b"
   integrity sha512-jgsaNduz+ndvGyFt3uSuWqvy4lCnIJiovtouQN5JZHOKCS2QuhEdbcQHFhVksz2N2U9hXJo8odG7ETyWlEeuDw==
->>>>>>> 9f40b6d (WIP fetching Hal software data)
 
 assign-symbols@^1.0.0:
   version "1.0.0"
@@ -4078,12 +4060,6 @@ posix-character-classes@^0.1.0:
   resolved "https://registry.yarnpkg.com/posix-character-classes/-/posix-character-classes-0.1.1.tgz#01eac0fe3b5af71a2a6c02feabb8c1fef7e00eab"
   integrity sha512-xTgYBc3fuo7Yt7JbiuFxSYGToMoz8fLoE6TC9Wx1P/u+LfeThMOAqmuyECnlBaaJb+u1m9hHiXUEtwW4OzfUJg==
 
-<<<<<<< HEAD
-powerhooks@^1.0.5:
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/powerhooks/-/powerhooks-1.0.8.tgz#e64e10b7f9cb2f367a3e92da2be8d2373f3d2418"
-  integrity sha512-BJJIJ5G/aT65Pbu7zAoOgK1NsWcRmho0W4sRSbKen/pqemkxG+2YsX4d8c2j6cbE1ldnN0muf76YnV5k4RwURw==
-=======
 postcss@^8.4.32:
   version "8.4.34"
   resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.34.tgz#563276e86b4ff20dfa5eed0d394d4c53853b2051"
@@ -4093,11 +4069,10 @@ postcss@^8.4.32:
     picocolors "^1.0.0"
     source-map-js "^1.0.2"
 
-powerhooks@^0.26.8:
-  version "0.26.8"
-  resolved "https://registry.yarnpkg.com/powerhooks/-/powerhooks-0.26.8.tgz#fa93e6141e424c17c031a56f77fde1c75e128dbc"
-  integrity sha512-lXuxiZgAEtPP/FPRCLOncE2ibHrZH1UQ3RRYcWFIK4zd7Hbf54p4OjS8n3/6cKTf8BhbU0b1AUio1hEPWO10Gg==
->>>>>>> 9f40b6d (WIP fetching Hal software data)
+powerhooks@^1.0.5:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/powerhooks/-/powerhooks-1.0.8.tgz#e64e10b7f9cb2f367a3e92da2be8d2373f3d2418"
+  integrity sha512-BJJIJ5G/aT65Pbu7zAoOgK1NsWcRmho0W4sRSbKen/pqemkxG+2YsX4d8c2j6cbE1ldnN0muf76YnV5k4RwURw==
   dependencies:
     evt "^2.5.7"
     memoizee "^0.4.15"
@@ -4907,12 +4882,6 @@ timers-ext@^0.1.7:
     es5-ext "~0.10.46"
     next-tick "1"
 
-<<<<<<< HEAD
-to-fast-properties@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/to-fast-properties/-/to-fast-properties-2.0.0.tgz#dc5e698cbd079265bc73e0377681a4e4e83f616e"
-  integrity sha512-/OaKK0xYrs3DmxRYqL/yDc+FxFUVYhDlXMhRmv3z915w2HF1tnN1omB354j8VUGO/hbRzyD6Y3sA7v7GS/ceog==
-=======
 tinybench@^2.5.1:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/tinybench/-/tinybench-2.6.0.tgz#1423284ee22de07c91b3752c048d2764714b341b"
@@ -4927,7 +4896,11 @@ tinyspy@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/tinyspy/-/tinyspy-2.2.0.tgz#9dc04b072746520b432f77ea2c2d17933de5d6ce"
   integrity sha512-d2eda04AN/cPOR89F7Xv5bK/jrQEhmcLFe6HFldoeO9AJtps+fqEnh486vnT/8y4bw38pSyxDcTCAq+Ks2aJTg==
->>>>>>> 9f40b6d (WIP fetching Hal software data)
+
+to-fast-properties@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/to-fast-properties/-/to-fast-properties-2.0.0.tgz#dc5e698cbd079265bc73e0377681a4e4e83f616e"
+  integrity sha512-/OaKK0xYrs3DmxRYqL/yDc+FxFUVYhDlXMhRmv3z915w2HF1tnN1omB354j8VUGO/hbRzyD6Y3sA7v7GS/ceog==
 
 to-object-path@^0.3.0:
   version "0.3.0"
