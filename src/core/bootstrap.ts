@@ -1,28 +1,31 @@
-import { createObjectThatThrowsIfAccessed, createCore, type GenericCore } from "redux-clean-architecture";
-import { usecases } from "./usecases";
-import { createGetSoftwareLatestVersion } from "./adapters/getSoftwareLatestVersion";
+import { createCore, createObjectThatThrowsIfAccessed, type GenericCore } from "redux-clean-architecture";
 import { createCompileData } from "./adapters/compileData";
-import { getWikidataSoftware } from "./adapters/getWikidataSoftware";
-import { getCnllPrestatairesSill } from "./adapters/getCnllPrestatairesSill";
 import { comptoirDuLibreApi } from "./adapters/comptoirDuLibreApi";
-import { createGitDbApi } from "./adapters/dbApi";
-import { createKeycloakUserApi } from "./adapters/userApi";
-import { getWikidataSoftwareOptions } from "./adapters/getWikidataSoftwareOptions";
+import { createGitDbApi, type GitDbApiParams } from "./adapters/dbApi";
+import { getCnllPrestatairesSill } from "./adapters/getCnllPrestatairesSill";
 import { getServiceProviders } from "./adapters/getServiceProviders";
-import type { DbApi } from "./ports/DbApi";
-import type { UserApi } from "./ports/UserApi";
+import { createGetSoftwareLatestVersion } from "./adapters/getSoftwareLatestVersion";
+import { getWikidataSoftware } from "./adapters/getWikidataSoftware";
+import { getWikidataSoftwareOptions } from "./adapters/getWikidataSoftwareOptions";
+import { createKeycloakUserApi, type KeycloakUserApiParams } from "./adapters/userApi";
 import type { CompileData } from "./ports/CompileData";
-import type { GetSoftwareExternalDataOptions } from "./ports/GetSoftwareExternalDataOptions";
 import type { ComptoirDuLibreApi } from "./ports/ComptoirDuLibreApi";
-import type { GetSoftwareExternalData } from "./ports/GetSoftwareExternalData";
+import type { DbApi } from "./ports/DbApi";
+import type { ExternalDataOrigin, GetSoftwareExternalData } from "./ports/GetSoftwareExternalData";
+import type { GetSoftwareExternalDataOptions } from "./ports/GetSoftwareExternalDataOptions";
 import type { GetSoftwareLatestVersion } from "./ports/GetSoftwareLatestVersion";
+import type { UserApi } from "./ports/UserApi";
+import { usecases } from "./usecases";
+import { getHalSoftware } from "./adapters/getHalSoftware";
+import { getHalSoftwareOptions } from "./adapters/getHalSoftwareOptions";
 
 type ParamsOfBootstrapCore = {
-    gitDbApiParams: import("./adapters/dbApi").GitDbApiParams;
-    keycloakUserApiParams: import("./adapters/userApi").KeycloakUserApiParams | undefined;
+    gitDbApiParams: GitDbApiParams;
+    keycloakUserApiParams: KeycloakUserApiParams | undefined;
     githubPersonalAccessTokenForApiRateLimit: string;
     doPerPerformPeriodicalCompilation: boolean;
     doPerformCacheInitialization: boolean;
+    externalSoftwareDataOrigin: ExternalDataOrigin;
 };
 
 export type Context = {
@@ -30,9 +33,9 @@ export type Context = {
     dbApi: DbApi;
     userApi: UserApi;
     compileData: CompileData;
-    getWikidataSoftwareOptions: GetSoftwareExternalDataOptions;
     comptoirDuLibreApi: ComptoirDuLibreApi;
-    getWikidataSoftware: GetSoftwareExternalData;
+    getSoftwareExternalDataOptions: GetSoftwareExternalDataOptions;
+    getSoftwareExternalData: GetSoftwareExternalData;
     getSoftwareLatestVersion: GetSoftwareLatestVersion;
 };
 
@@ -48,7 +51,8 @@ export async function bootstrapCore(params: ParamsOfBootstrapCore): Promise<{ co
         keycloakUserApiParams,
         githubPersonalAccessTokenForApiRateLimit,
         doPerPerformPeriodicalCompilation,
-        doPerformCacheInitialization
+        doPerformCacheInitialization,
+        externalSoftwareDataOrigin
     } = params;
 
     const { getSoftwareLatestVersion } = createGetSoftwareLatestVersion({
@@ -75,14 +79,16 @@ export async function bootstrapCore(params: ParamsOfBootstrapCore): Promise<{ co
               }
             : createKeycloakUserApi(keycloakUserApiParams);
 
+    const { getSoftwareExternalDataOptions, getSoftwareExternalData } = getSoftwareExternalDataFunctions();
+
     const context: Context = {
         "paramsOfBootstrapCore": params,
         dbApi,
         userApi,
         compileData,
-        getWikidataSoftwareOptions,
         comptoirDuLibreApi,
-        getWikidataSoftware,
+        getSoftwareExternalDataOptions: getWikidataSoftwareOptions,
+        getSoftwareExternalData: getWikidataSoftware,
         getSoftwareLatestVersion
     };
 
@@ -104,4 +110,27 @@ export async function bootstrapCore(params: ParamsOfBootstrapCore): Promise<{ co
     }
 
     return { core, context };
+}
+
+function getSoftwareExternalDataFunctions(externalSoftwareDataOrigin: ExternalDataOrigin): {
+    "getSoftwareExternalDataOptions": GetSoftwareExternalDataOptions;
+    "getSoftwareExternalData": GetSoftwareExternalData;
+} {
+    switch (externalSoftwareDataOrigin) {
+        case "wikidata":
+            return {
+                "getSoftwareExternalDataOptions": getWikidataSoftwareOptions,
+                "getSoftwareExternalData": getWikidataSoftware
+            };
+
+        case "HAL":
+            return {
+                "getSoftwareExternalDataOptions": getHalSoftwareOptions,
+                "getSoftwareExternalData": getHalSoftware
+            };
+
+        default:
+            const unreachableCase: never = externalSoftwareDataOrigin;
+            throw new Error(`Unreachable case: ${unreachableCase}`);
+    }
 }

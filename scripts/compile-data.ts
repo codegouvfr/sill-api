@@ -11,7 +11,8 @@ import { env } from "../src/env";
         },
         "githubPersonalAccessTokenForApiRateLimit": env.githubPersonalAccessTokenForApiRateLimit,
         "doPerPerformPeriodicalCompilation": false,
-        "doPerformCacheInitialization": false
+        "doPerformCacheInitialization": false,
+        "externalSoftwareDataOrigin": env.externalSoftwareDataOrigin
     });
 
     await core.functions.readWriteSillData.manuallyTriggerNonIncrementalCompilation();

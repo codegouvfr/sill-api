@@ -36,7 +36,8 @@ const zParsedCONFIGURATION = z.object({
     "port": z.number().optional(),
     "isDevEnvironnement": z.boolean().optional(),
     // Completely disable this instance and redirect to another url
-    "redirectUrl": z.string().optional()
+    "redirectUrl": z.string().optional(),
+    "externalSoftwareDataOrigin": z.enum(["wikidata", "HAL"]).optional()
 });
 
 const { parsedCONFIGURATION } = (() => {
@@ -72,5 +73,6 @@ const { parsedCONFIGURATION } = (() => {
 export const env = {
     ...parsedCONFIGURATION,
     "port": parsedCONFIGURATION.port ?? 8080,
-    "isDevEnvironnement": parsedCONFIGURATION.isDevEnvironnement ?? false
+    "isDevEnvironnement": parsedCONFIGURATION.isDevEnvironnement ?? false,
+    "externalSoftwareDataOrigin": parsedCONFIGURATION.externalSoftwareDataOrigin ?? ("wikidata" as const)
 };

@@ -12,7 +12,7 @@ export const thunks = {
         async (...args) => {
             const { queryString, language } = params;
 
-            const [, getState, { getWikidataSoftwareOptions }] = args;
+            const [, getState, { getSoftwareExternalDataOptions: getWikidataSoftwareOptions }] = args;
 
             const queryResults = await getWikidataSoftwareOptions({ queryString, language });
 
@@ -43,7 +43,11 @@ export const thunks = {
                 }
             }
 
-            const { getSoftwareLatestVersion, comptoirDuLibreApi, getWikidataSoftware } = rootContext;
+            const {
+                getSoftwareLatestVersion,
+                comptoirDuLibreApi,
+                getSoftwareExternalData: getWikidataSoftware
+            } = rootContext;
 
             const [wikidataSoftware, comptoirDuLibre] = await Promise.all([
                 getWikidataSoftware(wikidataId),
