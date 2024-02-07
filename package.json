@@ -10,6 +10,7 @@
     "types": "dist/lib/index.d.ts",
     "scripts": {
         "prepare": "[ ! -f .env.local.sh ] && cp .env.sh .env.local.sh",
+        "test": "vitest",
         "build": "tsc",
         "start": "./.env.local.sh forever dist/main.js",
         "_format": "prettier \"**/*.{ts,tsx,json,md}\"",
@@ -76,10 +77,12 @@
         "superjson": "^1.12.2",
         "ts-node": "^10.9.1",
         "typescript": "^5.0.4",
-        "url-join": "^4.0.1"
+        "url-join": "^4.0.1",
+        "vitest": "^1.2.2"
     },
     "dependencies": {
         "@octokit/graphql": "^7.0.2",
+        "@retorquere/bibtex-parser": "^7.0.11",
         "@trpc/server": "^10.18.0",
         "jwt-decode": "^3.1.2",
         "semver": "^7.5.4",

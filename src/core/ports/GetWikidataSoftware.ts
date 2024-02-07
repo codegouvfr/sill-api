@@ -26,6 +26,34 @@ export type WikidataSoftware = {
     license: string;
 }>;
 
+type ExternalId = string;
+
+type ExternalDataOrigin = "wikidata" | "HAL";
+
+export type GetExternalSoftwareData = {
+    (externalId: ExternalId): Promise<ExternalSoftwareData | undefined>;
+    clear: (externalId: ExternalId) => void;
+};
+
+export type ExternalSoftwareData = {
+    externalId: ExternalId;
+    origin: ExternalDataOrigin;
+    developers: {
+        name: string;
+        id: string;
+    }[];
+    label: LocalizedString;
+    description: LocalizedString;
+    isLibreSoftware: boolean;
+} & PartialNoOptional<{
+    logoUrl: string;
+    framaLibreId: string;
+    websiteUrl: string;
+    sourceUrl: string;
+    documentationUrl: string;
+    license: string;
+}>;
+
 export const languages = ["fr", "en"] as const;
 
 export type Language = (typeof languages)[number];
