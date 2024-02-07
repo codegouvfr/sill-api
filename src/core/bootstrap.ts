@@ -16,7 +16,7 @@ export type Context = {
     compileData: import("./ports/CompileData").CompileData;
     getWikidataSoftwareOptions: import("./ports/GetWikidataSoftwareOptions").GetWikidataSoftwareOptions;
     comptoirDuLibreApi: import("./ports/ComptoirDuLibreApi").ComptoirDuLibreApi;
-    getWikidataSoftware: import("./ports/GetWikidataSoftware").GetWikidataSoftware;
+    getWikidataSoftware: import("./ports/GetSoftwareExternalData").GetSoftwareExternalData;
     getSoftwareLatestVersion: import("./ports/GetSoftwareLatestVersion").GetSoftwareLatestVersion;
 };
 

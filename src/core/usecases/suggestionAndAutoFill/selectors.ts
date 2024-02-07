@@ -8,7 +8,7 @@ export const privateSelectors = (() => {
     const compiledData = (state: RootState) => state.readWriteSillData.compiledData;
 
     const sillWikidataIds = createSelector(compiledData, compiledData =>
-        compiledData.map(software => software.wikidataSoftware?.wikidataId).filter(exclude(undefined))
+        compiledData.map(software => software.softwareExternalData?.externalId).filter(exclude(undefined))
     );
 
     return { sillWikidataIds };

@@ -4,7 +4,7 @@ import cors from "cors";
 import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWebhookSignature";
 import compression from "compression";
 import { bootstrapCore } from "../core";
-import type { LocalizedString } from "../core/ports/GetWikidataSoftware";
+import type { LocalizedString } from "../core/ports/GetSoftwareExternalData";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { createContextFactory } from "./context";

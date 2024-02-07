@@ -135,7 +135,7 @@ export const thunks = {
                         "isFromFrenchPublicService": formData.isFromFrenchPublicService,
                         "isPresentInSupportContract": formData.isPresentInSupportContract,
                         "similarSoftwareWikidataIds": formData.similarSoftwareWikidataIds,
-                        "wikidataId": formData.wikidataId,
+                        "externalId": formData.wikidataId,
                         "comptoirDuLibreId": formData.comptoirDuLibreId,
                         "license": formData.softwareLicense,
                         "softwareType": formData.softwareType,
@@ -255,7 +255,7 @@ export const thunks = {
                             "versionMin": softwareMinimalVersion,
                             "name": softwareName,
                             "softwareType": softwareType,
-                            "wikidataId": wikidataId,
+                            "externalId": wikidataId,
                             "logoUrl": (() => {
                                 const state = getState()[name];
 

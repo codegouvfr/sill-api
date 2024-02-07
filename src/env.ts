@@ -2,7 +2,7 @@ import { symToStr } from "tsafe/symToStr";
 import { assert } from "tsafe/assert";
 import * as JSONC from "comment-json";
 import { z } from "zod";
-import { zLocalizedString } from "./core/ports/GetWikidataSoftware";
+import { zLocalizedString } from "./core/ports/GetSoftwareExternalData";
 import { is } from "tsafe/is";
 
 const zParsedCONFIGURATION = z.object({

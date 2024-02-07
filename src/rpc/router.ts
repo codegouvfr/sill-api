@@ -22,7 +22,7 @@ import type { Equals } from "tsafe";
 import type { OptionalIfCanBeUndefined } from "../tools/OptionalIfCanBeUndefined";
 import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
-import { type LocalizedString, Language, languages } from "../core/ports/GetWikidataSoftware";
+import { type LocalizedString, Language, languages } from "../core/ports/GetSoftwareExternalData";
 import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
 
 export function createRouter(params: {

@@ -1,6 +1,6 @@
 import { ServiceProvider } from "../usecases/readWriteSillData";
 import type { Db } from "./DbApi";
-import type { WikidataSoftware } from "./GetWikidataSoftware";
+import type { SoftwareExternalData } from "./GetSoftwareExternalData";
 import type { ComptoirDuLibre } from "./ComptoirDuLibreApi";
 
 export type CompileData = (params: {
@@ -11,7 +11,7 @@ export type CompileData = (params: {
 export namespace CompileData {
     export type PartialSoftware = Pick<
         CompiledData.Software<"private">,
-        "wikidataSoftware" | "latestVersion" | "similarWikidataSoftwares" | "parentWikidataSoftware"
+        "softwareExternalData" | "latestVersion" | "similarWikidataSoftwares" | "parentWikidataSoftware"
     > & {
         comptoirDuLibreSoftware:
             | {
@@ -53,12 +53,12 @@ export namespace CompiledData {
             | "keywords"
         > & {
             serviceProviders: ServiceProvider[];
-            wikidataSoftware: WikidataSoftware | undefined;
+            softwareExternalData: SoftwareExternalData | undefined;
             similarWikidataSoftwares: Pick<
-                WikidataSoftware,
-                "wikidataId" | "label" | "description" | "isLibreSoftware"
+                SoftwareExternalData,
+                "externalId" | "label" | "description" | "isLibreSoftware"
             >[];
-            parentWikidataSoftware: Pick<WikidataSoftware, "wikidataId" | "label" | "description"> | undefined;
+            parentWikidataSoftware: Pick<SoftwareExternalData, "externalId" | "label" | "description"> | undefined;
             comptoirDuLibreSoftware:
                 | (ComptoirDuLibre.Software & { logoUrl: string | undefined; keywords: string[] | undefined })
                 | undefined;
@@ -98,7 +98,7 @@ export namespace CompiledData {
         organization: string;
         targetAudience: string;
         publicUrl: string | undefined;
-        otherWikidataSoftwares: Pick<WikidataSoftware, "wikidataId" | "label" | "description">[];
+        otherWikidataSoftwares: Pick<SoftwareExternalData, "externalId" | "label" | "description">[];
     };
 }
 
@@ -131,7 +131,7 @@ export function compiledDataPrivateToPublic(compiledData: CompiledData<"private"
             updateTime,
             versionMin,
             workshopUrls,
-            wikidataSoftware,
+            softwareExternalData: wikidataSoftware,
             similarWikidataSoftwares,
             parentWikidataSoftware,
             serviceProviders
@@ -162,7 +162,7 @@ export function compiledDataPrivateToPublic(compiledData: CompiledData<"private"
             updateTime,
             versionMin,
             workshopUrls,
-            wikidataSoftware,
+            softwareExternalData: wikidataSoftware,
             similarWikidataSoftwares,
             parentWikidataSoftware,
             "hasExpertReferent": referents.find(({ isExpert }) => isExpert) !== undefined,

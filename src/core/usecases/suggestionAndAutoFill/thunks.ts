@@ -1,7 +1,7 @@
 import type { Thunks } from "../../bootstrap";
 import { createUsecaseContextApi } from "redux-clean-architecture";
 import { assert } from "tsafe/assert";
-import type { Language } from "../../ports/GetWikidataSoftware";
+import type { Language } from "../../ports/GetSoftwareExternalData";
 import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
 import { id } from "tsafe/id";
 import { privateSelectors } from "./selectors";

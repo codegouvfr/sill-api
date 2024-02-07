@@ -1,10 +1,10 @@
 import memoize from "memoizee";
 import fetch from "node-fetch";
-import { ExternalSoftwareData, GetExternalSoftwareData } from "../ports/GetWikidataSoftware";
+import { SoftwareExternalData, GetSoftwareExternalData } from "../ports/GetSoftwareExternalData";
 import { parseBibliographicFields } from "./parseBibliographicFields";
 
-export const getHalSoftware: GetExternalSoftwareData = memoize(
-    async halDocId => {
+export const getHalSoftware: GetSoftwareExternalData = memoize(
+    async (halDocId): Promise<SoftwareExternalData | undefined> => {
         const halRawSoftware = await fetchHalSoftwareById(halDocId).catch(error => {
             if (error instanceof HalFetchError) {
                 if (error.status === 404 || error.status === undefined) {
@@ -25,9 +25,9 @@ export const getHalSoftware: GetExternalSoftwareData = memoize(
             name: author
         }));
 
-        const soft: ExternalSoftwareData = {
+        return {
             externalId: halRawSoftware.docid,
-            origin: "HAL",
+            externalDataOrigin: "HAL",
             developers,
             label: {
                 "en": halRawSoftware?.en_title_s?.[0] ?? "-",
@@ -40,15 +40,11 @@ export const getHalSoftware: GetExternalSoftwareData = memoize(
             documentationUrl: halRawSoftware.uri_s,
             isLibreSoftware: halRawSoftware.openAccess_bool,
             license,
-            sourceUrl: bibliographicReferences.repository[0],
-            websiteUrl: bibliographicReferences.url[0],
+            sourceUrl: bibliographicReferences?.repository?.[0],
+            websiteUrl: bibliographicReferences?.url?.[0],
             framaLibreId: "",
             logoUrl: ""
         };
-
-        console.log(soft);
-
-        return soft;
     },
     {
         "promise": true,

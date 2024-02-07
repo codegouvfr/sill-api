@@ -3,41 +3,18 @@ import type { LocalizedString as LocalizedString_generic } from "i18nifty/Locali
 import type { PartialNoOptional } from "../../tools/PartialNoOptional";
 import { assert, type Equals } from "tsafe/assert";
 
-export type GetWikidataSoftware = {
-    (wikidataId: string): Promise<WikidataSoftware | undefined>;
-    clear: (wikidataId: string) => void;
-};
-
-export type WikidataSoftware = {
-    wikidataId: string;
-    developers: {
-        name: string;
-        id: string;
-    }[];
-    label: LocalizedString;
-    description: LocalizedString;
-    isLibreSoftware: boolean;
-} & PartialNoOptional<{
-    logoUrl: string;
-    framaLibreId: string;
-    websiteUrl: string;
-    sourceUrl: string;
-    documentationUrl: string;
-    license: string;
-}>;
-
 type ExternalId = string;
 
-type ExternalDataOrigin = "wikidata" | "HAL";
+export type ExternalDataOrigin = "wikidata" | "HAL";
 
-export type GetExternalSoftwareData = {
-    (externalId: ExternalId): Promise<ExternalSoftwareData | undefined>;
+export type GetSoftwareExternalData = {
+    (externalId: ExternalId): Promise<SoftwareExternalData | undefined>;
     clear: (externalId: ExternalId) => void;
 };
 
-export type ExternalSoftwareData = {
+export type SoftwareExternalData = {
     externalId: ExternalId;
-    origin: ExternalDataOrigin;
+    externalDataOrigin: ExternalDataOrigin;
     developers: {
         name: string;
         id: string;

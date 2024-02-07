@@ -1,4 +1,4 @@
-import type { WikidataSoftware } from "../../ports/GetWikidataSoftware";
+import type { SoftwareExternalData } from "../../ports/GetSoftwareExternalData";
 
 export type ServiceProvider = {
     name: string;
@@ -53,7 +53,7 @@ export type Software = {
     comptoirDuLibreId: number | undefined;
     wikidataId: string | undefined;
     softwareType: SoftwareType;
-    parentWikidataSoftware: Pick<WikidataSoftware, "wikidataId" | "label" | "description"> | undefined;
+    parentWikidataSoftware: Pick<SoftwareExternalData, "externalId" | "label" | "description"> | undefined;
     similarSoftwares: Software.SimilarSoftware[];
     keywords: string[];
 };
@@ -63,8 +63,8 @@ export namespace Software {
 
     export namespace SimilarSoftware {
         export type Wikidata = { isInSill: false } & Pick<
-            WikidataSoftware,
-            "wikidataId" | "label" | "description" | "isLibreSoftware"
+            SoftwareExternalData,
+            "externalId" | "label" | "description" | "isLibreSoftware"
         >;
 
         export type Sill = { isInSill: true; softwareName: string; softwareDescription: string };
@@ -85,7 +85,7 @@ export type Instance = {
     organization: string;
     targetAudience: string;
     publicUrl: string | undefined;
-    otherWikidataSoftwares: Pick<WikidataSoftware, "wikidataId" | "label" | "description">[];
+    otherWikidataSoftwares: Pick<SoftwareExternalData, "externalId" | "label" | "description">[];
 };
 
 export type SoftwareType = SoftwareType.Desktop | SoftwareType.CloudNative | SoftwareType.Stack;
