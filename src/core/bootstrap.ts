@@ -1,4 +1,5 @@
 import { createCore, createObjectThatThrowsIfAccessed, type GenericCore } from "redux-clean-architecture";
+import { id } from "tsafe/id";
 import { createCompileData } from "./adapters/compileData";
 import { comptoirDuLibreApi } from "./adapters/comptoirDuLibreApi";
 import { createGitDbApi, type GitDbApiParams } from "./adapters/dbApi";
@@ -16,8 +17,8 @@ import type { GetSoftwareExternalDataOptions } from "./ports/GetSoftwareExternal
 import type { GetSoftwareLatestVersion } from "./ports/GetSoftwareLatestVersion";
 import type { UserApi } from "./ports/UserApi";
 import { usecases } from "./usecases";
-import { getHalSoftware } from "./adapters/getHalSoftware";
-import { getHalSoftwareOptions } from "./adapters/getHalSoftwareOptions";
+import { getHalSoftware } from "./adapters/hal/getHalSoftware";
+import { getHalSoftwareOptions } from "./adapters/hal/getHalSoftwareOptions";
 
 type ParamsOfBootstrapCore = {
     gitDbApiParams: GitDbApiParams;
@@ -79,7 +80,8 @@ export async function bootstrapCore(params: ParamsOfBootstrapCore): Promise<{ co
               }
             : createKeycloakUserApi(keycloakUserApiParams);
 
-    const { getSoftwareExternalDataOptions, getSoftwareExternalData } = getSoftwareExternalDataFunctions();
+    const { getSoftwareExternalDataOptions, getSoftwareExternalData } =
+        getSoftwareExternalDataFunctions(externalSoftwareDataOrigin);
 
     const context: Context = {
         "paramsOfBootstrapCore": params,
@@ -87,8 +89,8 @@ export async function bootstrapCore(params: ParamsOfBootstrapCore): Promise<{ co
         userApi,
         compileData,
         comptoirDuLibreApi,
-        getSoftwareExternalDataOptions: getWikidataSoftwareOptions,
-        getSoftwareExternalData: getWikidataSoftware,
+        getSoftwareExternalDataOptions,
+        getSoftwareExternalData,
         getSoftwareLatestVersion
     };
 
@@ -122,13 +124,11 @@ function getSoftwareExternalDataFunctions(externalSoftwareDataOrigin: ExternalDa
                 "getSoftwareExternalDataOptions": getWikidataSoftwareOptions,
                 "getSoftwareExternalData": getWikidataSoftware
             };
-
         case "HAL":
             return {
                 "getSoftwareExternalDataOptions": getHalSoftwareOptions,
                 "getSoftwareExternalData": getHalSoftware
             };
-
         default:
             const unreachableCase: never = externalSoftwareDataOrigin;
             throw new Error(`Unreachable case: ${unreachableCase}`);
