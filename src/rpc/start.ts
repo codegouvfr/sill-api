@@ -4,7 +4,7 @@ import cors from "cors";
 import { createValidateGitHubWebhookSignature } from "../tools/validateGithubWebhookSignature";
 import compression from "compression";
 import { bootstrapCore } from "../core";
-import type { LocalizedString } from "../core/ports/GetWikidataSoftware";
+import type { ExternalDataOrigin, LocalizedString } from "../core/ports/GetSoftwareExternalData";
 import { assert } from "tsafe/assert";
 import type { Equals } from "tsafe";
 import { createContextFactory } from "./context";
@@ -30,6 +30,7 @@ export async function startRpcService(params: {
     githubPersonalAccessTokenForApiRateLimit: string;
     port: number;
     isDevEnvironnement: boolean;
+    externalSoftwareDataOrigin: ExternalDataOrigin;
     redirectUrl?: string;
 }) {
     const {
@@ -45,6 +46,7 @@ export async function startRpcService(params: {
         port,
         githubPersonalAccessTokenForApiRateLimit,
         isDevEnvironnement,
+        externalSoftwareDataOrigin,
         ...rest
     } = params;
 
@@ -69,7 +71,8 @@ export async function startRpcService(params: {
                   },
         githubPersonalAccessTokenForApiRateLimit,
         "doPerPerformPeriodicalCompilation": !isDevEnvironnement && redirectUrl === undefined,
-        "doPerformCacheInitialization": redirectUrl === undefined
+        "doPerformCacheInitialization": redirectUrl === undefined,
+        "externalSoftwareDataOrigin": externalSoftwareDataOrigin
     });
 
     console.log("Core API initialized");

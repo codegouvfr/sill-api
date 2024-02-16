@@ -1,7 +1,7 @@
 import { assert } from "tsafe/assert";
 import type { CompileData, CompiledData } from "../ports/CompileData";
 import { GetServiceProviders } from "../ports/GetServiceProviders";
-import type { GetWikidataSoftware, WikidataSoftware } from "../ports/GetWikidataSoftware";
+import type { GetSoftwareExternalData, SoftwareExternalData } from "../ports/GetSoftwareExternalData";
 import type { GetCnllPrestatairesSill } from "../ports/GetCnllPrestatairesSill";
 import type { GetSoftwareLatestVersion } from "../ports/GetSoftwareLatestVersion";
 import type { ComptoirDuLibreApi, ComptoirDuLibre } from "../ports/ComptoirDuLibreApi";
@@ -9,14 +9,14 @@ import { exclude } from "tsafe/exclude";
 import memoize from "memoizee";
 
 export function createCompileData(params: {
-    getWikidataSoftware: GetWikidataSoftware;
+    getSoftwareExternalData: GetSoftwareExternalData;
     getCnllPrestatairesSill: GetCnllPrestatairesSill;
     comptoirDuLibreApi: ComptoirDuLibreApi;
     getSoftwareLatestVersion: GetSoftwareLatestVersion;
     getServiceProviders: GetServiceProviders;
 }) {
     const {
-        getWikidataSoftware: getWikidataSoftware_params,
+        getSoftwareExternalData: getSoftwareExternalData_params,
         comptoirDuLibreApi,
         getCnllPrestatairesSill,
         getSoftwareLatestVersion: getSoftwareLatestVersion_params,
@@ -44,12 +44,12 @@ export function createCompileData(params: {
         const { partialSoftwareBySillId } = await (async () => {
             const partialSoftwareBySillId: Record<number, CompileData.PartialSoftware> = {};
 
-            const getWikidataSoftware = memoize(
+            const getExternalSoftware = memoize(
                 async (wikidataId: string) => {
                     if (getCachedSoftware === undefined) {
-                        getWikidataSoftware_params.clear(wikidataId);
+                        getSoftwareExternalData_params.clear(wikidataId);
                     }
-                    return await getWikidataSoftware_params(wikidataId);
+                    return await getSoftwareExternalData_params(wikidataId);
                 },
                 { "promise": true }
             );
@@ -71,10 +71,10 @@ export function createCompileData(params: {
             for (const {
                 id: sillId,
                 name,
-                wikidataId,
+                externalId,
                 comptoirDuLibreId,
                 parentSoftwareWikidataId,
-                similarSoftwareWikidataIds
+                similarSoftwareExternalDataIds
             } of softwareRows) {
                 const cache = getCachedSoftware?.({ "sillSoftwareId": sillId });
 
@@ -82,14 +82,14 @@ export function createCompileData(params: {
                     console.log(`Scrapping the web for info about ${name}`);
                 }
 
-                const wikidataSoftware_prev = cache?.wikidataSoftware;
+                const externalSoftware_prev = cache?.softwareExternalData;
 
-                const wikidataSoftware =
-                    wikidataId === undefined
+                const externalSoftware =
+                    externalId === undefined
                         ? undefined
-                        : cache?.wikidataSoftware?.wikidataId === wikidataId
-                        ? cache.wikidataSoftware
-                        : await getWikidataSoftware(wikidataId);
+                        : cache?.softwareExternalData?.externalId === externalId
+                        ? cache.softwareExternalData
+                        : await getExternalSoftware(externalId);
 
                 const cdlSoftware_prev = cdlSoftwares.find(({ id }) => cache?.comptoirDuLibreSoftware?.id === id);
 
@@ -100,17 +100,17 @@ export function createCompileData(params: {
                     comptoirDuLibreLogoUrl,
                     comptoirDuLibreKeywords,
                     parentWikidataSoftware,
-                    similarWikidataSoftwares,
+                    similarExternalSoftwares,
                     instances
                 ] = await Promise.all([
                     (async () => {
                         const getRepoUrl = (
-                            wikidataSoftware: WikidataSoftware | undefined,
+                            wikidataSoftware: SoftwareExternalData | undefined,
                             cdlSoftware: ComptoirDuLibre.Software | undefined
                         ) => wikidataSoftware?.sourceUrl ?? cdlSoftware?.external_resources?.repository ?? undefined;
 
-                        const repoUrl_prev = getRepoUrl(wikidataSoftware_prev, cdlSoftware_prev);
-                        const repoUrl = getRepoUrl(wikidataSoftware, cdlSoftware);
+                        const repoUrl_prev = getRepoUrl(externalSoftware_prev, cdlSoftware_prev);
+                        const repoUrl = getRepoUrl(externalSoftware, cdlSoftware);
 
                         if (repoUrl_prev === repoUrl) {
                             return cache?.latestVersion;
@@ -145,7 +145,7 @@ export function createCompileData(params: {
                         return comptoirDuLibreApi.getKeywords({ "comptoirDuLibreId": cdlSoftware.id });
                     })(),
                     (async () => {
-                        if (cache?.parentWikidataSoftware?.wikidataId === parentSoftwareWikidataId) {
+                        if (cache?.parentWikidataSoftware?.externalId === parentSoftwareWikidataId) {
                             return cache?.parentWikidataSoftware;
                         }
 
@@ -153,23 +153,23 @@ export function createCompileData(params: {
                             return undefined;
                         }
 
-                        const parentWikidataSoftware = await getWikidataSoftware(parentSoftwareWikidataId);
+                        const parentWikidataSoftware = await getExternalSoftware(parentSoftwareWikidataId);
 
                         if (parentWikidataSoftware === undefined) {
                             return undefined;
                         }
 
                         return {
-                            "wikidataId": parentWikidataSoftware.wikidataId,
+                            "externalId": parentWikidataSoftware.externalId,
                             "label": parentWikidataSoftware.label,
                             "description": parentWikidataSoftware.description
                         };
                     })(),
                     Promise.all(
-                        similarSoftwareWikidataIds.map(async wikidataId => {
+                        similarSoftwareExternalDataIds.map(async externalId => {
                             {
-                                const similarSoftware_cache = cache?.similarWikidataSoftwares?.find(
-                                    similarSoftware => similarSoftware.wikidataId === wikidataId
+                                const similarSoftware_cache = cache?.similarExternalSoftwares?.find(
+                                    similarSoftware => similarSoftware.externalId === externalId
                                 );
 
                                 if (similarSoftware_cache !== undefined) {
@@ -177,17 +177,18 @@ export function createCompileData(params: {
                                 }
                             }
 
-                            const wikidataSoftware = await getWikidataSoftware(wikidataId);
+                            const wikidataSoftware = await getExternalSoftware(externalId);
 
                             if (wikidataSoftware === undefined) {
                                 return undefined;
                             }
 
                             return {
-                                "wikidataId": wikidataSoftware.wikidataId,
+                                "externalId": wikidataSoftware.externalId,
                                 "label": wikidataSoftware.label,
                                 "description": wikidataSoftware.description,
-                                "isLibreSoftware": wikidataSoftware.isLibreSoftware
+                                "isLibreSoftware": wikidataSoftware.isLibreSoftware,
+                                "externalDataOrigin": wikidataSoftware.externalDataOrigin
                             };
                         })
                     ).then(similarWikidataSoftwares => similarWikidataSoftwares.filter(exclude(undefined))),
@@ -203,21 +204,21 @@ export function createCompileData(params: {
                                         otherSoftwareWikidataIds.map(async wikidataId => {
                                             const otherWikidataSoftware_cache =
                                                 instance_cache?.otherWikidataSoftwares.find(
-                                                    wikidataSoftware => wikidataSoftware.wikidataId === wikidataId
+                                                    wikidataSoftware => wikidataSoftware.externalId === wikidataId
                                                 );
 
                                             if (otherWikidataSoftware_cache !== undefined) {
                                                 return otherWikidataSoftware_cache;
                                             }
 
-                                            const wikidataSoftware = await getWikidataSoftware(wikidataId);
+                                            const wikidataSoftware = await getExternalSoftware(wikidataId);
 
                                             if (wikidataSoftware === undefined) {
                                                 return undefined;
                                             }
 
                                             return {
-                                                "wikidataId": wikidataSoftware.wikidataId,
+                                                "externalId": wikidataSoftware.externalId,
                                                 "label": wikidataSoftware.label,
                                                 "description": wikidataSoftware.description
                                             };
@@ -229,7 +230,7 @@ export function createCompileData(params: {
                 ] as const);
 
                 partialSoftwareBySillId[sillId] = {
-                    wikidataSoftware,
+                    softwareExternalData: externalSoftware,
                     latestVersion,
                     comptoirDuLibreSoftware:
                         cdlSoftware === undefined
@@ -240,7 +241,7 @@ export function createCompileData(params: {
                                   "keywords": comptoirDuLibreKeywords
                               },
                     parentWikidataSoftware,
-                    similarWikidataSoftwares,
+                    similarExternalSoftwares,
                     instances
                 };
             }
@@ -336,8 +337,8 @@ export function createCompileData(params: {
                     logoUrl,
                     keywords,
                     "serviceProviders": serviceProvidersBySillId[sillId] ?? [],
-                    "wikidataSoftware": partialSoftwareBySillId[sillId].wikidataSoftware,
-                    "similarWikidataSoftwares": partialSoftwareBySillId[sillId].similarWikidataSoftwares,
+                    "softwareExternalData": partialSoftwareBySillId[sillId].softwareExternalData,
+                    "similarExternalSoftwares": partialSoftwareBySillId[sillId].similarExternalSoftwares,
                     "parentWikidataSoftware": partialSoftwareBySillId[sillId].parentWikidataSoftware,
                     "comptoirDuLibreSoftware":
                         comptoirDuLibreId === undefined

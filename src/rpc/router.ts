@@ -22,7 +22,7 @@ import type { Equals } from "tsafe";
 import type { OptionalIfCanBeUndefined } from "../tools/OptionalIfCanBeUndefined";
 import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
-import { type LocalizedString, Language, languages } from "../core/ports/GetWikidataSoftware";
+import { type LocalizedString, Language, languages } from "../core/ports/GetSoftwareExternalData";
 import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
 
 export function createRouter(params: {
@@ -101,7 +101,7 @@ export function createRouter(params: {
         ),
         "getSoftwares": loggedProcedure.query(() => core.states.readWriteSillData.getSoftwares()),
         "getInstances": loggedProcedure.query(() => core.states.readWriteSillData.getInstances()),
-        "getWikidataOptions": loggedProcedure
+        "getExternalSoftwareOptions": loggedProcedure
             .input(
                 z.object({
                     "queryString": z.string(),
@@ -116,15 +116,15 @@ export function createRouter(params: {
 
                 const { queryString, language } = input;
 
-                return core.functions.suggestionAndAutoFill.getWikidataOptionsWithPresenceInSill({
+                return core.functions.suggestionAndAutoFill.getSoftwareExternalDataOptionsWithPresenceInSill({
                     queryString,
                     language
                 });
             }),
-        "getSoftwareFormAutoFillDataFromWikidataAndOtherSources": loggedProcedure
+        "getSoftwareFormAutoFillDataFromExternalSoftwareAndOtherSources": loggedProcedure
             .input(
                 z.object({
-                    "wikidataId": z.string()
+                    "externalId": z.string()
                 })
             )
             .query(async ({ ctx: { user }, input }) => {
@@ -133,10 +133,10 @@ export function createRouter(params: {
                     throw new TRPCError({ "code": "UNAUTHORIZED" });
                 }
 
-                const { wikidataId } = input;
+                const { externalId } = input;
 
-                return core.functions.suggestionAndAutoFill.getSoftwareFormAutoFillDataFromWikidataAndOtherSources({
-                    wikidataId
+                return core.functions.suggestionAndAutoFill.getSoftwareFormAutoFillDataFromExternalAndOtherSources({
+                    externalId
                 });
             }),
         "createSoftware": loggedProcedure
@@ -533,7 +533,7 @@ const zOs = z.enum(["windows", "linux", "mac", "android", "ios"]);
 const zSoftwareFormData = (() => {
     const zOut = z.object({
         "softwareType": zSoftwareType,
-        "wikidataId": z.string().optional(),
+        "externalId": z.string().optional(),
         "comptoirDuLibreId": z.number().optional(),
         "softwareName": z.string(),
         "softwareDescription": z.string(),
@@ -541,7 +541,7 @@ const zSoftwareFormData = (() => {
         "softwareMinimalVersion": z.string(),
         "isPresentInSupportContract": z.boolean(),
         "isFromFrenchPublicService": z.boolean(),
-        "similarSoftwareWikidataIds": z.array(z.string()),
+        "similarSoftwareExternalDataIds": z.array(z.string()),
         "softwareLogoUrl": z.string().optional(),
         "softwareKeywords": z.array(z.string()),
         "doRespectRgaa": z.boolean().or(z.null())

@@ -1,4 +1,4 @@
-import type { WikidataSoftware } from "../../ports/GetWikidataSoftware";
+import type { ExternalDataOrigin, SoftwareExternalData } from "../../ports/GetSoftwareExternalData";
 
 export type ServiceProvider = {
     name: string;
@@ -51,20 +51,21 @@ export type Software = {
           }[]
         | undefined;
     comptoirDuLibreId: number | undefined;
-    wikidataId: string | undefined;
+    externalId: string | undefined;
+    externalDataOrigin: ExternalDataOrigin | undefined;
     softwareType: SoftwareType;
-    parentWikidataSoftware: Pick<WikidataSoftware, "wikidataId" | "label" | "description"> | undefined;
+    parentWikidataSoftware: Pick<SoftwareExternalData, "externalId" | "label" | "description"> | undefined;
     similarSoftwares: Software.SimilarSoftware[];
     keywords: string[];
 };
 
 export namespace Software {
-    export type SimilarSoftware = SimilarSoftware.Wikidata | SimilarSoftware.Sill;
+    export type SimilarSoftware = SimilarSoftware.ExternalSoftwareData | SimilarSoftware.Sill;
 
     export namespace SimilarSoftware {
-        export type Wikidata = { isInSill: false } & Pick<
-            WikidataSoftware,
-            "wikidataId" | "label" | "description" | "isLibreSoftware"
+        export type ExternalSoftwareData = { isInSill: false } & Pick<
+            SoftwareExternalData,
+            "externalId" | "label" | "description" | "isLibreSoftware" | "externalDataOrigin"
         >;
 
         export type Sill = { isInSill: true; softwareName: string; softwareDescription: string };
@@ -85,7 +86,7 @@ export type Instance = {
     organization: string;
     targetAudience: string;
     publicUrl: string | undefined;
-    otherWikidataSoftwares: Pick<WikidataSoftware, "wikidataId" | "label" | "description">[];
+    otherWikidataSoftwares: Pick<SoftwareExternalData, "externalId" | "label" | "description">[];
 };
 
 export type SoftwareType = SoftwareType.Desktop | SoftwareType.CloudNative | SoftwareType.Stack;
@@ -116,7 +117,7 @@ export type Os = "windows" | "linux" | "mac" | "android" | "ios";
 
 export type SoftwareFormData = {
     softwareType: SoftwareType;
-    wikidataId: string | undefined;
+    externalId: string | undefined;
     comptoirDuLibreId: number | undefined;
     softwareName: string;
     softwareDescription: string;
@@ -124,7 +125,7 @@ export type SoftwareFormData = {
     softwareMinimalVersion: string;
     isPresentInSupportContract: boolean;
     isFromFrenchPublicService: boolean;
-    similarSoftwareWikidataIds: string[];
+    similarSoftwareExternalDataIds: string[];
     softwareLogoUrl: string | undefined;
     softwareKeywords: string[];
     doRespectRgaa: boolean | null;

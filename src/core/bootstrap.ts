@@ -1,23 +1,42 @@
-import { createObjectThatThrowsIfAccessed, createCore, type GenericCore } from "redux-clean-architecture";
+import { createCore, createObjectThatThrowsIfAccessed, type GenericCore } from "redux-clean-architecture";
+import { createCompileData } from "./adapters/compileData";
+import { comptoirDuLibreApi } from "./adapters/comptoirDuLibreApi";
+import { createGitDbApi, type GitDbApiParams } from "./adapters/dbApi";
+import { getCnllPrestatairesSill } from "./adapters/getCnllPrestatairesSill";
+import { getServiceProviders } from "./adapters/getServiceProviders";
+import { createGetSoftwareLatestVersion } from "./adapters/getSoftwareLatestVersion";
+import { getWikidataSoftware } from "./adapters/getWikidataSoftware";
+import { getWikidataSoftwareOptions } from "./adapters/getWikidataSoftwareOptions";
+import { getHalSoftware } from "./adapters/hal/getHalSoftware";
+import { getHalSoftwareOptions } from "./adapters/hal/getHalSoftwareOptions";
+import { createKeycloakUserApi, type KeycloakUserApiParams } from "./adapters/userApi";
+import type { CompileData } from "./ports/CompileData";
+import type { ComptoirDuLibreApi } from "./ports/ComptoirDuLibreApi";
+import type { DbApi } from "./ports/DbApi";
+import type { ExternalDataOrigin, GetSoftwareExternalData } from "./ports/GetSoftwareExternalData";
+import type { GetSoftwareExternalDataOptions } from "./ports/GetSoftwareExternalDataOptions";
+import type { GetSoftwareLatestVersion } from "./ports/GetSoftwareLatestVersion";
+import type { UserApi } from "./ports/UserApi";
 import { usecases } from "./usecases";
 
 type ParamsOfBootstrapCore = {
-    gitDbApiParams: import("./adapters/dbApi").GitDbApiParams;
-    keycloakUserApiParams: import("./adapters/userApi").KeycloakUserApiParams | undefined;
+    gitDbApiParams: GitDbApiParams;
+    keycloakUserApiParams: KeycloakUserApiParams | undefined;
     githubPersonalAccessTokenForApiRateLimit: string;
     doPerPerformPeriodicalCompilation: boolean;
     doPerformCacheInitialization: boolean;
+    externalSoftwareDataOrigin: ExternalDataOrigin;
 };
 
 export type Context = {
     paramsOfBootstrapCore: ParamsOfBootstrapCore;
-    dbApi: import("./ports/DbApi").DbApi;
-    userApi: import("./ports/UserApi").UserApi;
-    compileData: import("./ports/CompileData").CompileData;
-    getWikidataSoftwareOptions: import("./ports/GetWikidataSoftwareOptions").GetWikidataSoftwareOptions;
-    comptoirDuLibreApi: import("./ports/ComptoirDuLibreApi").ComptoirDuLibreApi;
-    getWikidataSoftware: import("./ports/GetWikidataSoftware").GetWikidataSoftware;
-    getSoftwareLatestVersion: import("./ports/GetSoftwareLatestVersion").GetSoftwareLatestVersion;
+    dbApi: DbApi;
+    userApi: UserApi;
+    compileData: CompileData;
+    comptoirDuLibreApi: ComptoirDuLibreApi;
+    getSoftwareExternalDataOptions: GetSoftwareExternalDataOptions;
+    getSoftwareExternalData: GetSoftwareExternalData;
+    getSoftwareLatestVersion: GetSoftwareLatestVersion;
 };
 
 export type Core = GenericCore<typeof usecases, Context>;
@@ -32,37 +51,19 @@ export async function bootstrapCore(params: ParamsOfBootstrapCore): Promise<{ co
         keycloakUserApiParams,
         githubPersonalAccessTokenForApiRateLimit,
         doPerPerformPeriodicalCompilation,
-        doPerformCacheInitialization
+        doPerformCacheInitialization,
+        externalSoftwareDataOrigin
     } = params;
-
-    const [
-        { createGetSoftwareLatestVersion },
-        { createCompileData },
-        { getWikidataSoftware },
-        { getCnllPrestatairesSill },
-        { comptoirDuLibreApi },
-        { createGitDbApi },
-        { createKeycloakUserApi },
-        { getWikidataSoftwareOptions },
-        { getServiceProviders }
-    ] = await Promise.all([
-        import("./adapters/getSoftwareLatestVersion"),
-        import("./adapters/compileData"),
-        import("./adapters/getWikidataSoftware"),
-        import("./adapters/getCnllPrestatairesSill"),
-        import("./adapters/comptoirDuLibreApi"),
-        import("./adapters/dbApi"),
-        import("./adapters/userApi"),
-        import("./adapters/getWikidataSoftwareOptions"),
-        import("./adapters/getServiceProviders")
-    ] as const);
 
     const { getSoftwareLatestVersion } = createGetSoftwareLatestVersion({
         githubPersonalAccessTokenForApiRateLimit
     });
 
+    const { getSoftwareExternalDataOptions, getSoftwareExternalData } =
+        getSoftwareExternalDataFunctions(externalSoftwareDataOrigin);
+
     const { compileData } = createCompileData({
-        getWikidataSoftware,
+        getSoftwareExternalData,
         getCnllPrestatairesSill,
         comptoirDuLibreApi,
         getSoftwareLatestVersion,
@@ -86,9 +87,9 @@ export async function bootstrapCore(params: ParamsOfBootstrapCore): Promise<{ co
         dbApi,
         userApi,
         compileData,
-        getWikidataSoftwareOptions,
         comptoirDuLibreApi,
-        getWikidataSoftware,
+        getSoftwareExternalDataOptions,
+        getSoftwareExternalData,
         getSoftwareLatestVersion
     };
 
@@ -110,4 +111,25 @@ export async function bootstrapCore(params: ParamsOfBootstrapCore): Promise<{ co
     }
 
     return { core, context };
+}
+
+function getSoftwareExternalDataFunctions(externalSoftwareDataOrigin: ExternalDataOrigin): {
+    "getSoftwareExternalDataOptions": GetSoftwareExternalDataOptions;
+    "getSoftwareExternalData": GetSoftwareExternalData;
+} {
+    switch (externalSoftwareDataOrigin) {
+        case "wikidata":
+            return {
+                "getSoftwareExternalDataOptions": getWikidataSoftwareOptions,
+                "getSoftwareExternalData": getWikidataSoftware
+            };
+        case "HAL":
+            return {
+                "getSoftwareExternalDataOptions": getHalSoftwareOptions,
+                "getSoftwareExternalData": getHalSoftware
+            };
+        default:
+            const unreachableCase: never = externalSoftwareDataOrigin;
+            throw new Error(`Unreachable case: ${unreachableCase}`);
+    }
 }

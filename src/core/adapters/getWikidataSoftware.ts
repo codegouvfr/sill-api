@@ -12,18 +12,18 @@ import { id } from "tsafe/id";
 import {
     languages,
     type Language,
-    type GetWikidataSoftware,
-    type WikidataSoftware,
+    type GetSoftwareExternalData,
+    type SoftwareExternalData,
     type LocalizedString
-} from "../ports/GetWikidataSoftware";
+} from "../ports/GetSoftwareExternalData";
 import type { Entity, DataValue, LocalizedString as WikiDataLocalizedString } from "../../tools/WikidataEntity";
 const { resolveLocalizedString } = createResolveLocalizedString({
     "currentLanguage": id<Language>("en"),
     "fallbackLanguage": "en"
 });
 
-export const getWikidataSoftware: GetWikidataSoftware = memoize(
-    async wikidataId => {
+export const getWikidataSoftware: GetSoftwareExternalData = memoize(
+    async (wikidataId): Promise<SoftwareExternalData | undefined> => {
         const { entity } =
             (await fetchEntity(wikidataId).catch(error => {
                 if (error instanceof WikidataFetchError) {
@@ -57,7 +57,8 @@ export const getWikidataSoftware: GetWikidataSoftware = memoize(
         })();
 
         return {
-            wikidataId,
+            externalId: wikidataId,
+            externalDataOrigin: "wikidata",
             "label": wikidataSingleLocalizedStringToLocalizedString(entity.labels) ?? {
                 "en": "No label"
             },
@@ -203,7 +204,7 @@ export const getWikidataSoftware: GetWikidataSoftware = memoize(
                             "areEquals": same
                         });
 
-                        return removeDuplicates<WikidataSoftware["developers"][number]>();
+                        return removeDuplicates<SoftwareExternalData["developers"][number]>();
                     })()
                 )
             )

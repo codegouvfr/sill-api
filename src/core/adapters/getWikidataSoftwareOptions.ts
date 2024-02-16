@@ -1,10 +1,10 @@
-import type { GetWikidataSoftwareOptions } from "../ports/GetWikidataSoftwareOptions";
+import type { GetSoftwareExternalDataOptions } from "../ports/GetSoftwareExternalDataOptions";
 import fetch from "node-fetch";
 import { freeSoftwareLicensesWikidataIds } from "./getWikidataSoftware";
 
 const useAgent = "Socle interministériel de logiciels libres - Ap";
 
-export const getWikidataSoftwareOptions: GetWikidataSoftwareOptions = async ({ queryString, language }) => {
+export const getWikidataSoftwareOptions: GetSoftwareExternalDataOptions = async ({ queryString, language }) => {
     const results: {
         search: {
             id: string;
@@ -33,7 +33,8 @@ export const getWikidataSoftwareOptions: GetWikidataSoftwareOptions = async ({ q
     const licensesById = await getLicenses(arr.map(({ id }) => id));
 
     return arr.map(({ id, label, description }) => ({
-        id,
+        externalId: id,
+        externalDataOrigin: "wikidata",
         label,
         description,
         "isLibreSoftware": (() => {

@@ -5,7 +5,7 @@ import { compiledDataPrivateToPublic } from "../../ports/CompileData";
 import { removeDuplicates } from "evt/tools/reducers/removeDuplicates";
 import { exclude } from "tsafe/exclude";
 import { id } from "tsafe/id";
-import { WikidataSoftware } from "../../ports/GetWikidataSoftware";
+import { SoftwareExternalData } from "../../ports/GetSoftwareExternalData";
 import { name } from "./state";
 import type { Software, Agent, Instance, DeclarationFormData } from "./types";
 import { CompiledData } from "../../ports/CompileData";
@@ -18,10 +18,10 @@ const similarSoftwarePartition = createSelector(compiledData, (compiledData): So
     const compiledSoftwareByWikidataId: { [wikidataId: string]: CompiledData.Software<"private"> } = {};
 
     compiledData.forEach(software => {
-        if (software.wikidataSoftware === undefined) {
+        if (software.softwareExternalData === undefined) {
             return;
         }
-        compiledSoftwareByWikidataId[software.wikidataSoftware.wikidataId] = software;
+        compiledSoftwareByWikidataId[software.softwareExternalData.externalId] = software;
     });
 
     const compiledSoftwareByName: { [name: string]: CompiledData.Software<"private"> } = {};
@@ -31,17 +31,21 @@ const similarSoftwarePartition = createSelector(compiledData, (compiledData): So
     });
 
     function wikidataSoftwareToSimilarSoftware(
-        wikidataSoftware: Pick<WikidataSoftware, "wikidataId" | "label" | "description" | "isLibreSoftware">
+        externalSoftwareData: Pick<
+            SoftwareExternalData,
+            "externalId" | "label" | "description" | "isLibreSoftware" | "externalDataOrigin"
+        >
     ): Software.SimilarSoftware {
-        const software = compiledSoftwareByWikidataId[wikidataSoftware.wikidataId];
+        const software = compiledSoftwareByWikidataId[externalSoftwareData.externalId];
 
         if (software === undefined) {
             return {
                 "isInSill": false,
-                "wikidataId": wikidataSoftware.wikidataId,
-                "label": wikidataSoftware.label,
-                "description": wikidataSoftware.description,
-                "isLibreSoftware": wikidataSoftware.isLibreSoftware
+                "externalId": externalSoftwareData.externalId,
+                "externalDataOrigin": externalSoftwareData.externalDataOrigin,
+                "label": externalSoftwareData.label,
+                "description": externalSoftwareData.description,
+                "isLibreSoftware": externalSoftwareData.isLibreSoftware
             };
         }
 
@@ -71,7 +75,7 @@ const similarSoftwarePartition = createSelector(compiledData, (compiledData): So
 
         function getPartition(similarSoftware: Software.SimilarSoftware): Software.SimilarSoftware[] {
             {
-                const id = similarSoftware.isInSill ? similarSoftware.softwareName : similarSoftware.wikidataId;
+                const id = similarSoftware.isInSill ? similarSoftware.softwareName : similarSoftware.externalId;
 
                 if (softwareAlreadySeen.has(id)) {
                     return [];
@@ -91,15 +95,15 @@ const similarSoftwarePartition = createSelector(compiledData, (compiledData): So
 
                     assert(software !== undefined);
 
-                    return software.similarWikidataSoftwares
+                    return software.similarExternalSoftwares
                         .map(wikidataSoftware => getPartition(wikidataSoftwareToSimilarSoftware(wikidataSoftware)))
                         .flat();
                 })(),
                 ...compiledData
                     .map(software => {
                         const hasCurrentSimilarSoftwareInItsListOfSimilarSoftware =
-                            software.similarWikidataSoftwares.find(wikidataSoftware => {
-                                const similarSoftware_i = wikidataSoftwareToSimilarSoftware(wikidataSoftware);
+                            software.similarExternalSoftwares.find(externalSoftware => {
+                                const similarSoftware_i = wikidataSoftwareToSimilarSoftware(externalSoftware);
 
                                 if (similarSoftware.isInSill) {
                                     return (
@@ -107,7 +111,7 @@ const similarSoftwarePartition = createSelector(compiledData, (compiledData): So
                                         similarSoftware_i.softwareName === similarSoftware.softwareName
                                     );
                                 } else {
-                                    return wikidataSoftware.wikidataId === similarSoftware.wikidataId;
+                                    return externalSoftware.externalId === similarSoftware.externalId;
                                 }
                             }) !== undefined;
 
@@ -144,7 +148,7 @@ const softwares = createSelector(compiledData, similarSoftwarePartition, (compil
     return compiledData.map(
         (o): Software => ({
             "serviceProviders": o.serviceProviders,
-            "logoUrl": o.logoUrl ?? o.wikidataSoftware?.logoUrl ?? o.comptoirDuLibreSoftware?.logoUrl,
+            "logoUrl": o.logoUrl ?? o.softwareExternalData?.logoUrl ?? o.comptoirDuLibreSoftware?.logoUrl,
             "softwareId": o.id,
             "softwareName": o.name,
             "softwareDescription": o.description,
@@ -174,21 +178,26 @@ const softwares = createSelector(compiledData, similarSoftwarePartition, (compil
                 return out;
             })(),
             "authors":
-                o.wikidataSoftware?.developers.map(developer => ({
+                o.softwareExternalData?.developers.map(developer => ({
                     "authorName": developer.name,
                     "authorUrl": `https://www.wikidata.org/wiki/${developer.id}`
                 })) ?? [],
             "officialWebsiteUrl":
-                o.wikidataSoftware?.websiteUrl ?? o.comptoirDuLibreSoftware?.external_resources.website ?? undefined,
+                o.softwareExternalData?.websiteUrl ??
+                o.comptoirDuLibreSoftware?.external_resources.website ??
+                undefined,
             "codeRepositoryUrl":
-                o.wikidataSoftware?.sourceUrl ?? o.comptoirDuLibreSoftware?.external_resources.repository ?? undefined,
-            "documentationUrl": o.wikidataSoftware?.documentationUrl,
+                o.softwareExternalData?.sourceUrl ??
+                o.comptoirDuLibreSoftware?.external_resources.repository ??
+                undefined,
+            "documentationUrl": o.softwareExternalData?.documentationUrl,
             "versionMin": o.versionMin,
             "license": o.license,
             "comptoirDuLibreServiceProviderCount": o.comptoirDuLibreSoftware?.providers.length ?? 0,
             "annuaireCnllServiceProviders": o.annuaireCnllServiceProviders,
             "comptoirDuLibreId": o.comptoirDuLibreSoftware?.id,
-            "wikidataId": o.wikidataSoftware?.wikidataId,
+            "externalId": o.softwareExternalData?.externalId,
+            "externalDataOrigin": o.softwareExternalData?.externalDataOrigin,
             "softwareType": o.softwareType,
             "parentWikidataSoftware": o.parentWikidataSoftware,
             "similarSoftwares": (() => {
