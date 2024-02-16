@@ -1,4 +1,4 @@
-import type { SoftwareExternalData } from "../../ports/GetSoftwareExternalData";
+import type { ExternalDataOrigin, SoftwareExternalData } from "../../ports/GetSoftwareExternalData";
 
 export type ServiceProvider = {
     name: string;
@@ -51,7 +51,8 @@ export type Software = {
           }[]
         | undefined;
     comptoirDuLibreId: number | undefined;
-    wikidataId: string | undefined;
+    externalId: string | undefined;
+    externalDataOrigin: ExternalDataOrigin | undefined;
     softwareType: SoftwareType;
     parentWikidataSoftware: Pick<SoftwareExternalData, "externalId" | "label" | "description"> | undefined;
     similarSoftwares: Software.SimilarSoftware[];
@@ -59,12 +60,12 @@ export type Software = {
 };
 
 export namespace Software {
-    export type SimilarSoftware = SimilarSoftware.Wikidata | SimilarSoftware.Sill;
+    export type SimilarSoftware = SimilarSoftware.ExternalSoftwareData | SimilarSoftware.Sill;
 
     export namespace SimilarSoftware {
-        export type Wikidata = { isInSill: false } & Pick<
+        export type ExternalSoftwareData = { isInSill: false } & Pick<
             SoftwareExternalData,
-            "externalId" | "label" | "description" | "isLibreSoftware"
+            "externalId" | "label" | "description" | "isLibreSoftware" | "externalDataOrigin"
         >;
 
         export type Sill = { isInSill: true; softwareName: string; softwareDescription: string };
@@ -116,7 +117,7 @@ export type Os = "windows" | "linux" | "mac" | "android" | "ios";
 
 export type SoftwareFormData = {
     softwareType: SoftwareType;
-    wikidataId: string | undefined;
+    externalId: string | undefined;
     comptoirDuLibreId: number | undefined;
     softwareName: string;
     softwareDescription: string;
@@ -124,7 +125,7 @@ export type SoftwareFormData = {
     softwareMinimalVersion: string;
     isPresentInSupportContract: boolean;
     isFromFrenchPublicService: boolean;
-    similarSoftwareWikidataIds: string[];
+    similarSoftwareExternalDataIds: string[];
     softwareLogoUrl: string | undefined;
     softwareKeywords: string[];
     doRespectRgaa: boolean | null;

@@ -1,4 +1,4 @@
-import bitexParser from "@retorquere/bibtex-parser";
+import * as bitexParser from "@retorquere/bibtex-parser";
 
 export const parseBibliographicFields = (input: string): BibliographicFields => {
     const bib = bitexParser.parse(input);

@@ -134,8 +134,8 @@ export const thunks = {
                         "doRespectRgaa": formData.doRespectRgaa,
                         "isFromFrenchPublicService": formData.isFromFrenchPublicService,
                         "isPresentInSupportContract": formData.isPresentInSupportContract,
-                        "similarSoftwareWikidataIds": formData.similarSoftwareWikidataIds,
-                        "externalId": formData.wikidataId,
+                        "similarSoftwareExternalDataIds": formData.similarSoftwareExternalDataIds,
+                        "externalId": formData.externalId,
                         "comptoirDuLibreId": formData.comptoirDuLibreId,
                         "license": formData.softwareLicense,
                         "softwareType": formData.softwareType,
@@ -148,7 +148,7 @@ export const thunks = {
                         "addedByAgentEmail": agentRow.email,
                         "logoUrl": await dispatch(
                             privateThunks.getStorableLogo({
-                                "wikidataId": formData.wikidataId,
+                                "externalId": formData.externalId,
                                 "logoUrlFromFormData": formData.softwareLogoUrl
                             })
                         ),
@@ -217,13 +217,13 @@ export const thunks = {
                             comptoirDuLibreId,
                             isFromFrenchPublicService,
                             isPresentInSupportContract,
-                            similarSoftwareWikidataIds,
+                            similarSoftwareExternalDataIds,
                             softwareDescription,
                             softwareLicense,
                             softwareMinimalVersion,
                             softwareName,
                             softwareType,
-                            wikidataId,
+                            externalId,
                             softwareLogoUrl: logoUrlFromFormData,
                             softwareKeywords,
                             doRespectRgaa,
@@ -249,13 +249,13 @@ export const thunks = {
                             comptoirDuLibreId,
                             isFromFrenchPublicService,
                             isPresentInSupportContract,
-                            similarSoftwareWikidataIds,
+                            similarSoftwareExternalDataIds,
                             "description": softwareDescription,
                             "license": softwareLicense,
                             "versionMin": softwareMinimalVersion,
                             "name": softwareName,
                             "softwareType": softwareType,
-                            "externalId": wikidataId,
+                            externalId,
                             "logoUrl": (() => {
                                 const state = getState()[name];
 
@@ -882,9 +882,9 @@ const privateThunks = {
         },
     /** Functions that returns logoUrlFromFormData if it's not the same as the one from the automatic suggestions */
     "getStorableLogo":
-        (params: { logoUrlFromFormData: string | undefined; wikidataId: string | undefined }) =>
+        (params: { logoUrlFromFormData: string | undefined; externalId: string | undefined }) =>
         async (...args): Promise<string | undefined> => {
-            const { logoUrlFromFormData, wikidataId } = params;
+            const { logoUrlFromFormData, externalId } = params;
 
             const [dispatch] = args;
 
@@ -892,13 +892,13 @@ const privateThunks = {
                 return undefined;
             }
 
-            if (wikidataId === undefined) {
+            if (externalId === undefined) {
                 return logoUrlFromFormData;
             }
 
             const softwareFormAutoFillData = await dispatch(
-                suggestionAndAutoFill.thunks.getSoftwareFormAutoFillDataFromWikidataAndOtherSources({
-                    wikidataId
+                suggestionAndAutoFill.thunks.getSoftwareFormAutoFillDataFromExternalAndOtherSources({
+                    externalId
                 })
             );
 

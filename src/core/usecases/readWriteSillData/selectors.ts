@@ -31,17 +31,21 @@ const similarSoftwarePartition = createSelector(compiledData, (compiledData): So
     });
 
     function wikidataSoftwareToSimilarSoftware(
-        wikidataSoftware: Pick<SoftwareExternalData, "externalId" | "label" | "description" | "isLibreSoftware">
+        externalSoftwareData: Pick<
+            SoftwareExternalData,
+            "externalId" | "label" | "description" | "isLibreSoftware" | "externalDataOrigin"
+        >
     ): Software.SimilarSoftware {
-        const software = compiledSoftwareByWikidataId[wikidataSoftware.externalId];
+        const software = compiledSoftwareByWikidataId[externalSoftwareData.externalId];
 
         if (software === undefined) {
             return {
                 "isInSill": false,
-                "externalId": wikidataSoftware.externalId,
-                "label": wikidataSoftware.label,
-                "description": wikidataSoftware.description,
-                "isLibreSoftware": wikidataSoftware.isLibreSoftware
+                "externalId": externalSoftwareData.externalId,
+                "externalDataOrigin": externalSoftwareData.externalDataOrigin,
+                "label": externalSoftwareData.label,
+                "description": externalSoftwareData.description,
+                "isLibreSoftware": externalSoftwareData.isLibreSoftware
             };
         }
 
@@ -91,15 +95,15 @@ const similarSoftwarePartition = createSelector(compiledData, (compiledData): So
 
                     assert(software !== undefined);
 
-                    return software.similarWikidataSoftwares
+                    return software.similarExternalSoftwares
                         .map(wikidataSoftware => getPartition(wikidataSoftwareToSimilarSoftware(wikidataSoftware)))
                         .flat();
                 })(),
                 ...compiledData
                     .map(software => {
                         const hasCurrentSimilarSoftwareInItsListOfSimilarSoftware =
-                            software.similarWikidataSoftwares.find(wikidataSoftware => {
-                                const similarSoftware_i = wikidataSoftwareToSimilarSoftware(wikidataSoftware);
+                            software.similarExternalSoftwares.find(externalSoftware => {
+                                const similarSoftware_i = wikidataSoftwareToSimilarSoftware(externalSoftware);
 
                                 if (similarSoftware.isInSill) {
                                     return (
@@ -107,7 +111,7 @@ const similarSoftwarePartition = createSelector(compiledData, (compiledData): So
                                         similarSoftware_i.softwareName === similarSoftware.softwareName
                                     );
                                 } else {
-                                    return wikidataSoftware.externalId === similarSoftware.externalId;
+                                    return externalSoftware.externalId === similarSoftware.externalId;
                                 }
                             }) !== undefined;
 
@@ -192,7 +196,8 @@ const softwares = createSelector(compiledData, similarSoftwarePartition, (compil
             "comptoirDuLibreServiceProviderCount": o.comptoirDuLibreSoftware?.providers.length ?? 0,
             "annuaireCnllServiceProviders": o.annuaireCnllServiceProviders,
             "comptoirDuLibreId": o.comptoirDuLibreSoftware?.id,
-            "wikidataId": o.softwareExternalData?.externalId,
+            "externalId": o.softwareExternalData?.externalId,
+            "externalDataOrigin": o.softwareExternalData?.externalDataOrigin,
             "softwareType": o.softwareType,
             "parentWikidataSoftware": o.parentWikidataSoftware,
             "similarSoftwares": (() => {

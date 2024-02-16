@@ -7,59 +7,56 @@ import { id } from "tsafe/id";
 import { privateSelectors } from "./selectors";
 
 export const thunks = {
-    "getWikidataOptionsWithPresenceInSill":
+    "getSoftwareExternalDataOptionsWithPresenceInSill":
         (params: { queryString: string; language: Language }) =>
         async (...args) => {
             const { queryString, language } = params;
 
-            const [, getState, { getSoftwareExternalDataOptions: getWikidataSoftwareOptions }] = args;
+            const [, getState, { getSoftwareExternalDataOptions }] = args;
 
-            const queryResults = await getWikidataSoftwareOptions({ queryString, language });
+            const queryResults = await getSoftwareExternalDataOptions({ queryString, language });
 
             const sillWikidataIds = privateSelectors.sillWikidataIds(getState());
 
-            return queryResults.map(({ externalId, description, label, isLibreSoftware }) => ({
-                "wikidataId": externalId,
+            return queryResults.map(({ externalId, description, label, isLibreSoftware, externalDataOrigin }) => ({
+                "externalId": externalId,
                 "description": description,
                 "label": label,
                 "isInSill": sillWikidataIds.includes(externalId),
-                isLibreSoftware
+                isLibreSoftware,
+                "externalDataOrigin": externalDataOrigin
             }));
         },
-    "getSoftwareFormAutoFillDataFromWikidataAndOtherSources":
-        (params: { wikidataId: string }) =>
+    "getSoftwareFormAutoFillDataFromExternalAndOtherSources":
+        (params: { externalId: string }) =>
         async (...args): Promise<AutoFillData> => {
-            const { wikidataId } = params;
+            const { externalId } = params;
 
             const [, , rootContext] = args;
 
             const { autoFillDataCache } = getContext(rootContext);
 
             {
-                const cachedAutoFillData = autoFillDataCache[wikidataId];
+                const cachedAutoFillData = autoFillDataCache[externalId];
 
                 if (cachedAutoFillData !== undefined) {
                     return cachedAutoFillData;
                 }
             }
 
-            const {
-                getSoftwareLatestVersion,
-                comptoirDuLibreApi,
-                getSoftwareExternalData: getWikidataSoftware
-            } = rootContext;
+            const { getSoftwareLatestVersion, comptoirDuLibreApi, getSoftwareExternalData } = rootContext;
 
-            const [wikidataSoftware, comptoirDuLibre] = await Promise.all([
-                getWikidataSoftware(wikidataId),
+            const [softwareExternalData, comptoirDuLibre] = await Promise.all([
+                getSoftwareExternalData(externalId),
                 comptoirDuLibreApi.getComptoirDuLibre()
             ]);
 
-            assert(wikidataSoftware !== undefined);
+            assert(softwareExternalData !== undefined);
 
-            const { label: wikidataSoftwareLabel } = wikidataSoftware;
+            const { label: externalSoftwareLabel } = softwareExternalData;
 
             const { comptoirDuLibreSoftware } = (() => {
-                if (wikidataSoftwareLabel === undefined) {
+                if (externalSoftwareLabel === undefined) {
                     return { "comptoirDuLibreSoftware": undefined };
                 }
 
@@ -77,7 +74,7 @@ export const thunks = {
                     });
 
                     return format(software.name).includes(
-                        format(resolveLocalizedString(wikidataSoftwareLabel)).substring(0, 8)
+                        format(resolveLocalizedString(externalSoftwareLabel)).substring(0, 8)
                     );
                 });
 
@@ -100,15 +97,15 @@ export const thunks = {
             const autoFillData: AutoFillData = {
                 "comptoirDuLibreId": comptoirDuLibreSoftware?.id,
                 "softwareName":
-                    wikidataSoftwareLabel === undefined ? undefined : resolveLocalizedString(wikidataSoftwareLabel),
+                    externalSoftwareLabel === undefined ? undefined : resolveLocalizedString(externalSoftwareLabel),
                 "softwareDescription":
-                    wikidataSoftware.description === undefined
+                    softwareExternalData.description === undefined
                         ? undefined
-                        : resolveLocalizedString(wikidataSoftware.description),
-                "softwareLicense": wikidataSoftware.license ?? comptoirDuLibreSoftware?.licence,
+                        : resolveLocalizedString(softwareExternalData.description),
+                "softwareLicense": softwareExternalData.license ?? comptoirDuLibreSoftware?.licence,
                 "softwareMinimalVersion": await (async () => {
                     const repoUrl =
-                        wikidataSoftware.sourceUrl ??
+                        softwareExternalData.sourceUrl ??
                         comptoirDuLibreSoftware?.external_resources.repository ??
                         undefined;
 
@@ -116,14 +113,14 @@ export const thunks = {
                         ? undefined
                         : getSoftwareLatestVersion(repoUrl, "quick").then(resp => resp?.semVer);
                 })(),
-                "softwareLogoUrl": wikidataSoftware.logoUrl ?? comptoirDuLibreLogoUrl,
+                "softwareLogoUrl": softwareExternalData.logoUrl ?? comptoirDuLibreLogoUrl,
                 "keywords": comptoirDuLibreKeywords ?? []
             };
 
-            autoFillDataCache[wikidataId] = autoFillData;
+            autoFillDataCache[externalId] = autoFillData;
 
             setTimeout(() => {
-                delete autoFillDataCache[wikidataId];
+                delete autoFillDataCache[externalId];
             }, 3 * 60 * 1000 /* 3 hours */);
 
             return autoFillData;
@@ -141,5 +138,5 @@ type AutoFillData = {
 };
 
 const { getContext } = createUsecaseContextApi(() => ({
-    "autoFillDataCache": id<{ [wikidataId: string]: AutoFillData }>({})
+    "autoFillDataCache": id<{ [externalId: string]: AutoFillData }>({})
 }));

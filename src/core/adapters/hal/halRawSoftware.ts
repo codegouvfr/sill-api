@@ -67,7 +67,8 @@ export const rawHalSoftwareToExternalOption =
             externalId: halSoftware.docid,
             label: labelByLang[language],
             description: descriptionByLang[language],
-            isLibreSoftware: halSoftware.openAccess_bool
+            isLibreSoftware: halSoftware.openAccess_bool,
+            externalDataOrigin: "HAL"
         };
     };
 

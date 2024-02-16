@@ -11,7 +11,7 @@ export type CompileData = (params: {
 export namespace CompileData {
     export type PartialSoftware = Pick<
         CompiledData.Software<"private">,
-        "softwareExternalData" | "latestVersion" | "similarWikidataSoftwares" | "parentWikidataSoftware"
+        "softwareExternalData" | "latestVersion" | "similarExternalSoftwares" | "parentWikidataSoftware"
     > & {
         comptoirDuLibreSoftware:
             | {
@@ -51,12 +51,14 @@ export namespace CompiledData {
             | "generalInfoMd"
             | "logoUrl"
             | "keywords"
+            | "externalId"
+            | "externalDataOrigin"
         > & {
             serviceProviders: ServiceProvider[];
             softwareExternalData: SoftwareExternalData | undefined;
-            similarWikidataSoftwares: Pick<
+            similarExternalSoftwares: Pick<
                 SoftwareExternalData,
-                "externalId" | "label" | "description" | "isLibreSoftware"
+                "externalId" | "label" | "description" | "isLibreSoftware" | "externalDataOrigin"
             >[];
             parentWikidataSoftware: Pick<SoftwareExternalData, "externalId" | "label" | "description"> | undefined;
             comptoirDuLibreSoftware:
@@ -131,8 +133,8 @@ export function compiledDataPrivateToPublic(compiledData: CompiledData<"private"
             updateTime,
             versionMin,
             workshopUrls,
-            softwareExternalData: wikidataSoftware,
-            similarWikidataSoftwares,
+            softwareExternalData,
+            similarExternalSoftwares,
             parentWikidataSoftware,
             serviceProviders
         } = software;
@@ -162,8 +164,8 @@ export function compiledDataPrivateToPublic(compiledData: CompiledData<"private"
             updateTime,
             versionMin,
             workshopUrls,
-            softwareExternalData: wikidataSoftware,
-            similarWikidataSoftwares,
+            softwareExternalData,
+            similarExternalSoftwares,
             parentWikidataSoftware,
             "hasExpertReferent": referents.find(({ isExpert }) => isExpert) !== undefined,
             "userAndReferentCountByOrganization": (() => {

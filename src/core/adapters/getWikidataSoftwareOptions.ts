@@ -34,6 +34,7 @@ export const getWikidataSoftwareOptions: GetSoftwareExternalDataOptions = async 
 
     return arr.map(({ id, label, description }) => ({
         externalId: id,
+        externalDataOrigin: "wikidata",
         label,
         description,
         "isLibreSoftware": (() => {

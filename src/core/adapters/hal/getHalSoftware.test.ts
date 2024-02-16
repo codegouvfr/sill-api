@@ -46,7 +46,8 @@ describe("HAL", () => {
                     "externalId": "2801278",
                     "label": "multisensi",
                     "description": "Functions to perform sensitivity analysis on a model with multivariate output.",
-                    "isLibreSoftware": true
+                    "isLibreSoftware": true,
+                    "externalDataOrigin": "HAL"
                 }
             ]);
 
@@ -56,7 +57,8 @@ describe("HAL", () => {
                     "externalId": "2801278",
                     "label": "multisensi : Analyse de sensibilité multivariée",
                     "description": "Functions to perform sensitivity analysis on a model with multivariate output.",
-                    "isLibreSoftware": true
+                    "isLibreSoftware": true,
+                    "externalDataOrigin": "HAL"
                 }
             ]);
         });

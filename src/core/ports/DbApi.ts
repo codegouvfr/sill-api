@@ -32,7 +32,7 @@ export namespace Db {
         doRespectRgaa: boolean | null;
         isFromFrenchPublicService: boolean;
         isPresentInSupportContract: boolean;
-        similarSoftwareWikidataIds: string[];
+        similarSoftwareExternalDataIds: string[];
         externalId?: string;
         externalDataOrigin?: "wikidata" | "HAL";
         //Example https://comptoir-du-libre.org/en/softwares/461 -> 461
