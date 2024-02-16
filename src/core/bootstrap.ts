@@ -1,5 +1,4 @@
 import { createCore, createObjectThatThrowsIfAccessed, type GenericCore } from "redux-clean-architecture";
-import { id } from "tsafe/id";
 import { createCompileData } from "./adapters/compileData";
 import { comptoirDuLibreApi } from "./adapters/comptoirDuLibreApi";
 import { createGitDbApi, type GitDbApiParams } from "./adapters/dbApi";
@@ -8,6 +7,8 @@ import { getServiceProviders } from "./adapters/getServiceProviders";
 import { createGetSoftwareLatestVersion } from "./adapters/getSoftwareLatestVersion";
 import { getWikidataSoftware } from "./adapters/getWikidataSoftware";
 import { getWikidataSoftwareOptions } from "./adapters/getWikidataSoftwareOptions";
+import { getHalSoftware } from "./adapters/hal/getHalSoftware";
+import { getHalSoftwareOptions } from "./adapters/hal/getHalSoftwareOptions";
 import { createKeycloakUserApi, type KeycloakUserApiParams } from "./adapters/userApi";
 import type { CompileData } from "./ports/CompileData";
 import type { ComptoirDuLibreApi } from "./ports/ComptoirDuLibreApi";
@@ -17,8 +18,6 @@ import type { GetSoftwareExternalDataOptions } from "./ports/GetSoftwareExternal
 import type { GetSoftwareLatestVersion } from "./ports/GetSoftwareLatestVersion";
 import type { UserApi } from "./ports/UserApi";
 import { usecases } from "./usecases";
-import { getHalSoftware } from "./adapters/hal/getHalSoftware";
-import { getHalSoftwareOptions } from "./adapters/hal/getHalSoftwareOptions";
 
 type ParamsOfBootstrapCore = {
     gitDbApiParams: GitDbApiParams;
@@ -60,8 +59,11 @@ export async function bootstrapCore(params: ParamsOfBootstrapCore): Promise<{ co
         githubPersonalAccessTokenForApiRateLimit
     });
 
+    const { getSoftwareExternalDataOptions, getSoftwareExternalData } =
+        getSoftwareExternalDataFunctions(externalSoftwareDataOrigin);
+
     const { compileData } = createCompileData({
-        getWikidataSoftware,
+        getSoftwareExternalData,
         getCnllPrestatairesSill,
         comptoirDuLibreApi,
         getSoftwareLatestVersion,
@@ -79,9 +81,6 @@ export async function bootstrapCore(params: ParamsOfBootstrapCore): Promise<{ co
                   "initializeUserApiCache": async () => {}
               }
             : createKeycloakUserApi(keycloakUserApiParams);
-
-    const { getSoftwareExternalDataOptions, getSoftwareExternalData } =
-        getSoftwareExternalDataFunctions(externalSoftwareDataOrigin);
 
     const context: Context = {
         "paramsOfBootstrapCore": params,

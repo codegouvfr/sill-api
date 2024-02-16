@@ -18,11 +18,11 @@ export const thunks = {
 
             const sillWikidataIds = privateSelectors.sillWikidataIds(getState());
 
-            return queryResults.map(({ id, description, label, isLibreSoftware }) => ({
-                "wikidataId": id,
+            return queryResults.map(({ externalId, description, label, isLibreSoftware }) => ({
+                "wikidataId": externalId,
                 "description": description,
                 "label": label,
-                "isInSill": sillWikidataIds.includes(id),
+                "isInSill": sillWikidataIds.includes(externalId),
                 isLibreSoftware
             }));
         },

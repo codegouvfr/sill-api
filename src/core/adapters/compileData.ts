@@ -9,14 +9,14 @@ import { exclude } from "tsafe/exclude";
 import memoize from "memoizee";
 
 export function createCompileData(params: {
-    getWikidataSoftware: GetSoftwareExternalData;
+    getSoftwareExternalData: GetSoftwareExternalData;
     getCnllPrestatairesSill: GetCnllPrestatairesSill;
     comptoirDuLibreApi: ComptoirDuLibreApi;
     getSoftwareLatestVersion: GetSoftwareLatestVersion;
     getServiceProviders: GetServiceProviders;
 }) {
     const {
-        getWikidataSoftware: getWikidataSoftware_params,
+        getSoftwareExternalData: getSoftwareExternalData_params,
         comptoirDuLibreApi,
         getCnllPrestatairesSill,
         getSoftwareLatestVersion: getSoftwareLatestVersion_params,
@@ -47,9 +47,9 @@ export function createCompileData(params: {
             const getWikidataSoftware = memoize(
                 async (wikidataId: string) => {
                     if (getCachedSoftware === undefined) {
-                        getWikidataSoftware_params.clear(wikidataId);
+                        getSoftwareExternalData_params.clear(wikidataId);
                     }
-                    return await getWikidataSoftware_params(wikidataId);
+                    return await getSoftwareExternalData_params(wikidataId);
                 },
                 { "promise": true }
             );

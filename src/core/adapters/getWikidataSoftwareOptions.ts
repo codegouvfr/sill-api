@@ -33,7 +33,7 @@ export const getWikidataSoftwareOptions: GetSoftwareExternalDataOptions = async 
     const licensesById = await getLicenses(arr.map(({ id }) => id));
 
     return arr.map(({ id, label, description }) => ({
-        id,
+        externalId: id,
         label,
         description,
         "isLibreSoftware": (() => {
