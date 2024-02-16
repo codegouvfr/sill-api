@@ -22,7 +22,8 @@ export CONFIGURATION=$(cat << EOF
   "githubPersonalAccessTokenForApiRateLimit": "$SILL_GITHUB_TOKEN",
   "githubWebhookSecret": "$SILL_WEBHOOK_SECRET",
   "port": $SILL_API_PORT,
-  "isDevEnvironnement": $SILL_IS_DEV_ENVIRONNEMENT
+  "isDevEnvironnement": $SILL_IS_DEV_ENVIRONNEMENT,
+  "externalSoftwareDataOrigin": $SILL_EXTERNAL_SOFTWARE_DATA_ORIGIN
 }
 EOF
 ) 
