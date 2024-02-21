@@ -104,7 +104,8 @@ export async function startRpcService(params: {
                   },
         termsOfServiceUrl,
         readmeUrl,
-        redirectUrl
+        redirectUrl,
+        externalSoftwareDataOrigin
     });
 
     express()

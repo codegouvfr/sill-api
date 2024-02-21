@@ -22,7 +22,7 @@ import type { Equals } from "tsafe";
 import type { OptionalIfCanBeUndefined } from "../tools/OptionalIfCanBeUndefined";
 import { initTRPC } from "@trpc/server";
 import superjson from "superjson";
-import { type LocalizedString, Language, languages } from "../core/ports/GetSoftwareExternalData";
+import { type LocalizedString, Language, languages, ExternalDataOrigin } from "../core/ports/GetSoftwareExternalData";
 import { createResolveLocalizedString } from "i18nifty/LocalizedString/reactless";
 
 export function createRouter(params: {
@@ -37,8 +37,18 @@ export function createRouter(params: {
     termsOfServiceUrl: LocalizedString;
     readmeUrl: LocalizedString;
     redirectUrl: string | undefined;
+    externalSoftwareDataOrigin: ExternalDataOrigin;
 }) {
-    const { core, coreContext, keycloakParams, jwtClaimByUserKey, termsOfServiceUrl, readmeUrl, redirectUrl } = params;
+    const {
+        core,
+        coreContext,
+        keycloakParams,
+        jwtClaimByUserKey,
+        termsOfServiceUrl,
+        readmeUrl,
+        redirectUrl,
+        externalSoftwareDataOrigin
+    } = params;
 
     const t = initTRPC.context<Context>().create({
         "transformer": superjson
@@ -61,6 +71,7 @@ export function createRouter(params: {
 
     const router = t.router({
         "getRedirectUrl": loggedProcedure.query(() => redirectUrl),
+        "getExternalSoftwareDataOrigin": loggedProcedure.query(() => externalSoftwareDataOrigin),
         "getApiVersion": loggedProcedure.query(
             (() => {
                 const out: string = JSON.parse(
