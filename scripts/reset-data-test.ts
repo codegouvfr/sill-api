@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 
 const tmpDirBasename = "tmp_x3dL4bZdj4dbq2Td";
-const repoUrl = "https://github.com/codegouvfr/sill-data";
+const repoUrl = "git@github.com:codegouvfr/sill-data.git";
 
 function executeCommand(command: string) {
     console.log(`Executing: ${command}`);
@@ -22,7 +22,7 @@ try {
     executeCommand(`git fetch origin`);
 
     // Change remote URL
-    executeCommand(`git remote set-url origin ${repoUrl}-test`);
+    executeCommand(`git remote set-url origin ${repoUrl.replace(".git", "-test.git")}`);
 
     // Push all branches to the new origin
     executeCommand(`git push -f --all`);
