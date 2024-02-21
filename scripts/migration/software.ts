@@ -48,6 +48,47 @@ const zSoftwareType = z.union([
     assert<Equals<Got, Expected>>();
 }
 
+// Previous version, kept until the new one reach production :
+
+// const zSoftwareRow = z.object({
+//     "id": z.number(),
+//     "name": z.string(),
+//     "description": z.string(),
+//     "referencedSinceTime": z.number(),
+//     "updateTime": z.number(),
+//     "dereferencing": z
+//       .object({
+//           "reason": z.string().optional(),
+//           "time": z.number(),
+//           "lastRecommendedVersion": z.string().optional()
+//       })
+//       .optional(),
+//     "isStillInObservation": z.boolean(),
+//     "parentSoftwareWikidataId": z.string().optional(),
+//     "doRespectRgaa": z.boolean().or(z.null()),
+//     "isFromFrenchPublicService": z.boolean(),
+//     "isPresentInSupportContract": z.boolean(),
+//     "similarSoftwareWikidataIds": z.array(z.string()),
+//     "wikidataId": z.string().optional(),
+//     "comptoirDuLibreId": z.number().optional(),
+//     "license": z.string(),
+//     "softwareType": zSoftwareType,
+//     "catalogNumeriqueGouvFrId": z.string().optional(),
+//     "versionMin": z.string(),
+//     "workshopUrls": z.array(z.string()),
+//     "testUrls": z.array(
+//       z.object({
+//           "description": z.string(),
+//           "url": z.string()
+//       })
+//     ),
+//     "categories": z.array(z.string()),
+//     "generalInfoMd": z.string().optional(),
+//     "addedByAgentEmail": z.string(),
+//     "logoUrl": z.string().optional(),
+//     "keywords": z.array(z.string())
+// });
+
 const zSoftwareRow = z.object({
     "id": z.number(),
     "name": z.string(),
@@ -63,11 +104,12 @@ const zSoftwareRow = z.object({
         .optional(),
     "isStillInObservation": z.boolean(),
     "parentSoftwareWikidataId": z.string().optional(),
-    "doRespectRgaa": z.boolean(),
+    "doRespectRgaa": z.boolean().or(z.null()),
     "isFromFrenchPublicService": z.boolean(),
     "isPresentInSupportContract": z.boolean(),
-    "similarSoftwareWikidataIds": z.array(z.string()),
+    "similarSoftwareExternalDataIds": z.array(z.string()),
     "externalId": z.string().optional(),
+    "externalDataOrigin": z.enum(["wikidata", "HAL"]).optional(),
     "comptoirDuLibreId": z.number().optional(),
     "license": z.string(),
     "softwareType": zSoftwareType,
@@ -120,6 +162,7 @@ fs.writeFileSync(
                     isFromFrenchPublicService,
                     isPresentInSupportContract,
                     externalId,
+                    externalDataOrigin,
                     comptoirDuLibreId,
                     license,
                     catalogNumeriqueGouvFrId,
@@ -129,7 +172,7 @@ fs.writeFileSync(
                     generalInfoMd,
                     updateTime,
                     doRespectRgaa,
-                    similarExternalSoftwareIds,
+                    similarSoftwareExternalDataIds,
                     softwareType,
                     categories,
                     addedByAgentEmail,
@@ -159,7 +202,8 @@ fs.writeFileSync(
                     parentSoftwareWikidataId,
                     isFromFrenchPublicService,
                     isPresentInSupportContract,
-                    wikidataId,
+                    externalId,
+                    externalDataOrigin,
                     comptoirDuLibreId,
                     license,
                     catalogNumeriqueGouvFrId,
@@ -169,7 +213,7 @@ fs.writeFileSync(
                     generalInfoMd,
                     updateTime,
                     doRespectRgaa,
-                    similarExternalSoftwareIds: similarSoftwareWikidataIds,
+                    similarSoftwareExternalDataIds,
                     softwareType,
                     categories,
                     addedByAgentEmail,
