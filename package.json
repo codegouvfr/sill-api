@@ -9,7 +9,7 @@
     "main": "dist/lib/index.js",
     "types": "dist/lib/index.d.ts",
     "scripts": {
-        "prepare": "[ ! -f .env.local.sh ] && cp .env.sh .env.local.sh",
+        "prepare": "[ ! -f .env.local.sh ] && cp .env.sh .env.local.sh || true",
         "test": "vitest",
         "build": "tsc",
         "start": "./.env.local.sh forever dist/main.js",
