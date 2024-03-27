@@ -1,16 +1,8 @@
-<p align="center">
-    <i>The backend of <a href="https://code.gouv.fr/sill">code.gouv.fr/sill</a></i>
-    <br>
-    <br>
-    <a href="https://github.com/codegouvfr/sill-api/actions">
-      <img src="https://github.com/codegouvfr/sill-api/workflows/ci/badge.svg?branch=main">
-    </a>
-    <a href="https://github.com/codegouvfr/sill#licence">
-      <img src="https://img.shields.io/npm/l/sillfr">
-    </a>
-    <br/>
-    <a href="https://github.com/codegouvfr/sill-docs/">Documentation</a>
-</p>
+# This project has been migrated to a monorepo.
+
+It is now available at https://github.com/codegouvfr/sill
+
+This one is kept only for history purposes. Please do not use it anymore, issues and PRs will not be processed. They should be addressed to the new repository mentioned above.
 
 # Licences
 
