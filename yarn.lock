@@ -2605,12 +2605,12 @@ husky@^4.3.8:
     slash "^3.0.0"
     which-pm-runs "^1.0.0"
 
-i18nifty@^3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/i18nifty/-/i18nifty-3.2.0.tgz#277676d20893b12fad9199e71aa5564f81b66f41"
-  integrity sha512-6+WgmW4oZOoUiQp9Hik4d+uDeO9LBeTrcEvOIuIYOkIo7W/s/BVKlDtpXn1JGaH3thy9iEtZ9sxx/fhxDo2aUQ==
+i18nifty@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/i18nifty/-/i18nifty-3.2.1.tgz#ee27e76cfdb8591d26ac980063567fac75a19c11"
+  integrity sha512-/exQ7rch7erPczJVy8gL+BD7TT24FfLFUvpLV1QW23tDB+tatq4/BN6j2V6nvADtn5GCFkhmWBe8ZzavDjQ3fQ==
   dependencies:
-    powerhooks "^1.0.5"
+    powerhooks "^1.0.9"
     tsafe "^1.6.5"
 
 i@0.3.x:
@@ -3121,10 +3121,10 @@ keycloak-backend@^2.0.1:
     axios "^0.21.0"
     jsonwebtoken "^8.5.1"
 
-keycloakify@^9.2.0:
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/keycloakify/-/keycloakify-9.2.0.tgz#236edadcc35f4ab039529577b26fc28c117bd55b"
-  integrity sha512-VbQ5EL7hvsEuoEr9pXd+2KDhVcNd4YOJuKG6+/pH0RfNeO6sow63WD8C+XiGY6HoEIKb22S2NNKR3mjclRaCrA==
+keycloakify@^9.6.7:
+  version "9.6.7"
+  resolved "https://registry.yarnpkg.com/keycloakify/-/keycloakify-9.6.7.tgz#9eb3b7dae2ac7b9e0f8169544ffed0930fa83b6f"
+  integrity sha512-lIRAuOq609qaPoW0lhRoFTBwuYNJw+pF3pqe66gZo/uucAwZaR6Uzk/OHBfFgQd+T8wNk2ODEZN5BR4xJKNGYQ==
   dependencies:
     "@babel/generator" "^7.22.9"
     "@babel/parser" "^7.22.7"
@@ -3133,10 +3133,10 @@ keycloakify@^9.2.0:
     cheerio "^1.0.0-rc.5"
     cli-select "^1.1.2"
     evt "^2.4.18"
+    magic-string "^0.30.7"
     make-fetch-happen "^11.0.3"
     minimal-polyfills "^2.2.2"
     minimist "^1.2.6"
-    path-browserify "^1.0.1"
     react-markdown "^5.0.3"
     recast "^0.23.3"
     rfc4648 "^1.5.2"
@@ -3332,6 +3332,13 @@ magic-string@^0.30.5:
   version "0.30.7"
   resolved "https://registry.yarnpkg.com/magic-string/-/magic-string-0.30.7.tgz#0cecd0527d473298679da95a2d7aeb8c64048505"
   integrity sha512-8vBuFF/I/+OSLRmdf2wwFCJCz+nSn0m6DPvGH1fS/KiQoSaR+sETbov0eIk9KhEKy8CYqIkIAnbohxT/4H0kuA==
+  dependencies:
+    "@jridgewell/sourcemap-codec" "^1.4.15"
+
+magic-string@^0.30.7:
+  version "0.30.10"
+  resolved "https://registry.yarnpkg.com/magic-string/-/magic-string-0.30.10.tgz#123d9c41a0cb5640c892b041d4cfb3bd0aa4b39e"
+  integrity sha512-iIRwTIf0QKV3UAnYK4PU8uiEc4SRh5jX0mwpIwETPpHdhVM4f53RSwS/vXvN1JhGX+Cs7B8qIq3d6AH49O5fAQ==
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.4.15"
 
@@ -3937,11 +3944,6 @@ pascalcase@^0.1.1:
   resolved "https://registry.yarnpkg.com/pascalcase/-/pascalcase-0.1.1.tgz#b363e55e8006ca6fe21784d2db22bd15d7917f14"
   integrity sha512-XHXfu/yOQRy9vYOtUDVMN60OEJjW013GoObG1o+xwQTpB9eYJX/BjXMsdW13ZDPruFhYYn0AG22w0xgQMwl3Nw==
 
-path-browserify@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/path-browserify/-/path-browserify-1.0.1.tgz#d98454a9c3753d5790860f16f68867b9e46be1fd"
-  integrity sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==
-
 path-dirname@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/path-dirname/-/path-dirname-1.0.2.tgz#cc33d24d525e099a5388c0336c6e32b9160609e0"
@@ -4069,10 +4071,10 @@ postcss@^8.4.32:
     picocolors "^1.0.0"
     source-map-js "^1.0.2"
 
-powerhooks@^1.0.5:
-  version "1.0.8"
-  resolved "https://registry.yarnpkg.com/powerhooks/-/powerhooks-1.0.8.tgz#e64e10b7f9cb2f367a3e92da2be8d2373f3d2418"
-  integrity sha512-BJJIJ5G/aT65Pbu7zAoOgK1NsWcRmho0W4sRSbKen/pqemkxG+2YsX4d8c2j6cbE1ldnN0muf76YnV5k4RwURw==
+powerhooks@^1.0.9:
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/powerhooks/-/powerhooks-1.0.10.tgz#9d532b23294cba69d5872d859bdf843b91cb9c41"
+  integrity sha512-fJmKSVJk9Bkotl9rK1ryVPSqhY4xOZKxM6deyTaMbICK8jHh/CQztN2mNTxlKu6vkJBIFj1cRd/7N6slh3uM6w==
   dependencies:
     evt "^2.5.7"
     memoizee "^0.4.15"
